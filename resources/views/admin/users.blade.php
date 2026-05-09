@@ -4,8 +4,10 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
         <form method="GET" action="{{ route('admin.users') }}" class="form-inline">
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari nama/email/username"
+                   class="form-control form-control-sm mr-2" style="width:240px">
             <select name="role" class="form-control form-control-sm mr-2" onchange="this.form.submit()">
                 <option value="">Semua Role</option>
                 @foreach($roles as $role)
@@ -14,13 +16,18 @@
                 </option>
                 @endforeach
             </select>
+            <button type="submit" class="btn btn-sm btn-outline-secondary">Cari</button>
         </form>
+        <a href="{{ route('admin.users.create') }}" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus mr-1"></i> Tambah Pengguna
+        </a>
     </div>
     <div class="card-body p-0">
         <table class="table table-sm table-hover mb-0">
             <thead class="thead-light">
                 <tr>
                     <th>Nama</th>
+                    <th>Username</th>
                     <th>Email</th>
                     <th>Role</th>
                     <th>Cabang</th>
@@ -38,19 +45,14 @@
                             {{ $user->name }}
                         </div>
                     </td>
-                    <td class="text-muted" style="font-size:13px">{{ $user->email }}</td>
+                    <td class="text-muted" style="font-size:13px">{{ $user->username }}</td>
+                    <td class="text-muted" style="font-size:13px">{{ $user->email ?? '-' }}</td>
                     <td>
-                        <form method="POST" action="{{ route('admin.users.role', $user->id) }}" class="d-inline">
-                            @csrf
-                            <select name="role" class="form-control form-control-sm" style="width:auto"
-                                    onchange="this.form.submit()">
-                                @foreach($roles as $role)
-                                <option value="{{ $role->name }}" {{ $user->role?->name === $role->name ? 'selected' : '' }}>
-                                    {{ ucfirst($role->name) }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </form>
+                        @forelse($user->roles as $r)
+                            <span class="badge badge-info mr-1">{{ ucfirst($r->name) }}</span>
+                        @empty
+                            <span class="text-muted" style="font-size:12px">- tanpa role -</span>
+                        @endforelse
                     </td>
                     <td style="font-size:13px">{{ $user->cabang?->nama ?? '-' }}</td>
                     <td>
@@ -64,7 +66,8 @@
                         </form>
                     </td>
                     <td>
-                        <form method="POST" action="{{ route('admin.users.delete', $user->id) }}"
+                        <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-xs btn-info">Edit</a>
+                        <form method="POST" action="{{ route('admin.users.delete', $user->id) }}" class="d-inline"
                               onsubmit="return confirm('Hapus pengguna ini?')">
                             @csrf
                             @method('DELETE')

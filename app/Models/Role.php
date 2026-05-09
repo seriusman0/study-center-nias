@@ -10,6 +10,16 @@ class Role extends Model
 
     public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->belongsToMany(User::class, 'user_roles')->withTimestamps();
+    }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'role_permissions');
+    }
+
+    public function hasPermission(string $name): bool
+    {
+        return $this->permissions()->where('name', $name)->exists();
     }
 }

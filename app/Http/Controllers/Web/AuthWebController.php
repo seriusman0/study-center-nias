@@ -54,13 +54,16 @@ class AuthWebController extends Controller
         $guestRole = Role::where('name', 'guest')->first();
 
         $user = User::create([
-            'name'     => $request->name,
-            'username' => Str::slug($request->name) . '-' . Str::random(4),
-            'email'    => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id'  => $guestRole?->id,
+            'name'      => $request->name,
+            'username'  => Str::slug($request->name) . '-' . Str::random(4),
+            'email'     => $request->email,
+            'password'  => Hash::make($request->password),
             'is_active' => true,
         ]);
+
+        if ($guestRole) {
+            $user->roles()->attach($guestRole->id);
+        }
 
         Auth::login($user);
         $request->session()->regenerate();

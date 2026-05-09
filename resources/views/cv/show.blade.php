@@ -19,7 +19,7 @@
                  class="w-24 h-24 rounded-full object-cover" alt="{{ $user->name }}">
             <div>
                 <h2 class="text-2xl font-bold text-[#1e3a5f]">{{ $user->name }}</h2>
-                <p class="text-gray-600 capitalize">{{ $user->role?->name }}</p>
+                <p class="text-gray-600 capitalize">{{ $user->roles->pluck('name')->implode(', ') }}</p>
                 @if($user->cabang)
                 <p class="text-gray-500 text-sm">{{ $user->cabang->nama }}</p>
                 @endif

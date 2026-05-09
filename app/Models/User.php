@@ -14,7 +14,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'google_id', 'name', 'username', 'email', 'password',
-        'avatar', 'bio', 'role_id', 'cabang_id',
+        'avatar', 'bio', 'cabang_id',
         'is_active', 'profile_public', 'cv_enabled',
         'email_verified_at',
     ];
@@ -32,9 +32,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function role()
+    public function roles()
     {
-        return $this->belongsTo(Role::class);
+        return $this->belongsToMany(Role::class, 'user_roles')->withTimestamps();
     }
 
     public function cabang()
@@ -62,16 +62,46 @@ class User extends Authenticatable
         return $this->hasOne(CvData::class);
     }
 
+    public function studentProfile()
+    {
+        return $this->hasOne(StudentProfile::class);
+    }
+
+    public function mentorProfile()
+    {
+        return $this->hasOne(MentorProfile::class);
+    }
+
+    public function adminProfile()
+    {
+        return $this->hasOne(AdminProfile::class);
+    }
+
     public function hasRole(string|array $roles): bool
     {
-        if (is_string($roles)) {
-            return $this->role?->name === $roles;
-        }
-        return in_array($this->role?->name, $roles);
+        $roles = (array) $roles;
+        return $this->roles->pluck('name')->intersect($roles)->isNotEmpty();
     }
 
     public function isAdmin(): bool
     {
         return $this->hasRole('admin');
+    }
+
+    public function hasPermission(string $name): bool
+    {
+        return $this->roles()
+            ->whereHas('permissions', fn($q) => $q->where('name', $name))
+            ->exists();
+    }
+
+    public function getRoleNamesAttribute()
+    {
+        return $this->roles->pluck('name')->all();
+    }
+
+    public function getPrimaryRoleAttribute(): ?Role
+    {
+        return $this->roles->first();
     }
 }

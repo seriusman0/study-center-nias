@@ -25,21 +25,23 @@ class GoogleController extends Controller
             ->first();
 
         if (!$user) {
-            $studentRole = Role::where('name', 'student')->first();
             $user = User::create([
-                'google_id' => $googleUser->getId(),
-                'name' => $googleUser->getName(),
-                'username' => $this->generateUsername($googleUser->getName()),
-                'email' => $googleUser->getEmail(),
-                'avatar' => $googleUser->getAvatar(),
+                'google_id'         => $googleUser->getId(),
+                'name'              => $googleUser->getName(),
+                'username'          => $this->generateUsername($googleUser->getName()),
+                'email'             => $googleUser->getEmail(),
+                'avatar'            => $googleUser->getAvatar(),
                 'email_verified_at' => now(),
-                'role_id' => $studentRole?->id,
-                'is_active' => true,
+                'is_active'         => true,
             ]);
+            $studentRole = Role::where('name', 'student')->first();
+            if ($studentRole) {
+                $user->roles()->attach($studentRole->id);
+            }
         } else {
             $user->update([
                 'google_id' => $googleUser->getId(),
-                'avatar' => $googleUser->getAvatar() ?? $user->avatar,
+                'avatar'    => $googleUser->getAvatar() ?? $user->avatar,
             ]);
         }
 

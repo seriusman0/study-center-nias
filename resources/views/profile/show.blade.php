@@ -11,7 +11,7 @@
             <div class="flex-1 text-center sm:text-left">
                 <h1 class="text-2xl font-bold text-[#1e3a5f]">{{ $user->name }}</h1>
                 <p class="text-gray-500 text-sm mt-1">
-                    <span class="capitalize">{{ $user->role?->name }}</span>
+                    <span class="capitalize">{{ $user->roles->pluck('name')->implode(', ') }}</span>
                     @if($user->cabang)
                     · {{ $user->cabang->nama }}
                     @endif

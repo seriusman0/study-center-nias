@@ -41,8 +41,8 @@ class BlogController extends Controller
     public function show(string $slug): JsonResponse
     {
         $blog = Blog::with([
-            'user:id,name,username,avatar,role_id,cabang_id',
-            'user.role:id,name',
+            'user:id,name,username,avatar,cabang_id',
+            'user.roles:id,name',
             'cabang:id,nama,slug',
             'tags:id,name,slug',
         ])->whereNotNull('published_at')->where('slug', $slug)->firstOrFail();

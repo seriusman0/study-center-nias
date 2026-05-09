@@ -12,8 +12,8 @@ class UserController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = User::with(['role:id,name', 'cabang:id,nama'])
-            ->when($request->role, fn($q) => $q->whereHas('role', fn($r) => $r->where('name', $request->role)))
+        $query = User::with(['roles:id,name', 'cabang:id,nama'])
+            ->when($request->role, fn($q) => $q->whereHas('roles', fn($r) => $r->where('name', $request->role)))
             ->when($request->cabang_id, fn($q) => $q->where('cabang_id', $request->cabang_id));
 
         return response()->json($query->paginate(20));
@@ -22,13 +22,16 @@ class UserController extends Controller
     public function updateRole(Request $request, User $user): JsonResponse
     {
         $validated = $request->validate([
-            'role' => ['required', 'exists:roles,name'],
+            'roles'   => ['nullable', 'array'],
+            'roles.*' => ['exists:roles,name'],
+            'role'    => ['nullable', 'exists:roles,name'],
         ]);
 
-        $role = Role::where('name', $validated['role'])->first();
-        $user->update(['role_id' => $role->id]);
+        $names = $validated['roles'] ?? (isset($validated['role']) ? [$validated['role']] : []);
+        $ids = Role::whereIn('name', $names)->pluck('id')->all();
+        $user->roles()->sync($ids);
 
-        return response()->json($user->load('role'));
+        return response()->json($user->load('roles'));
     }
 
     public function toggleActive(User $user): JsonResponse

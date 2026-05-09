@@ -30,18 +30,21 @@ class GuestAuthController extends Controller
         }
 
         $user = User::create([
-            'name' => $validated['name'],
-            'username' => $username,
-            'email' => $validated['email'],
-            'password' => $validated['password'],
-            'role_id' => $guestRole?->id,
+            'name'      => $validated['name'],
+            'username'  => $username,
+            'email'     => $validated['email'],
+            'password'  => $validated['password'],
             'is_active' => true,
         ]);
+
+        if ($guestRole) {
+            $user->roles()->attach($guestRole->id);
+        }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'user' => $user->load('role', 'cabang'),
+            'user' => $user->load('roles', 'cabang'),
             'token' => $token,
         ], 201);
     }
@@ -66,7 +69,7 @@ class GuestAuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'user' => $user->load('role', 'cabang'),
+            'user' => $user->load('roles', 'cabang'),
             'token' => $token,
         ]);
     }
@@ -79,6 +82,6 @@ class GuestAuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json($request->user()->load('role', 'cabang', 'socialLinks'));
+        return response()->json($request->user()->load('roles', 'cabang', 'socialLinks'));
     }
 }

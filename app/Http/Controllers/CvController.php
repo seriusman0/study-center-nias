@@ -23,7 +23,7 @@ class CvController extends Controller
 
         $cv = $user->cvData;
         return response()->json([
-            'user' => $user->only('id', 'name', 'username', 'avatar', 'bio') + ['role' => $user->role?->name, 'cabang' => $user->cabang?->nama],
+            'user' => $user->only('id', 'name', 'username', 'avatar', 'bio') + ['role' => $user->roles->pluck('name')->first(), 'cabang' => $user->cabang?->nama],
             'cv' => $cv,
         ]);
     }

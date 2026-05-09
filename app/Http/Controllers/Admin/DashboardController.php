@@ -14,10 +14,9 @@ class DashboardController extends Controller
 {
     public function stats(): JsonResponse
     {
-        $usersByRole = User::join('roles', 'users.role_id', '=', 'roles.id')
-            ->select('roles.name as role', DB::raw('count(*) as total'))
-            ->groupBy('roles.name')
-            ->get();
+        $usersByRole = Role::withCount('users')
+            ->get()
+            ->map(fn($r) => ['role' => $r->name, 'total' => $r->users_count]);
 
         $blogsByCabang = Blog::join('cabangs', 'blogs.cabang_id', '=', 'cabangs.id')
             ->whereNotNull('blogs.published_at')
@@ -26,7 +25,7 @@ class DashboardController extends Controller
             ->get();
 
         $commentsPerMonth = Comment::select(
-            DB::raw("strftime('%Y-%m', created_at) as month"),
+            DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"),
             DB::raw('count(*) as total')
         )
             ->whereNull('deleted_at')

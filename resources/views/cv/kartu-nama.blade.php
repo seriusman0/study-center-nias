@@ -18,7 +18,7 @@
             <p class="text-[#c9a84c] font-bold text-lg">Study Center</p>
             <div class="w-16 h-1 bg-[#c9a84c] mt-1 mb-4"></div>
             <p class="text-white font-bold text-xl">{{ $user->name }}</p>
-            <p class="text-white/70 text-sm capitalize">{{ $user->role?->name }}</p>
+            <p class="text-white/70 text-sm capitalize">{{ $user->roles->pluck('name')->implode(', ') }}</p>
             @if($user->cabang)
             <p class="text-white/50 text-xs">{{ $user->cabang->nama }}</p>
             @endif

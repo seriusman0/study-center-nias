@@ -34,16 +34,18 @@ class GoogleWebController extends Controller
                 return redirect('/login')->withErrors(['email' => 'Akun tidak aktif.']);
             }
         } else {
-            $guestRole = Role::where('name', 'guest')->first();
             $user = User::create([
                 'google_id' => $googleUser->id,
                 'name'      => $googleUser->name,
                 'username'  => Str::slug($googleUser->name) . '-' . Str::random(4),
                 'email'     => $googleUser->email,
                 'avatar'    => $googleUser->avatar,
-                'role_id'   => $guestRole?->id,
                 'is_active' => true,
             ]);
+            $guestRole = Role::where('name', 'guest')->first();
+            if ($guestRole) {
+                $user->roles()->attach($guestRole->id);
+            }
         }
 
         Auth::login($user);
