@@ -23,7 +23,7 @@ class CvWebController extends Controller
     {
         $user = User::where('username', $username)
             ->where('is_active', true)
-            ->with(['roles', 'cabang', 'socialLinks'])
+            ->with(['roles', 'cabang', 'socialLinks', 'studentProfile'])
             ->firstOrFail();
 
         return view('cv.kartu-nama', compact('user'));

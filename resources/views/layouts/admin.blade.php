@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('head')
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
@@ -55,7 +56,7 @@
         <a href="{{ route('admin.dashboard') }}" class="brand-link d-flex align-items-center" style="padding:8px 16px;text-decoration:none">
             <span class="brand-text font-weight-bold text-white" style="font-size:13px;line-height:1.3">
                 Study Center<br>
-                <small style="font-weight:400;opacity:.65;font-size:11px">Admin Panel</small>
+                <small style="font-weight:400;opacity:.65;font-size:11px">{{ auth()->user()->isAdmin() ? 'Admin Panel' : 'Mentor Panel' }}</small>
             </span>
         </a>
         <div class="sidebar">
@@ -73,6 +74,7 @@
             </div>
             <nav class="mt-2">
                 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                    @if(auth()->user()->hasRole(['admin','mentor']))
                     <li class="nav-item">
                         <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-tachometer-alt"></i><p>Dashboard</p>
@@ -80,9 +82,12 @@
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-users"></i><p>Pengguna</p>
+                            <i class="nav-icon fas fa-users"></i><p>{{ auth()->user()->isAdmin() ? 'Pengguna' : 'Daftar Siswa' }}</p>
                         </a>
                     </li>
+                    @endif
+
+                    @if(auth()->user()->isAdmin())
                     <li class="nav-item">
                         <a href="{{ route('admin.roles') }}" class="nav-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-tag"></i><p>Role</p>
@@ -94,6 +99,22 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="{{ route('admin.nametags') }}" class="nav-link {{ request()->routeIs('admin.nametags*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-id-card"></i><p>Generator Name Tag</p>
+                        </a>
+                    </li>
+                    @endif
+
+                    @if(auth()->user()->hasRole(['admin','mentor']))
+                    <li class="nav-item">
+                        <a href="{{ route('presensi.index') }}" class="nav-link {{ request()->routeIs('presensi.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-clipboard-check"></i><p>Presensi</p>
+                        </a>
+                    </li>
+                    @endif
+
+                    @if(auth()->user()->isAdmin())
+                    <li class="nav-item">
                         <a href="{{ route('admin.cabangs') }}" class="nav-link {{ request()->routeIs('admin.cabangs*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-map-marker-alt"></i><p>Cabang</p>
                         </a>
@@ -103,6 +124,7 @@
                             <i class="nav-icon fas fa-newspaper"></i><p>Blog</p>
                         </a>
                     </li>
+                    @endif
                 </ul>
             </nav>
         </div>

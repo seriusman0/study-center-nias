@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             CabangSeeder::class,
             AdminUserSeeder::class,
+            StudentCsvSeeder::class,
         ]);
     }
 }

@@ -1,13 +1,15 @@
 @extends('layouts.admin')
 
-@section('page-title', 'Pengguna')
+@section('page-title', auth()->user()->isAdmin() ? 'Pengguna' : 'Daftar Siswa')
 
 @section('content')
+@php $isAdmin = auth()->user()->isAdmin(); @endphp
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
         <form method="GET" action="{{ route('admin.users') }}" class="form-inline">
             <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari nama/email/username"
                    class="form-control form-control-sm mr-2" style="width:240px">
+            @if($isAdmin)
             <select name="role" class="form-control form-control-sm mr-2" onchange="this.form.submit()">
                 <option value="">Semua Role</option>
                 @foreach($roles as $role)
@@ -16,11 +18,19 @@
                 </option>
                 @endforeach
             </select>
+            @endif
             <button type="submit" class="btn btn-sm btn-outline-secondary">Cari</button>
         </form>
+        @if($isAdmin)
         <a href="{{ route('admin.users.create') }}" class="btn btn-sm btn-primary">
             <i class="fas fa-plus mr-1"></i> Tambah Pengguna
         </a>
+        @else
+        <span class="badge badge-info">
+            Mode Lihat: Siswa
+            @if(auth()->user()->cabang_id) · Cabang {{ auth()->user()->cabang?->nama }} @endif
+        </span>
+        @endif
     </div>
     <div class="card-body p-0">
         <table class="table table-sm table-hover mb-0">
@@ -32,7 +42,7 @@
                     <th>Role</th>
                     <th>Cabang</th>
                     <th>Status</th>
-                    <th>Aksi</th>
+                    @if($isAdmin)<th>Aksi</th>@endif
                 </tr>
             </thead>
             <tbody>
@@ -56,6 +66,7 @@
                     </td>
                     <td style="font-size:13px">{{ $user->cabang?->nama ?? '-' }}</td>
                     <td>
+                        @if($isAdmin)
                         <form method="POST" action="{{ route('admin.users.toggle', $user->id) }}">
                             @csrf
                             <button type="submit"
@@ -64,7 +75,13 @@
                                 {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
                             </button>
                         </form>
+                        @else
+                        <span class="badge badge-{{ $user->is_active ? 'success' : 'secondary' }}">
+                            {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
+                        </span>
+                        @endif
                     </td>
+                    @if($isAdmin)
                     <td>
                         <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-xs btn-info">Edit</a>
                         <form method="POST" action="{{ route('admin.users.delete', $user->id) }}" class="d-inline"
@@ -74,6 +91,7 @@
                             <button type="submit" class="btn btn-xs btn-danger">Hapus</button>
                         </form>
                     </td>
+                    @endif
                 </tr>
                 @endforeach
             </tbody>

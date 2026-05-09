@@ -12,6 +12,8 @@ use App\Http\Controllers\Web\CommentWebController;
 use App\Http\Controllers\Web\Admin\AdminController;
 use App\Http\Controllers\Web\Admin\RoleAdminController;
 use App\Http\Controllers\Web\Admin\PermissionAdminController;
+use App\Http\Controllers\Web\Admin\NameTagController;
+use App\Http\Controllers\Web\PresensiController;
 
 // Public pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -62,10 +64,25 @@ Route::middleware('auth')->group(function () {
     Route::delete('/comments/{comment}', [CommentWebController::class, 'destroy'])->name('comment.destroy');
 });
 
-// Admin panel
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+// Presensi (admin + mentor)
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('presensi')->name('presensi.')->group(function () {
+    Route::get('/', [PresensiController::class, 'index'])->name('index');
+    Route::get('/create', [PresensiController::class, 'create'])->name('create');
+    Route::post('/', [PresensiController::class, 'store'])->name('store');
+    Route::get('/api/students', [PresensiController::class, 'searchStudents'])->name('students.search');
+    Route::get('/{presensi}', [PresensiController::class, 'show'])->name('show');
+    Route::get('/{presensi}/edit', [PresensiController::class, 'edit'])->name('edit');
+    Route::put('/{presensi}', [PresensiController::class, 'update'])->name('update');
+    Route::delete('/{presensi}', [PresensiController::class, 'destroy'])->name('destroy');
+});
+
+// Admin panel — dashboard + read-only users list shared with mentor
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/users', [AdminController::class, 'users'])->name('users');
+});
+
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/users/create', [AdminController::class, 'createUser'])->name('users.create');
     Route::post('/users', [AdminController::class, 'storeUser'])->name('users.store');
     Route::get('/users/{user}/edit', [AdminController::class, 'editUser'])->name('users.edit');
@@ -85,6 +102,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/roles/{role}', [RoleAdminController::class, 'update'])->name('roles.update');
     Route::post('/roles/{role}/permissions', [RoleAdminController::class, 'syncPermissions'])->name('roles.permissions');
     Route::delete('/roles/{role}', [RoleAdminController::class, 'destroy'])->name('roles.delete');
+
+    Route::get('/nametags', [NameTagController::class, 'index'])->name('nametags');
+    Route::post('/nametags/generate', [NameTagController::class, 'generate'])->name('nametags.generate');
 
     Route::get('/permissions', [PermissionAdminController::class, 'index'])->name('permissions');
     Route::post('/permissions', [PermissionAdminController::class, 'store'])->name('permissions.store');

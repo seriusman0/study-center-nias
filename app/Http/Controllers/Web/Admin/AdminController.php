@@ -20,8 +20,14 @@ use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
 {
-    public function dashboard()
+    public function dashboard(Request $request)
     {
+        $user = $request->user();
+
+        if (! $user->isAdmin()) {
+            return $this->mentorDashboard($user);
+        }
+
         $stats = [
             'total_users'    => User::count(),
             'total_blogs'    => Blog::count(),
@@ -35,16 +41,60 @@ class AdminController extends Controller
         return view('admin.dashboard', compact('stats', 'usersByRole', 'blogsByCabang'));
     }
 
+    private function mentorDashboard(User $mentor)
+    {
+        $studentRoleId = Role::where('name', 'student')->value('id');
+
+        $studentQuery = User::query()
+            ->whereHas('roles', fn($q) => $q->where('roles.id', $studentRoleId))
+            ->where('is_active', true);
+
+        if ($mentor->cabang_id) {
+            $studentQuery->where('cabang_id', $mentor->cabang_id);
+        }
+
+        $today = now()->toDateString();
+
+        $stats = [
+            'students_in_cabang' => (clone $studentQuery)->count(),
+            'my_presensi'        => \App\Models\Presensi::where('mentor_id', $mentor->id)->count(),
+            'presensi_today'     => \App\Models\Presensi::where('mentor_id', $mentor->id)
+                ->whereDate('tanggal', $today)->count(),
+            'cabang_name'        => $mentor->cabang?->nama,
+        ];
+
+        $latestPresensi = \App\Models\Presensi::with('cabang:id,nama')
+            ->where('mentor_id', $mentor->id)
+            ->withCount('students')
+            ->latest('tanggal')
+            ->take(5)
+            ->get();
+
+        return view('admin.dashboard_mentor', compact('mentor', 'stats', 'latestPresensi'));
+    }
+
     public function users(Request $request)
     {
+        $isAdmin = $request->user()->isAdmin();
+
         $query = User::with(['roles', 'cabang']);
-        if ($request->filled('role')) {
+
+        if (! $isAdmin) {
+            $query->whereHas('roles', fn($q) => $q->where('name', 'student'));
+            if ($request->user()->cabang_id) {
+                $query->where('cabang_id', $request->user()->cabang_id);
+            } else {
+                $query->whereRaw('1 = 0'); // mentor without cabang sees nothing
+            }
+        } elseif ($request->filled('role')) {
             $query->whereHas('roles', fn($q) => $q->where('name', $request->role));
         }
+
         if ($request->filled('q')) {
             $term = '%' . $request->q . '%';
             $query->where(fn($w) => $w->where('name', 'like', $term)->orWhere('email', 'like', $term)->orWhere('username', 'like', $term));
         }
+
         $users = $query->latest()->paginate(20)->withQueryString();
         $roles = Role::orderBy('name')->get();
         return view('admin.users', compact('users', 'roles'));
@@ -193,6 +243,7 @@ class AdminController extends Controller
                 'student.guardian_name'  => 'nullable|string|max:100',
                 'student.guardian_phone' => 'nullable|string|max:50',
                 'student.school_name'    => 'nullable|string|max:150',
+                'student.grade_class'    => 'nullable|string|max:50',
                 'student.entry_year'     => 'nullable|integer|min:2000|max:2100',
             ];
         }

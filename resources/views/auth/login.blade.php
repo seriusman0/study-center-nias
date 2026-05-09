@@ -27,17 +27,23 @@
         <form method="POST" action="{{ route('login') }}" class="space-y-4">
             @csrf
             <div>
-                <label class="block text-sm font-medium mb-1">Email</label>
-                <input type="email" name="email" required value="{{ old('email') }}"
+                <label class="block text-sm font-medium mb-1">Email atau Username</label>
+                <input type="text" name="login" required autofocus value="{{ old('login') }}"
+                       autocomplete="username"
                        class="w-full border rounded-xl px-4 py-3 outline-[#1e3a5f] text-sm"
-                       placeholder="email@contoh.com">
+                       placeholder="email@contoh.com / username">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Password</label>
                 <input type="password" name="password" required
+                       autocomplete="current-password"
                        class="w-full border rounded-xl px-4 py-3 outline-[#1e3a5f] text-sm"
                        placeholder="••••••••">
             </div>
+            <label class="flex items-center gap-2 text-sm text-gray-600">
+                <input type="checkbox" name="remember" value="1" class="rounded border-gray-300">
+                Ingat saya
+            </label>
             <button type="submit"
                     class="w-full py-3 bg-[#1e3a5f] text-white rounded-xl font-semibold hover:bg-[#2d5282] transition">
                 Masuk

@@ -45,8 +45,10 @@
                     @if(auth()->user()->hasRole(['admin','fulltimer','mentor','student']))
                         <a href="{{ route('blog.create') }}" class="px-3 py-2 rounded hover:bg-white/10">Tulis</a>
                     @endif
-                    @if(auth()->user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded hover:bg-white/10">Admin</a>
+                    @if(auth()->user()->hasRole(['admin','mentor']))
+                        <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded hover:bg-white/10">
+                            {{ auth()->user()->isAdmin() ? 'Admin' : 'Panel Mentor' }}
+                        </a>
                     @endif
                     <a href="{{ route('profile.show', auth()->user()->username) }}" class="flex items-center gap-2 ml-2">
                         <img src="{{ auth()->user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name).'&background=1e3a5f&color=fff' }}"

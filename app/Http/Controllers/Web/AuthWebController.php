@@ -19,19 +19,27 @@ class AuthWebController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required',
+        $request->validate([
+            'login'    => 'required|string',
+            'password' => 'required|string',
         ]);
 
+        $login = trim($request->input('login'));
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
+        $credentials = [
+            $field     => $login,
+            'password' => $request->input('password'),
+        ];
+
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()->withErrors(['email' => 'Email atau password salah.'])->withInput();
+            return back()->withErrors(['login' => 'Email/username atau password salah.'])->withInput();
         }
 
         $user = Auth::user();
         if (! $user->is_active) {
             Auth::logout();
-            return back()->withErrors(['email' => 'Akun tidak aktif.']);
+            return back()->withErrors(['login' => 'Akun tidak aktif.']);
         }
 
         $request->session()->regenerate();

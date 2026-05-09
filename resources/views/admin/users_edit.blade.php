@@ -130,8 +130,12 @@
                         <label>Nama Sekolah</label>
                         <input type="text" name="student[school_name]" class="form-control" value="{{ old('student.school_name', $student?->school_name) }}">
                     </div>
-                    <div class="form-group col-md-2">
-                        <label>Tahun Masuk</label>
+                    <div class="form-group col-md-1">
+                        <label>Kelas</label>
+                        <input type="text" name="student[grade_class]" class="form-control" value="{{ old('student.grade_class', $student?->grade_class) }}" placeholder="X-A">
+                    </div>
+                    <div class="form-group col-md-1">
+                        <label>Thn Masuk</label>
                         <input type="number" name="student[entry_year]" class="form-control" min="2000" max="2100" value="{{ old('student.entry_year', $student?->entry_year) }}">
                     </div>
                 </div>
