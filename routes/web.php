@@ -10,6 +10,8 @@ use App\Http\Controllers\Web\ProfileWebController;
 use App\Http\Controllers\Web\CvWebController;
 use App\Http\Controllers\Web\CommentWebController;
 use App\Http\Controllers\Web\Admin\AdminController;
+use App\Http\Controllers\Web\Admin\RoleAdminController;
+use App\Http\Controllers\Web\Admin\PermissionAdminController;
 
 // Public pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -45,6 +47,7 @@ Route::get('/profil/{username}/kartu-nama', [CvWebController::class, 'kartuNama'
 Route::middleware(['auth', 'role:admin,fulltimer,mentor,student'])->group(function () {
     Route::get('/blog/tulis', [BlogWebController::class, 'create'])->name('blog.create');
     Route::post('/blog', [BlogWebController::class, 'store'])->name('blog.store');
+    Route::post('/blog/upload-image', [BlogWebController::class, 'uploadImage'])->name('blog.upload-image');
     Route::get('/blog/{slug}/edit', [BlogWebController::class, 'edit'])->name('blog.edit');
     Route::post('/blog/{blog}', [BlogWebController::class, 'update'])->name('blog.update');
     Route::delete('/blog/{blog}', [BlogWebController::class, 'destroy'])->name('blog.destroy');
@@ -76,4 +79,15 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::delete('/cabangs/{cabang}', [AdminController::class, 'deleteCabang'])->name('cabangs.delete');
     Route::get('/blogs', [AdminController::class, 'blogs'])->name('blogs');
     Route::delete('/blogs/{blog}', [AdminController::class, 'deleteBlog'])->name('blogs.delete');
+
+    Route::get('/roles', [RoleAdminController::class, 'index'])->name('roles');
+    Route::post('/roles', [RoleAdminController::class, 'store'])->name('roles.store');
+    Route::put('/roles/{role}', [RoleAdminController::class, 'update'])->name('roles.update');
+    Route::post('/roles/{role}/permissions', [RoleAdminController::class, 'syncPermissions'])->name('roles.permissions');
+    Route::delete('/roles/{role}', [RoleAdminController::class, 'destroy'])->name('roles.delete');
+
+    Route::get('/permissions', [PermissionAdminController::class, 'index'])->name('permissions');
+    Route::post('/permissions', [PermissionAdminController::class, 'store'])->name('permissions.store');
+    Route::put('/permissions/{permission}', [PermissionAdminController::class, 'update'])->name('permissions.update');
+    Route::delete('/permissions/{permission}', [PermissionAdminController::class, 'destroy'])->name('permissions.delete');
 });

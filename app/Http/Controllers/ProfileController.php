@@ -15,7 +15,7 @@ class ProfileController extends Controller
         $user = User::where('username', $username)
             ->where('is_active', true)
             ->where('profile_public', true)
-            ->with(['role:id,name', 'cabang:id,nama,slug', 'socialLinks'])
+            ->with(['roles:id,name', 'cabang:id,nama,slug', 'socialLinks'])
             ->firstOrFail();
 
         $blogs = $user->blogs()
@@ -66,6 +66,6 @@ class ProfileController extends Controller
             }
         }
 
-        return response()->json($user->fresh()->load('role', 'cabang', 'socialLinks'));
+        return response()->json($user->fresh()->load('roles', 'cabang', 'socialLinks'));
     }
 }

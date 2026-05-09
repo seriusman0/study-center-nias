@@ -56,9 +56,20 @@
     @endif
 
     {{-- Content --}}
-    <div class="prose prose-gray max-w-none mb-12">
+    <div class="prose prose-gray max-w-none mb-12 blog-content">
         {!! $blog->content !!}
     </div>
+    <style>
+        .blog-content img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1rem auto; display: block; }
+        .blog-content h2 { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; margin: 1.5rem 0 0.75rem; }
+        .blog-content h3 { font-size: 1.25rem; font-weight: 600; color: #1e3a5f; margin: 1.25rem 0 0.5rem; }
+        .blog-content blockquote { border-left: 4px solid #c9a84c; padding: 0.5rem 1rem; color: #4b5563; background: #fafafa; margin: 1rem 0; }
+        .blog-content pre { background: #1f2937; color: #f9fafb; padding: 0.75rem 1rem; border-radius: 0.5rem; overflow-x: auto; }
+        .blog-content ul { list-style: disc; padding-left: 1.5rem; }
+        .blog-content ol { list-style: decimal; padding-left: 1.5rem; }
+        .blog-content a { color: #1e3a5f; text-decoration: underline; }
+        .blog-content iframe { max-width: 100%; border-radius: 0.75rem; }
+    </style>
 
     {{-- Comments --}}
     <section class="border-t pt-8">

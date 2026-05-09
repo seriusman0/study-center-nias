@@ -84,6 +84,16 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="{{ route('admin.roles') }}" class="nav-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-tag"></i><p>Role</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.permissions') }}" class="nav-link {{ request()->routeIs('admin.permissions*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-key"></i><p>Permission</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{{ route('admin.cabangs') }}" class="nav-link {{ request()->routeIs('admin.cabangs*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-map-marker-alt"></i><p>Cabang</p>
                         </a>

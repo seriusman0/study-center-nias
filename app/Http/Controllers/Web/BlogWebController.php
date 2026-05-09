@@ -36,7 +36,7 @@ class BlogWebController extends Controller
 
     public function show(string $slug)
     {
-        $blog = Blog::with(['user.role', 'cabang', 'tags'])->where('slug', $slug)->firstOrFail();
+        $blog = Blog::with(['user.roles', 'cabang', 'tags'])->where('slug', $slug)->firstOrFail();
         $comments = $blog->rootComments()->with(['user', 'replies.user'])->latest()->get();
 
         return view('blog.show', compact('blog', 'comments'));
@@ -143,5 +143,18 @@ class BlogWebController extends Controller
 
         $blog->delete();
         return redirect()->route('blog.index')->with('success', 'Blog dihapus.');
+    }
+
+    public function uploadImage(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
+        ]);
+
+        $path = $request->file('image')->store('blogs/inline', 'public');
+
+        return response()->json([
+            'url' => asset('storage/' . $path),
+        ]);
     }
 }
