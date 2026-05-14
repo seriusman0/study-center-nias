@@ -49,6 +49,13 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('throttle:20,1');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
 
+    // Jurnal (student app sync)
+    Route::middleware('role:student')->prefix('jurnal')->group(function () {
+        Route::get ('/today',   [\App\Http\Controllers\Api\JurnalApiController::class, 'today']);
+        Route::post('/check',   [\App\Http\Controllers\Api\JurnalApiController::class, 'check']);
+        Route::get ('/history', [\App\Http\Controllers\Api\JurnalApiController::class, 'history']);
+    });
+
     // Admin only
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'stats']);
