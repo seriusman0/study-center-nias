@@ -29,8 +29,7 @@
                 @forelse($verses as $v)
                 <tr>
                     <td>{{ $v->tahun }}</td>
-                    <td>{{ \Carbon\Carbon::create()->month($v->bulan)->locale('id')->isoFormat('MMMM') }}</td>
-                    <td>Minggu {{ $v->minggu }}</td>
+<td>{{ \Carbon\Carbon::createFromDate(\Carbon\Carbon::now()->year, (int) $v->bulan, 1)->locale('id')->isoFormat('MMMM') }}</td>                    <td>Minggu {{ $v->minggu }}</td>
                     <td><strong>{{ $v->referensi }}</strong></td>
                     <td><small>{{ \Illuminate\Support\Str::limit($v->isi, 120) }}</small></td>
                     <td class="text-right">
