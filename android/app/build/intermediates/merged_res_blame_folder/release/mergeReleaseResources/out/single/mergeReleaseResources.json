@@ -4,8 +4,16 @@
         "source": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-main-55:\\xml\\backup_rules.xml"
     },
     {
+        "merged": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-release-54:\\font_grandeur.ttf.flat",
+        "source": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-main-55:\\font\\grandeur.ttf"
+    },
+    {
         "merged": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-release-54:\\drawable_logo.png.flat",
         "source": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-main-55:\\drawable\\logo.png"
+    },
+    {
+        "merged": "id.scnias.app-release-54:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "id.scnias.app-main-55:/mipmap-anydpi-v26/ic_launcher_round.xml"
     },
     {
         "merged": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-release-54:\\mipmap-anydpi-v26_ic_launcher_round.xml.flat",
@@ -28,7 +36,7 @@
         "source": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-main-55:\\drawable\\ic_launcher_foreground.xml"
     },
     {
-        "merged": "id.scnias.app-release-54:/font_grandeur.ttf.flat",
-        "source": "id.scnias.app-main-55:/font/grandeur.ttf"
+        "merged": "id.scnias.app-release-54:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "id.scnias.app-main-55:/mipmap-anydpi-v26/ic_launcher.xml"
     }
 ]

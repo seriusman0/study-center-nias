@@ -29,7 +29,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8000/api/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://studycenter.overcomer.my.id/api/\"")
             applicationIdSuffix = ".debug"
         }
         release {

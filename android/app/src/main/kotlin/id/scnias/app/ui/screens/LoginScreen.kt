@@ -51,14 +51,19 @@ fun LoginScreen(nav: NavHostController) {
     var showPass by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    val canSubmit = !loading && login.isNotBlank() && password.isNotBlank()
+    val canSubmit = !loading && login.trim().isNotEmpty() && password.isNotBlank()
 
     fun submit() {
-        if (!canSubmit) return
+        val u = login.trim()
+        val p = password.trim()
+        if (u.isEmpty() || p.isEmpty()) {
+            error = "Isi username/email dan kata sandi terlebih dahulu."
+            return
+        }
         error = null
         loading = true
         scope.launch {
-            when (val r = AppGraph.auth.login(login.trim(), password)) {
+            when (val r = AppGraph.auth.login(u, p)) {
                 is ApiResult.Success -> { loading = false; nav.navTopLevel(Route.Home) }
                 is ApiResult.Error   -> { error = r.message; loading = false }
             }
@@ -129,6 +134,7 @@ fun LoginScreen(nav: NavHostController) {
                             cursorColor = ScTeal600,
                             focusedTextColor = ScInk900,
                             unfocusedTextColor = ScInk900,
+                            errorTextColor = ScInk900,
                         ),
                     )
 
@@ -158,6 +164,7 @@ fun LoginScreen(nav: NavHostController) {
                             cursorColor = ScTeal600,
                             focusedTextColor = ScInk900,
                             unfocusedTextColor = ScInk900,
+                            errorTextColor = ScInk900,
                         ),
                     )
 

@@ -5,6 +5,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import id.scnias.app.data.TokenStore
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import id.scnias.app.BuildConfig
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -12,7 +13,11 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
     fun build(baseUrl: String, tokenStore: TokenStore): ApiService {
-        val log = HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC }
+        val log = HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
+                    else HttpLoggingInterceptor.Level.NONE
+            redactHeader("Authorization")
+        }
 
         val authInterceptor = Interceptor { chain ->
             val req = chain.request().newBuilder()
