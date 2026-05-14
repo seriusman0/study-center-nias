@@ -46,6 +46,10 @@
                         <a href="{{ route('jurnal.index') }}"
                            class="px-3 py-2 rounded hover:bg-white/10 {{ request()->routeIs('jurnal.*') ? 'text-[#c9a84c]' : '' }}">Jurnal</a>
                     @endif
+                    @if(auth()->user()->hasRole('mentor'))
+                        <a href="{{ route('mentor-presensi.index') }}"
+                           class="px-3 py-2 rounded hover:bg-white/10 {{ request()->routeIs('mentor-presensi.*') ? 'text-[#c9a84c]' : '' }}">Presensi Saya</a>
+                    @endif
                     @if(auth()->user()->hasRole(['admin','fulltimer','mentor','student']))
                         <a href="{{ route('blog.create') }}" class="px-3 py-2 rounded hover:bg-white/10">Tulis</a>
                     @endif

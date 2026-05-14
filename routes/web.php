@@ -19,6 +19,9 @@ use App\Http\Controllers\Web\Admin\JurnalBibleScheduleController;
 use App\Http\Controllers\Web\Admin\JurnalWeeklyVerseController;
 use App\Http\Controllers\Web\Admin\JurnalLifeItemController;
 use App\Http\Controllers\Web\Admin\JurnalReportController;
+use App\Http\Controllers\Web\Admin\KelasMasterController;
+use App\Http\Controllers\Web\MentorPresensiController;
+use App\Http\Controllers\Web\Admin\MentorPresensiAdminController;
 
 // Public pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -146,4 +149,38 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal')->name('
     Route::get('reports',                                [JurnalReportController::class, 'index'])->name('reports.index');
     Route::get('reports/{student}',                      [JurnalReportController::class, 'show'])->name('reports.show');
     Route::get('reports/{student}/export',               [JurnalReportController::class, 'export'])->name('reports.export');
+});
+
+// Mentor self-attendance
+Route::middleware(['auth', 'role:mentor'])->prefix('mentor/presensi')->name('mentor-presensi.')->group(function () {
+    Route::get('/',                [MentorPresensiController::class, 'index'])->name('index');
+    Route::get('/create',          [MentorPresensiController::class, 'create'])->name('create');
+    Route::post('/',               [MentorPresensiController::class, 'store'])->name('store');
+    Route::get('/{presensi}/edit', [MentorPresensiController::class, 'edit'])->name('edit');
+    Route::put('/{presensi}',      [MentorPresensiController::class, 'update'])->name('update');
+    Route::delete('/{presensi}',   [MentorPresensiController::class, 'destroy'])->name('destroy');
+    Route::get('/api/kelas',       [MentorPresensiController::class, 'searchKelas'])->name('kelas.search');
+});
+
+// Shared kelas master search (for /presensi/create form)
+Route::middleware(['auth', 'role:admin,mentor'])
+    ->get('/presensi/api/kelas-master', [MentorPresensiController::class, 'searchKelas'])
+    ->name('presensi.kelas-master.search');
+
+// Kelas master (admin write, mentor read-only)
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/kelas-master', [KelasMasterController::class, 'index'])->name('kelas-master.index');
+});
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::post  ('/kelas-master',          [KelasMasterController::class, 'store'])->name('kelas-master.store');
+    Route::put   ('/kelas-master/{kelas}',  [KelasMasterController::class, 'update'])->name('kelas-master.update');
+    Route::delete('/kelas-master/{kelas}',  [KelasMasterController::class, 'destroy'])->name('kelas-master.destroy');
+});
+
+// Admin: mentor-presensi list, reports, export
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/mentor-presensi')->name('admin.mentor-presensi.')->group(function () {
+    Route::get('/',             [MentorPresensiAdminController::class, 'index'])->name('index');
+    Route::get('/reports',      [MentorPresensiAdminController::class, 'reports'])->name('reports');
+    Route::get('/export/excel', [MentorPresensiAdminController::class, 'exportExcel'])->name('export.excel');
+    Route::get('/export/pdf',   [MentorPresensiAdminController::class, 'exportPdf'])->name('export.pdf');
 });

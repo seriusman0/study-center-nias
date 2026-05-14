@@ -54,6 +54,18 @@ class JurnalController extends Controller
             ->pluck('life_item_id')
             ->all();
 
+        // Streak: consecutive days back from today where student has at least 1 jurnal activity.
+        $streak = 0;
+        $cursor = $today->copy();
+        for ($i = 0; $i < 60; $i++) {
+            $d = $cursor->toDateString();
+            $has = JurnalEntry::forStudent($user->id)->whereDate('tanggal', $d)
+                    ->where(fn($q) => $q->where('pl_checked', true)->orWhere('pb_checked', true)->orWhereNotNull('verse_week_key'))
+                    ->exists()
+                || JurnalLifeCheck::forStudent($user->id)->whereDate('tanggal', $d)->where('checked', true)->exists();
+            if ($has) { $streak++; $cursor->subDay(); } else break;
+        }
+
         return view('jurnal.index', [
             'date'           => $date,
             'today'          => $today,
@@ -65,6 +77,7 @@ class JurnalController extends Controller
             'entry'          => $entry,
             'lifeItems'      => $lifeItems,
             'checkedItemIds' => $lifeChecks,
+            'streak'         => $streak,
         ]);
     }
 

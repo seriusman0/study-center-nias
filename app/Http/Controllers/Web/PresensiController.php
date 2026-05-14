@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cabang;
+use App\Models\KelasMaster;
 use App\Models\Presensi;
 use App\Models\Role;
 use App\Models\User;
@@ -73,6 +74,7 @@ class PresensiController extends Controller
         $presensi = DB::transaction(function () use ($data, $request) {
             $payload = collect($data)->except(['student_ids', 'student_status', 'foto'])->all();
             $payload['created_by'] = $request->user()->id;
+            $payload['kelas'] = $this->resolveKelasLabel($payload['kelas_id'] ?? null, $payload['kelas'] ?? null);
 
             if ($request->hasFile('foto')) {
                 $payload['foto'] = $request->file('foto')->store('presensi', 'public');
@@ -158,6 +160,7 @@ class PresensiController extends Controller
 
         DB::transaction(function () use ($data, $request, $presensi) {
             $payload = collect($data)->except(['student_ids', 'student_status', 'foto'])->all();
+            $payload['kelas'] = $this->resolveKelasLabel($payload['kelas_id'] ?? null, $payload['kelas'] ?? null);
 
             if ($request->hasFile('foto')) {
                 if ($presensi->foto) {
@@ -243,7 +246,8 @@ class PresensiController extends Controller
         return $request->validate([
             'mentor_id'        => ['required', Rule::exists('users', 'id')],
             'cabang_id'        => 'nullable|exists:cabangs,id',
-            'kelas'            => 'required|string|max:100',
+            'kelas_id'         => ['required', Rule::exists('kelas_master', 'id')->whereNull('deleted_at')],
+            'kelas'            => 'nullable|string|max:100',
             'tanggal'          => 'required|date',
             'jam_mulai'        => 'required|date_format:H:i',
             'jam_selesai'      => 'required|date_format:H:i|after:jam_mulai',
@@ -254,6 +258,15 @@ class PresensiController extends Controller
             'student_status'   => 'nullable|array',
             'student_status.*' => 'in:hadir,izin,sakit,alpha',
         ]);
+    }
+
+    private function resolveKelasLabel(?int $kelasId, ?string $fallback): ?string
+    {
+        if ($kelasId) {
+            $nama = KelasMaster::where('id', $kelasId)->value('nama');
+            if ($nama) return $nama;
+        }
+        return $fallback;
     }
 
     private function syncStudents(Presensi $presensi, array $ids, array $statuses): void

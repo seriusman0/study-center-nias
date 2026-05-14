@@ -28,6 +28,7 @@ Route::get('/cabangs', [CabangController::class, 'index']);
 // Authenticated
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [GuestAuthController::class, 'logout']);
+    Route::post('/auth/refresh', [GuestAuthController::class, 'refresh']);
     Route::get('/me', [GuestAuthController::class, 'me']);
 
     // Profile
@@ -54,6 +55,33 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get ('/today',   [\App\Http\Controllers\Api\JurnalApiController::class, 'today']);
         Route::post('/check',   [\App\Http\Controllers\Api\JurnalApiController::class, 'check']);
         Route::get ('/history', [\App\Http\Controllers\Api\JurnalApiController::class, 'history']);
+    });
+
+    // Kelas master (read for admin+mentor, write for admin)
+    Route::middleware('role:admin,mentor')->get('/kelas-master', [\App\Http\Controllers\Api\KelasMasterController::class, 'index']);
+    Route::middleware('role:admin')->group(function () {
+        Route::post  ('/kelas-master',         [\App\Http\Controllers\Api\KelasMasterController::class, 'store']);
+        Route::put   ('/kelas-master/{kelas}', [\App\Http\Controllers\Api\KelasMasterController::class, 'update']);
+        Route::delete('/kelas-master/{kelas}', [\App\Http\Controllers\Api\KelasMasterController::class, 'destroy']);
+    });
+
+    // Mentor self-attendance (mentor own + admin all)
+    Route::middleware('role:admin,mentor')->prefix('mentor-presensi')->group(function () {
+        Route::get   ('/',                       [\App\Http\Controllers\Api\MentorPresensiController::class, 'index']);
+        Route::post  ('/',                       [\App\Http\Controllers\Api\MentorPresensiController::class, 'store']);
+        Route::get   ('/{mentorPresensi}',       [\App\Http\Controllers\Api\MentorPresensiController::class, 'show']);
+        Route::put   ('/{mentorPresensi}',       [\App\Http\Controllers\Api\MentorPresensiController::class, 'update']);
+        Route::delete('/{mentorPresensi}',       [\App\Http\Controllers\Api\MentorPresensiController::class, 'destroy']);
+    });
+
+    // Presensi (mentor records students)
+    Route::middleware('role:admin,mentor')->prefix('presensi')->group(function () {
+        Route::get   ('/students/search',  [\App\Http\Controllers\Api\PresensiController::class, 'searchStudents']);
+        Route::get   ('/',                 [\App\Http\Controllers\Api\PresensiController::class, 'index']);
+        Route::post  ('/',                 [\App\Http\Controllers\Api\PresensiController::class, 'store']);
+        Route::get   ('/{presensi}',       [\App\Http\Controllers\Api\PresensiController::class, 'show']);
+        Route::put   ('/{presensi}',       [\App\Http\Controllers\Api\PresensiController::class, 'update']);
+        Route::delete('/{presensi}',       [\App\Http\Controllers\Api\PresensiController::class, 'destroy']);
     });
 
     // Admin only

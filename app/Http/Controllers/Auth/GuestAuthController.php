@@ -82,6 +82,23 @@ class GuestAuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json($request->user()->load('roles', 'cabang', 'socialLinks'));
+        $user = $request->user()->load('roles', 'cabang', 'socialLinks');
+        $payload = $user->toArray();
+        $payload['role_names'] = $user->roles->pluck('name')->all();
+        return response()->json($payload);
+    }
+
+    public function refresh(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $current = $user->currentAccessToken();
+        if ($current) {
+            $current->delete();
+        }
+        $token = $user->createToken('auth_token')->plainTextToken;
+        return response()->json([
+            'user'  => $user->load('roles', 'cabang'),
+            'token' => $token,
+        ]);
     }
 }

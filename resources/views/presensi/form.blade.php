@@ -63,9 +63,8 @@
                 </div>
                 <div class="form-group col-md-5">
                     <label>Nama Kelas <span class="text-danger">*</span></label>
-                    <input type="text" name="kelas" class="form-control"
-                           value="{{ old('kelas', $presensi?->kelas) }}"
-                           placeholder="Contoh: Kelas X IPA / Bimbel Matematika Sore" required>
+                    <select id="kelasPicker" name="kelas_id" required></select>
+                    <small class="text-muted">Pilih kelas dari master. Jika belum ada, tambahkan di <a href="{{ route('admin.kelas-master.index') }}">Master Kelas</a>.</small>
                 </div>
             </div>
 
@@ -130,6 +129,45 @@
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script>
 (function() {
+    // === Kelas master picker ===
+    const kelasSearchUrl = @json(route('presensi.kelas-master.search'));
+    const cabangSelect = document.querySelector('select[name="cabang_id"]');
+    const initialKelas = @json($presensi?->kelasMaster ? ['id' => $presensi->kelasMaster->id, 'nama' => $presensi->kelasMaster->nama, 'cabang' => $presensi->kelasMaster->cabang?->nama, 'label' => $presensi->kelasMaster->nama . ($presensi->kelasMaster->cabang ? ' — ' . $presensi->kelasMaster->cabang->nama : '')] : null);
+
+    const tsKelas = new TomSelect('#kelasPicker', {
+        valueField: 'id',
+        labelField: 'label',
+        searchField: ['nama', 'cabang', 'label'],
+        maxOptions: 50,
+        placeholder: 'Pilih atau cari kelas...',
+        load: function(query, callback) {
+            const params = new URLSearchParams();
+            if (query) params.set('q', query);
+            const cid = cabangSelect?.value;
+            if (cid) params.set('cabang_id', cid);
+            fetch(kelasSearchUrl + '?' + params.toString())
+                .then(r => r.json())
+                .then(json => callback(json.data || []))
+                .catch(() => callback([]));
+        },
+        render: {
+            option: function(item, escape) {
+                return `<div><strong>${escape(item.nama)}</strong>` +
+                    (item.cabang ? ` <small class="text-muted">— ${escape(item.cabang)}</small>` : '') +
+                    `</div>`;
+            },
+        },
+    });
+    if (initialKelas) {
+        tsKelas.addOption(initialKelas);
+        tsKelas.addItem(String(initialKelas.id), true);
+    }
+    cabangSelect?.addEventListener('change', () => {
+        tsKelas.clear();
+        tsKelas.clearOptions();
+    });
+
+    // === Student picker (existing) ===
     const searchUrl = @json(route('presensi.students.search'));
     const selectedContainer = document.getElementById('selectedStudents');
     const initial = @json($selectedStudents);

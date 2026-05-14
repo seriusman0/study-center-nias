@@ -10,7 +10,7 @@ class Presensi extends Model
 
     protected $fillable = [
         'mentor_id', 'cabang_id', 'created_by',
-        'kelas', 'tanggal', 'jam_mulai', 'jam_selesai',
+        'kelas', 'kelas_id', 'tanggal', 'jam_mulai', 'jam_selesai',
         'materi', 'foto',
     ];
 
@@ -31,6 +31,11 @@ class Presensi extends Model
     public function cabang()
     {
         return $this->belongsTo(Cabang::class);
+    }
+
+    public function kelasMaster()
+    {
+        return $this->belongsTo(KelasMaster::class, 'kelas_id');
     }
 
     public function students()

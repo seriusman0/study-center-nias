@@ -17,23 +17,26 @@
         }
      })">
 
-    <div class="bg-white shadow rounded-xl p-5 mb-4">
+    <div class="bg-gradient-to-br from-[#1e3a5f] to-[#2d5282] text-white shadow rounded-xl p-5 mb-4">
         <div class="flex items-center justify-between gap-2 mb-2">
             <div>
-                <h1 class="text-xl font-bold text-[#1e3a5f]">Jurnal Harian</h1>
-                <p class="text-sm text-gray-500">{{ $date->locale('id')->isoFormat('dddd, D MMMM Y') }}</p>
+                <h1 class="text-xl font-bold">Halo, {{ auth()->user()->name }} 👋</h1>
+                <p class="text-sm text-white/80">{{ $date->locale('id')->isoFormat('dddd, D MMMM Y') }}</p>
+                @if(($streak ?? 0) > 0)
+                <p class="text-xs mt-2 text-[#c9a84c] font-semibold">🔥 Streak: {{ $streak }} hari berturut-turut</p>
+                @endif
             </div>
             <div class="flex items-center gap-1">
                 <a href="{{ route('jurnal.index', ['date' => $date->copy()->subDay()->toDateString()]) }}"
-                   class="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 text-sm" title="Hari sebelumnya">&larr;</a>
+                   class="px-3 py-2 rounded bg-white/15 hover:bg-white/25 text-sm" title="Hari sebelumnya">&larr;</a>
                 @if($date->lt($today))
                     <a href="{{ route('jurnal.index', ['date' => $date->copy()->addDay()->toDateString()]) }}"
-                       class="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 text-sm" title="Hari berikutnya">&rarr;</a>
+                       class="px-3 py-2 rounded bg-white/15 hover:bg-white/25 text-sm" title="Hari berikutnya">&rarr;</a>
                 @else
-                    <span class="px-3 py-2 rounded bg-gray-50 text-gray-300 text-sm cursor-not-allowed">&rarr;</span>
+                    <span class="px-3 py-2 rounded bg-white/5 text-white/30 text-sm cursor-not-allowed">&rarr;</span>
                 @endif
                 @if(!$isToday)
-                    <a href="{{ route('jurnal.index') }}" class="ml-2 px-3 py-2 rounded bg-[#1e3a5f] text-white text-sm">Hari ini</a>
+                    <a href="{{ route('jurnal.index') }}" class="ml-2 px-3 py-2 rounded bg-[#c9a84c] text-[#1e3a5f] font-semibold text-sm">Hari ini</a>
                 @endif
             </div>
         </div>

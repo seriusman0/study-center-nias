@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             StudentCsvSeeder::class,
             JurnalLifeItemSeeder::class,
+            KelasMasterSeeder::class,
         ]);
     }
 }

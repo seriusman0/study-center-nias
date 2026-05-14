@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#000000</color>
+    <color name="sc_bg">#F8FAFC</color>
+    <color name="sc_gold">#C9A84C</color>
+    <color name="sc_navy">#1E3A5F</color>
+    <color name="sc_navy_dark">#152744</color>
+    <color name="white">#FFFFFF</color>
+    <string name="app_name">SC NIAS</string>
+    <string name="email">Email</string>
+    <string name="loading">Memuat…</string>
+    <string name="login">Masuk</string>
+    <string name="logout">Keluar</string>
+    <string name="password">Kata sandi</string>
+    <string name="register">Daftar</string>
+    <string name="tagline">Study Center Nias</string>
+    <style name="Theme.ScNias" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/sc_navy</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
