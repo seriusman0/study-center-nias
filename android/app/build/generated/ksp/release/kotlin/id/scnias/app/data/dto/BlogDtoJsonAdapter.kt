@@ -9,12 +9,14 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import com.squareup.moshi.`internal`.Util
 import java.lang.NullPointerException
 import kotlin.Long
 import kotlin.String
 import kotlin.Suppress
 import kotlin.Unit
+import kotlin.collections.List
 import kotlin.collections.emptySet
 import kotlin.text.buildString
 
@@ -22,7 +24,7 @@ public class BlogDtoJsonAdapter(
   moshi: Moshi,
 ) : JsonAdapter<BlogDto>() {
   private val options: JsonReader.Options = JsonReader.Options.of("id", "title", "slug", "content",
-      "image", "published_at", "user", "cabang")
+      "image", "published_at", "user", "cabang", "tags")
 
   private val longAdapter: JsonAdapter<Long> = moshi.adapter(Long::class.java, emptySet(), "id")
 
@@ -38,6 +40,10 @@ public class BlogDtoJsonAdapter(
   private val nullableCabangDtoAdapter: JsonAdapter<CabangDto?> =
       moshi.adapter(CabangDto::class.java, emptySet(), "cabang")
 
+  private val nullableListOfTagDtoAdapter: JsonAdapter<List<TagDto>?> =
+      moshi.adapter(Types.newParameterizedType(List::class.java, TagDto::class.java), emptySet(),
+      "tags")
+
   public override fun toString(): String = buildString(29) {
       append("GeneratedJsonAdapter(").append("BlogDto").append(')') }
 
@@ -50,6 +56,7 @@ public class BlogDtoJsonAdapter(
     var publishedAt: String? = null
     var user: UserDto? = null
     var cabang: CabangDto? = null
+    var tags: List<TagDto>? = null
     reader.beginObject()
     while (reader.hasNext()) {
       when (reader.selectName(options)) {
@@ -63,6 +70,7 @@ public class BlogDtoJsonAdapter(
         5 -> publishedAt = nullableStringAdapter.fromJson(reader)
         6 -> user = nullableUserDtoAdapter.fromJson(reader)
         7 -> cabang = nullableCabangDtoAdapter.fromJson(reader)
+        8 -> tags = nullableListOfTagDtoAdapter.fromJson(reader)
         -1 -> {
           // Unknown name, skip it.
           reader.skipName()
@@ -79,7 +87,8 @@ public class BlogDtoJsonAdapter(
         image = image,
         publishedAt = publishedAt,
         user = user,
-        cabang = cabang
+        cabang = cabang,
+        tags = tags
     )
   }
 
@@ -104,6 +113,8 @@ public class BlogDtoJsonAdapter(
     nullableUserDtoAdapter.toJson(writer, value_.user)
     writer.name("cabang")
     nullableCabangDtoAdapter.toJson(writer, value_.cabang)
+    writer.name("tags")
+    nullableListOfTagDtoAdapter.toJson(writer, value_.tags)
     writer.endObject()
   }
 }

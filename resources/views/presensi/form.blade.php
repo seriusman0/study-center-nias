@@ -132,7 +132,18 @@
     // === Kelas master picker ===
     const kelasSearchUrl = @json(route('presensi.kelas-master.search'));
     const cabangSelect = document.querySelector('select[name="cabang_id"]');
-    const initialKelas = @json($presensi?->kelasMaster ? ['id' => $presensi->kelasMaster->id, 'nama' => $presensi->kelasMaster->nama, 'cabang' => $presensi->kelasMaster->cabang?->nama, 'label' => $presensi->kelasMaster->nama . ($presensi->kelasMaster->cabang ? ' — ' . $presensi->kelasMaster->cabang->nama : '')] : null);
+    @php
+        $initKelasObj = null;
+        if ($presensi?->kelasMaster) {
+            $initKelasObj = [
+                'id' => $presensi->kelasMaster->id,
+                'nama' => $presensi->kelasMaster->nama,
+                'cabang' => $presensi->kelasMaster->cabang?->nama,
+                'label' => $presensi->kelasMaster->nama . ($presensi->kelasMaster->cabang ? ' — ' . $presensi->kelasMaster->cabang->nama : '')
+            ];
+        }
+    @endphp
+    const initialKelas = @json($initKelasObj);
 
     const tsKelas = new TomSelect('#kelasPicker', {
         valueField: 'id',

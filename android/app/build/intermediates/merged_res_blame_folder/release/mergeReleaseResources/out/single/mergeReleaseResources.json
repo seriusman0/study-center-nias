@@ -1,26 +1,34 @@
 [
     {
-        "merged": "id.scnias.app-release-54:/drawable_ic_launcher_background.xml.flat",
-        "source": "id.scnias.app-main-55:/drawable/ic_launcher_background.xml"
+        "merged": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-release-54:\\xml_backup_rules.xml.flat",
+        "source": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-main-55:\\xml\\backup_rules.xml"
     },
     {
-        "merged": "id.scnias.app-release-54:/xml_data_extraction_rules.xml.flat",
-        "source": "id.scnias.app-main-55:/xml/data_extraction_rules.xml"
+        "merged": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-release-54:\\drawable_logo.png.flat",
+        "source": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-main-55:\\drawable\\logo.png"
     },
     {
-        "merged": "id.scnias.app-release-54:/xml_backup_rules.xml.flat",
-        "source": "id.scnias.app-main-55:/xml/backup_rules.xml"
+        "merged": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-release-54:\\mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-main-55:\\mipmap-anydpi-v26\\ic_launcher_round.xml"
     },
     {
-        "merged": "id.scnias.app-release-54:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
-        "source": "id.scnias.app-main-55:/mipmap-anydpi-v26/ic_launcher_round.xml"
+        "merged": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-release-54:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-main-55:\\mipmap-anydpi-v26\\ic_launcher.xml"
     },
     {
-        "merged": "id.scnias.app-release-54:/drawable_ic_launcher_foreground.xml.flat",
-        "source": "id.scnias.app-main-55:/drawable/ic_launcher_foreground.xml"
+        "merged": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-release-54:\\drawable_ic_launcher_background.xml.flat",
+        "source": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-main-55:\\drawable\\ic_launcher_background.xml"
     },
     {
-        "merged": "id.scnias.app-release-54:/mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "id.scnias.app-main-55:/mipmap-anydpi-v26/ic_launcher.xml"
+        "merged": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-release-54:\\xml_data_extraction_rules.xml.flat",
+        "source": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-main-55:\\xml\\data_extraction_rules.xml"
+    },
+    {
+        "merged": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-release-54:\\drawable_ic_launcher_foreground.xml.flat",
+        "source": "C:\\Users\\Krisman\\.gradle\\daemon\\8.7\\id.scnias.app-main-55:\\drawable\\ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "id.scnias.app-release-54:/font_grandeur.ttf.flat",
+        "source": "id.scnias.app-main-55:/font/grandeur.ttf"
     }
 ]

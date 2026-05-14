@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Study Center Nias · Web UI Kit</title>
+  <link rel="stylesheet" href="../../colors_and_type.css" />
+  <style>
+    html, body { margin: 0; padding: 0; background: var(--sc-bg); min-height: 100vh; }
+    body { font-family: var(--font-sans); color: var(--sc-ink-900); -webkit-font-smoothing: antialiased; }
+    @keyframes slideInRight {
+      from { transform: translateX(20px); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="Tokens.jsx"></script>
+  <script type="text/babel" src="Atoms.jsx"></script>
+  <script type="text/babel" src="Nav.jsx"></script>
+  <script type="text/babel" src="Home.jsx"></script>
+  <script type="text/babel" src="BlogPages.jsx"></script>
+  <script type="text/babel" src="Jurnal.jsx"></script>
+  <script type="text/babel" src="SignIn.jsx"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    function App() {
+      const [route, setRoute] = React.useState('home');
+      const [blogSlug, setBlogSlug] = React.useState(null);
+      const [user, setUser] = React.useState(null);
+      const [toast, setToast] = React.useState({ show: false, msg: '', tone: 'success' });
+
+      const showToast = (msg, tone='success') => {
+        setToast({ show: true, msg, tone });
+        clearTimeout(window._toastT);
+        window._toastT = setTimeout(() => setToast(t => ({ ...t, show: false })), 2200);
+      };
+      const openBlog = (slug) => { setBlogSlug(slug); setRoute('blog-detail'); };
+      const onSignIn = (u) => { setUser(u); setRoute(u.role === 'student' ? 'jurnal' : 'home'); showToast(`Selamat datang, ${u.name.split(' ')[0]}`); };
+
+      let page;
+      switch (route) {
+        case 'home':        page = <Home setRoute={setRoute} openBlog={openBlog} />; break;
+        case 'blog':        page = <BlogIndex openBlog={openBlog} />; break;
+        case 'blog-detail': page = <BlogDetail slug={blogSlug} setRoute={setRoute} user={user} />; break;
+        case 'cabang':      page = <Home setRoute={setRoute} openBlog={openBlog} />; break;
+        case 'jurnal':      page = <Jurnal user={user} onToast={showToast} />; break;
+        case 'tulis':       page = <ComingSoon title="Tulis Blog" />; break;
+        case 'login':       page = <SignIn onSignIn={onSignIn} setRoute={setRoute} />; break;
+        default:            page = <Home setRoute={setRoute} openBlog={openBlog} />;
+      }
+
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <Nav route={route} setRoute={setRoute} user={user} onLogout={() => { setUser(null); setRoute('home'); showToast('Sampai jumpa'); }} />
+          <div style={{ flex: 1 }}>{page}</div>
+          <Footer />
+          <Toast {...toast} />
+        </div>
+      );
+    }
+
+    function ComingSoon({ title }) {
+      return (
+        <main style={{ maxWidth: 720, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
+          <h1 style={{ fontFamily: T.fontDisplay, fontSize: 36, color: T.teal800, marginBottom: 12 }}>{title}</h1>
+          <p style={{ color: T.ink500 }}>Surface not included in this UI kit.</p>
+        </main>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

@@ -20,21 +20,21 @@ import kotlin.text.buildString
 public class LoginRequestJsonAdapter(
   moshi: Moshi,
 ) : JsonAdapter<LoginRequest>() {
-  private val options: JsonReader.Options = JsonReader.Options.of("email", "password")
+  private val options: JsonReader.Options = JsonReader.Options.of("login", "password")
 
   private val stringAdapter: JsonAdapter<String> = moshi.adapter(String::class.java, emptySet(),
-      "email")
+      "login")
 
   public override fun toString(): String = buildString(34) {
       append("GeneratedJsonAdapter(").append("LoginRequest").append(')') }
 
   public override fun fromJson(reader: JsonReader): LoginRequest {
-    var email: String? = null
+    var login: String? = null
     var password: String? = null
     reader.beginObject()
     while (reader.hasNext()) {
       when (reader.selectName(options)) {
-        0 -> email = stringAdapter.fromJson(reader) ?: throw Util.unexpectedNull("email", "email",
+        0 -> login = stringAdapter.fromJson(reader) ?: throw Util.unexpectedNull("login", "login",
             reader)
         1 -> password = stringAdapter.fromJson(reader) ?: throw Util.unexpectedNull("password",
             "password", reader)
@@ -47,7 +47,7 @@ public class LoginRequestJsonAdapter(
     }
     reader.endObject()
     return LoginRequest(
-        email = email ?: throw Util.missingProperty("email", "email", reader),
+        login = login ?: throw Util.missingProperty("login", "login", reader),
         password = password ?: throw Util.missingProperty("password", "password", reader)
     )
   }
@@ -57,8 +57,8 @@ public class LoginRequestJsonAdapter(
       throw NullPointerException("value_ was null! Wrap in .nullSafe() to write nullable values.")
     }
     writer.beginObject()
-    writer.name("email")
-    stringAdapter.toJson(writer, value_.email)
+    writer.name("login")
+    stringAdapter.toJson(writer, value_.login)
     writer.name("password")
     stringAdapter.toJson(writer, value_.password)
     writer.endObject()

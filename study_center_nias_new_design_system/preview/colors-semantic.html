@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=700, initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:transparent;font-family:var(--font-sans);color:var(--sc-ink-900);-webkit-font-smoothing:antialiased}
+  .frame{width:700px;box-sizing:border-box;padding:20px 24px;background:var(--sc-bg);min-height:220px}
+  .row{display:flex;gap:10px}
+  .grid{display:grid;gap:10px}
+  .sw{flex:1;min-height:64px;border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;justify-content:flex-end;font-family:var(--font-mono);font-size:11px;line-height:1.25;box-shadow:var(--sh-inset)}
+  .sw .n{font-family:var(--font-sans);font-weight:700;font-size:12px;margin-bottom:2px}
+  .sw.dark{color:#fff}
+  .sw.light{color:var(--sc-ink-900)}
+  .hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+  .hdr .ttl{font-weight:700;font-size:13px}
+  .hdr .sub{font-size:11px;color:var(--sc-ink-500);font-family:var(--font-mono)}
+</style>
+</head><body><div class="frame">
+<div class="hdr"><span class="ttl">Semantic</span><span class="sub">--sc-success / warning / danger / info</span></div>
+<div class="row">
+  <div class="sw dark" style="background:#0e8e6d"><span class="n">success</span><span>#0e8e6d</span></div>
+  <div class="sw light" style="background:#e1f3ec"><span class="n">success-bg</span><span>#e1f3ec</span></div>
+  <div class="sw dark" style="background:#d8731a"><span class="n">warning</span><span>#d8731a</span></div>
+  <div class="sw light" style="background:#fde6cf"><span class="n">warning-bg</span><span>#fde6cf</span></div>
+</div>
+<div class="row" style="margin-top:10px">
+  <div class="sw dark" style="background:#c1352b"><span class="n">danger</span><span>#c1352b</span></div>
+  <div class="sw light" style="background:#fbe5e2"><span class="n">danger-bg</span><span>#fbe5e2</span></div>
+  <div class="sw dark" style="background:#1f6fb2"><span class="n">info</span><span>#1f6fb2</span></div>
+  <div class="sw light" style="background:#e3f0fb"><span class="n">info-bg</span><span>#e3f0fb</span></div>
+</div></div></body></html>

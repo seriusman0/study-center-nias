@@ -25,7 +25,8 @@ public class UserDtoJsonAdapter(
   moshi: Moshi,
 ) : JsonAdapter<UserDto>() {
   private val options: JsonReader.Options = JsonReader.Options.of("id", "name", "username", "email",
-      "avatar", "bio", "cabang_id", "cabang", "roles", "role_names", "is_active")
+      "avatar", "bio", "cabang_id", "cabang", "roles", "role_names", "is_active", "profile_public",
+      "cv_enabled", "social_links")
 
   private val longAdapter: JsonAdapter<Long> = moshi.adapter(Long::class.java, emptySet(), "id")
 
@@ -52,6 +53,10 @@ public class UserDtoJsonAdapter(
   private val nullableBooleanAdapter: JsonAdapter<Boolean?> =
       moshi.adapter(Boolean::class.javaObjectType, emptySet(), "isActive")
 
+  private val nullableListOfSocialLinkDtoAdapter: JsonAdapter<List<SocialLinkDto>?> =
+      moshi.adapter(Types.newParameterizedType(List::class.java, SocialLinkDto::class.java),
+      emptySet(), "socialLinks")
+
   public override fun toString(): String = buildString(29) {
       append("GeneratedJsonAdapter(").append("UserDto").append(')') }
 
@@ -67,6 +72,9 @@ public class UserDtoJsonAdapter(
     var roles: List<RoleDto>? = null
     var roleNames: List<String>? = null
     var isActive: Boolean? = null
+    var profilePublic: Boolean? = null
+    var cvEnabled: Boolean? = null
+    var socialLinks: List<SocialLinkDto>? = null
     reader.beginObject()
     while (reader.hasNext()) {
       when (reader.selectName(options)) {
@@ -82,6 +90,9 @@ public class UserDtoJsonAdapter(
         8 -> roles = nullableListOfRoleDtoAdapter.fromJson(reader)
         9 -> roleNames = nullableListOfStringAdapter.fromJson(reader)
         10 -> isActive = nullableBooleanAdapter.fromJson(reader)
+        11 -> profilePublic = nullableBooleanAdapter.fromJson(reader)
+        12 -> cvEnabled = nullableBooleanAdapter.fromJson(reader)
+        13 -> socialLinks = nullableListOfSocialLinkDtoAdapter.fromJson(reader)
         -1 -> {
           // Unknown name, skip it.
           reader.skipName()
@@ -101,7 +112,10 @@ public class UserDtoJsonAdapter(
         cabang = cabang,
         roles = roles,
         roleNames = roleNames,
-        isActive = isActive
+        isActive = isActive,
+        profilePublic = profilePublic,
+        cvEnabled = cvEnabled,
+        socialLinks = socialLinks
     )
   }
 
@@ -132,6 +146,12 @@ public class UserDtoJsonAdapter(
     nullableListOfStringAdapter.toJson(writer, value_.roleNames)
     writer.name("is_active")
     nullableBooleanAdapter.toJson(writer, value_.isActive)
+    writer.name("profile_public")
+    nullableBooleanAdapter.toJson(writer, value_.profilePublic)
+    writer.name("cv_enabled")
+    nullableBooleanAdapter.toJson(writer, value_.cvEnabled)
+    writer.name("social_links")
+    nullableListOfSocialLinkDtoAdapter.toJson(writer, value_.socialLinks)
     writer.endObject()
   }
 }

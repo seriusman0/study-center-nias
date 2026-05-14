@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=700, initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:transparent;font-family:var(--font-sans);color:var(--sc-ink-900);-webkit-font-smoothing:antialiased}
+  .frame{width:700px;box-sizing:border-box;padding:20px 24px;background:var(--sc-bg);min-height:380px}
+  .hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+  .hdr .ttl{font-weight:700;font-size:13px}
+  .hdr .sub{font-size:11px;color:var(--sc-ink-500);font-family:var(--font-mono)}
+</style>
+</head><body><div class="frame">
+<div class="hdr"><span class="ttl">Cards</span><span class="sub">blog · verse · stat</span></div>
+<style>
+  .blog{background:#fff;border-radius:var(--r-md);box-shadow:var(--sh-2);overflow:hidden;display:flex;flex-direction:column}
+  .blog .img{height:120px;background:linear-gradient(135deg, var(--sc-teal-700), var(--sc-teal-500));display:flex;align-items:center;justify-content:center;color:#ffffff80;font-family:var(--font-display);font-size:32px}
+  .blog .body{padding:14px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .blog .meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--sc-ink-500)}
+  .blog .title{font-weight:700;font-size:15px;line-height:1.3;color:var(--sc-ink-900);text-wrap:pretty}
+  .blog .foot{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:8px}
+  .blog .av{width:24px;height:24px;border-radius:50%;background:var(--sc-teal-700);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:600}
+  .blog .name{font-size:12px;color:var(--sc-ink-700)}
+  .verse{background:var(--sc-yellow-100);border:1px solid var(--sc-yellow-300);border-radius:var(--r-md);padding:14px 16px}
+  .verse .ref{font-weight:800;color:var(--sc-teal-800);font-family:var(--font-sans);font-size:14px;margin-bottom:4px}
+  .verse .body{font-family:var(--font-display);font-style:italic;font-size:15px;line-height:1.5;color:var(--sc-ink-900)}
+  .stat{background:#fff;border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--sh-2);border:1px solid var(--sc-line)}
+  .stat .num{font-size:28px;font-weight:800;color:var(--sc-teal-700);line-height:1;letter-spacing:-.01em}
+  .stat .lbl{font-size:12px;color:var(--sc-ink-500);margin-top:4px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+  .stat .accent{height:3px;background:var(--sc-orange-500);width:24px;border-radius:2px;margin-top:8px}
+</style>
+<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:14px">
+  <div class="blog">
+    <div class="img">📖</div>
+    <div class="body">
+      <div class="meta"><span class="chip" style="background:var(--sc-teal-100);color:var(--sc-teal-800);padding:2px 8px;border-radius:999px;font-weight:600">Gunungsitoli</span><span>14 Mei 2026</span></div>
+      <div class="title">Persiapan Ujian Tengah Semester di Cabang Gunungsitoli</div>
+      <div class="foot"><div class="av">SW</div><div class="name">Seri Waruwu</div></div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div class="verse">
+      <div class="ref">Yakobus 1:19</div>
+      <div class="body">"Setiap orang harus cepat untuk mendengar, tetapi lambat untuk berkata‑kata."</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="stat"><div class="num">128</div><div class="lbl">Siswa Aktif</div><div class="accent"></div></div>
+      <div class="stat"><div class="num">4</div><div class="lbl">Cabang</div><div class="accent" style="background:var(--sc-yellow-500)"></div></div>
+    </div>
+  </div>
+</div>
+</div></body></html>

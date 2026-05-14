@@ -31,6 +31,18 @@ class TokenStore(ctx: Context) {
             if (value == null) remove(KEY_NAME) else putString(KEY_NAME, value)
         }.apply()
 
+    var userUsername: String?
+        get() = prefs.getString(KEY_USERNAME, null)
+        set(value) = prefs.edit().apply {
+            if (value == null) remove(KEY_USERNAME) else putString(KEY_USERNAME, value)
+        }.apply()
+
+    var userId: Long?
+        get() = prefs.getLong(KEY_ID, -1L).takeIf { it != -1L }
+        set(value) = prefs.edit().apply {
+            if (value == null) remove(KEY_ID) else putLong(KEY_ID, value)
+        }.apply()
+
     fun clear() {
         prefs.edit().clear().apply()
     }
@@ -39,5 +51,7 @@ class TokenStore(ctx: Context) {
         private const val KEY_TOKEN = "auth_token"
         private const val KEY_ROLE = "primary_role"
         private const val KEY_NAME = "user_name"
+        private const val KEY_USERNAME = "user_username"
+        private const val KEY_ID = "user_id"
     }
 }

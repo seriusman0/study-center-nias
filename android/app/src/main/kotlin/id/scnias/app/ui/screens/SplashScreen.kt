@@ -1,5 +1,6 @@
 package id.scnias.app.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CircularProgressIndicator
@@ -9,10 +10,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import id.scnias.app.R
 import id.scnias.app.core.AppGraph
 import id.scnias.app.data.repo.ApiResult
 import id.scnias.app.ui.Route
@@ -39,9 +42,13 @@ fun SplashScreen(nav: NavHostController) {
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text("SC NIAS", color = ScGold, fontSize = 36.sp, fontWeight = FontWeight.Black)
-            Text("Study Center Nias", color = Color.White.copy(alpha = 0.75f))
-            Spacer(Modifier.height(24.dp))
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "Study Center Logo",
+                modifier = Modifier.size(120.dp),
+            )
+            Text("Study Center Nias", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(16.dp))
             CircularProgressIndicator(color = ScGold)
         }
     }

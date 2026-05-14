@@ -47,8 +47,16 @@ color notification_action_color_filter
 color notification_icon_bg_color
 color sc_bg
 color sc_gold
+color sc_ink_900
+color sc_line
 color sc_navy
 color sc_navy_dark
+color sc_orange_500
+color sc_teal_100
+color sc_teal_600
+color sc_teal_700
+color sc_teal_900
+color sc_yellow_500
 color vector_tint_color
 color vector_tint_theme_color
 color white
@@ -83,6 +91,7 @@ drawable ic_call_decline
 drawable ic_call_decline_low
 drawable ic_launcher_background
 drawable ic_launcher_foreground
+drawable logo
 drawable notification_action_background
 drawable notification_bg
 drawable notification_bg_low
@@ -96,6 +105,7 @@ drawable notification_template_icon_bg
 drawable notification_template_icon_low_bg
 drawable notification_tile_bg
 drawable notify_panel_notification_icon_bg
+font grandeur
 id accessibility_action_clickable_span
 id accessibility_custom_action_0
 id accessibility_custom_action_1

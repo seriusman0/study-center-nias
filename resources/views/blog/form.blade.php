@@ -9,16 +9,16 @@
     .ql-toolbar.ql-snow { border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; border-color: #e5e7eb; }
     .ql-container.ql-snow { border-bottom-left-radius: 0.75rem; border-bottom-right-radius: 0.75rem; border-color: #e5e7eb; }
     .ql-editor img { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 0.5rem 0; }
-    .ql-editor h2 { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; margin: 1rem 0 0.5rem; }
-    .ql-editor h3 { font-size: 1.25rem; font-weight: 600; color: #1e3a5f; margin: 0.75rem 0 0.5rem; }
-    .ql-editor blockquote { border-left: 4px solid #c9a84c; padding-left: 1rem; color: #4b5563; }
+    .ql-editor h2 { font-size: 1.5rem; font-weight: 700; color: var(--sc-teal-800); margin: 1rem 0 0.5rem; }
+    .ql-editor h3 { font-size: 1.25rem; font-weight: 600; color: var(--sc-teal-800); margin: 0.75rem 0 0.5rem; }
+    .ql-editor blockquote { border-left: 4px solid var(--sc-orange-500); padding-left: 1rem; color: var(--sc-ink-700); }
     .ql-editor pre { background: #1f2937; color: #f9fafb; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; }
 </style>
 @endpush
 
 @section('content')
 <div class="max-w-4xl mx-auto px-4 py-10">
-    <h1 class="text-2xl font-bold text-[#1e3a5f] mb-8">
+    <h1 class="text-2xl font-bold text-sc-ink-900 mb-8">
         {{ isset($blog) ? 'Edit Blog' : 'Tulis Blog Baru' }}
     </h1>
 
@@ -36,14 +36,14 @@
             <label class="block text-sm font-medium mb-1">Judul</label>
             <input type="text" name="title" required
                    value="{{ old('title', $blog->title ?? '') }}"
-                   class="w-full border rounded-xl px-4 py-3 text-lg font-semibold outline-[#1e3a5f]"
+                   class="w-full border border-sc-line rounded-xl px-4 py-3 text-lg font-semibold focus:outline-none focus:border-sc-teal-600 focus:ring-2 focus:ring-sc-teal-600/20"
                    placeholder="Judul blog...">
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium mb-1">Cabang</label>
-                <select name="cabang_id" required class="w-full border rounded-xl px-3 py-2 outline-[#1e3a5f]">
+                <select name="cabang_id" required class="w-full border border-sc-line rounded-xl px-3 py-2 focus:outline-none focus:border-sc-teal-600">
                     <option value="">Pilih cabang...</option>
                     @foreach($cabangs as $c)
                     <option value="{{ $c->id }}"
@@ -57,7 +57,7 @@
                 <label class="block text-sm font-medium mb-1">Tags <span class="text-gray-400 font-normal">(pisah koma)</span></label>
                 <input type="text" name="tags"
                        value="{{ old('tags', isset($blog) ? $blog->tags->pluck('name')->join(', ') : '') }}"
-                       class="w-full border rounded-xl px-3 py-2 outline-[#1e3a5f]"
+                       class="w-full border border-sc-line rounded-xl px-3 py-2 focus:outline-none focus:border-sc-teal-600"
                        placeholder="Pendidikan, Nias, ...">
             </div>
         </div>
@@ -72,8 +72,8 @@
 
         <div>
             <label class="block text-sm font-medium mb-1">Konten</label>
-            <p class="text-xs text-gray-500 mb-2">
-                <i class="text-[#c9a84c]">Tip:</i> klik ikon gambar di toolbar untuk menyisipkan gambar di dalam tulisan.
+            <p class="text-xs text-sc-ink-500 mb-2">
+                <i class="text-sc-orange-600">Tip:</i> klik ikon gambar di toolbar untuk menyisipkan gambar di dalam tulisan.
             </p>
             <input type="hidden" name="content" id="content-input">
             <div id="editor-toolbar">
@@ -113,11 +113,11 @@
 
         <div class="flex gap-3">
             <a href="{{ route('blog.index') }}"
-               class="flex-none px-5 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50">
+               class="flex-none px-5 py-3 border border-sc-line text-sc-ink-700 rounded-xl font-semibold hover:bg-sc-line-soft transition">
                 Batal
             </a>
             <button type="submit"
-                    class="flex-1 py-3 bg-[#1e3a5f] text-white rounded-xl font-semibold hover:bg-[#2d5282] transition">
+                    class="flex-1 py-3 bg-sc-teal-600 text-white rounded-xl font-semibold hover:bg-sc-teal-700 transition">
                 {{ isset($blog) ? 'Perbarui Blog' : 'Terbitkan Blog' }}
             </button>
         </div>

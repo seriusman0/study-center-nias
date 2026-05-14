@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="black">#000000</color>
-    <color name="sc_bg">#F8FAFC</color>
-    <color name="sc_gold">#C9A84C</color>
-    <color name="sc_navy">#1E3A5F</color>
-    <color name="sc_navy_dark">#152744</color>
+    <color name="sc_bg">#F7F6F1</color>
+    <color name="sc_gold">#F19121</color>
+    <color name="sc_ink_900">#15201C</color>
+    <color name="sc_line">#D9E2DC</color>
+    <color name="sc_navy">#007A5C</color>
+    <color name="sc_navy_dark">#003A2C</color>
+    <color name="sc_orange_500">#F19121</color>
+    <color name="sc_teal_100">#E1F3EC</color>
+    <color name="sc_teal_600">#0E8E6D</color>
+    <color name="sc_teal_700">#007A5C</color>
+    <color name="sc_teal_900">#003A2C</color>
+    <color name="sc_yellow_500">#E0C020</color>
     <color name="white">#FFFFFF</color>
     <string name="app_name">SC NIAS</string>
     <string name="email">Email</string>
