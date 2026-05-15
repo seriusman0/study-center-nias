@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class PresensiController extends Controller
@@ -40,18 +41,26 @@ class PresensiController extends Controller
     public function show(Request $request, Presensi $presensi): JsonResponse
     {
         $this->authorize($request, $presensi);
-        $presensi->load(['mentor:id,name', 'cabang:id,nama', 'kelasMaster:id,nama', 'students:id,name,username']);
+        $presensi->load(['mentor:id,name', 'cabang:id,nama', 'kelasMaster:id,nama']);
+        $presensi->setRelation(
+            'students',
+            $presensi->students()->select('users.id', 'users.name', 'users.username')
+                ->withPivot('status')
+                ->get()
+        );
         return response()->json(['data' => $presensi]);
     }
 
     public function store(Request $request): JsonResponse
     {
         $data = $this->validateData($request);
-        $presensi = DB::transaction(function () use ($data, $request) {
+        $fotoPath = $this->handleFotoUpload($request);
+        $presensi = DB::transaction(function () use ($data, $request, $fotoPath) {
             $kelas = KelasMaster::find($data['kelas_id']);
-            $payload = collect($data)->except(['student_ids', 'student_status'])->all();
+            $payload = collect($data)->except(['student_ids', 'student_status', 'foto'])->all();
             $payload['created_by'] = $request->user()->id;
             $payload['kelas'] = $kelas?->nama ?? '-';
+            if ($fotoPath) $payload['foto'] = $fotoPath;
 
             $presensi = Presensi::create($payload);
             $this->syncStudents($presensi, $data['student_ids'] ?? [], $data['student_status'] ?? []);
@@ -64,15 +73,28 @@ class PresensiController extends Controller
     {
         $this->authorize($request, $presensi);
         $data = $this->validateData($request, $presensi);
+        $fotoPath = $this->handleFotoUpload($request, $presensi);
 
-        DB::transaction(function () use ($data, $presensi) {
+        DB::transaction(function () use ($data, $presensi, $fotoPath) {
             $kelas = KelasMaster::find($data['kelas_id']);
-            $payload = collect($data)->except(['student_ids', 'student_status'])->all();
+            $payload = collect($data)->except(['student_ids', 'student_status', 'foto'])->all();
             $payload['kelas'] = $kelas?->nama ?? $presensi->kelas;
+            if ($fotoPath) $payload['foto'] = $fotoPath;
             $presensi->update($payload);
             $this->syncStudents($presensi, $data['student_ids'] ?? [], $data['student_status'] ?? []);
         });
         return response()->json(['data' => $presensi->fresh()->load('mentor:id,name', 'kelasMaster:id,nama', 'students:id,name')]);
+    }
+
+    private function handleFotoUpload(Request $request, ?Presensi $existing = null): ?string
+    {
+        if (! $request->hasFile('foto')) return null;
+        $file = $request->file('foto');
+        if (! $file->isValid()) return null;
+        if ($existing?->foto && Storage::disk('public')->exists($existing->foto)) {
+            Storage::disk('public')->delete($existing->foto);
+        }
+        return $file->store('presensi', 'public');
     }
 
     public function destroy(Request $request, Presensi $presensi): JsonResponse
@@ -125,6 +147,7 @@ class PresensiController extends Controller
             'jam_mulai'        => 'required|date_format:H:i',
             'jam_selesai'      => 'required|date_format:H:i|after:jam_mulai',
             'materi'           => 'required|string|max:5000',
+            'foto'             => 'nullable|image|max:4096',
             'student_ids'      => 'required|array|min:1',
             'student_ids.*'    => 'integer|exists:users,id',
             'student_status'   => 'nullable|array',

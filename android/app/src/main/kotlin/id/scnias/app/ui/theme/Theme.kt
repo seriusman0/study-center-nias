@@ -111,6 +111,7 @@ private val DarkScheme = darkColorScheme(
 
 @Composable
 fun ScNiasTheme(content: @Composable () -> Unit) {
-    val scheme = if (isSystemInDarkTheme()) DarkScheme else LightScheme
-    MaterialTheme(colorScheme = scheme, typography = ScTypography, content = content)
+    // Force light scheme: brand designed for cream paper background. Dark mode
+    // produced poor contrast with hard-coded grays in screen-local code.
+    MaterialTheme(colorScheme = LightScheme, typography = ScTypography, content = content)
 }

@@ -9,6 +9,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        /* AdminLTE → sc-teal/sc-orange brand override */
+        :root {
+            --sc-teal-700: #007a5c; --sc-teal-600: #0e8e6d; --sc-orange-500: #f19121;
+        }
+        .btn-primary { background-color: var(--sc-teal-600) !important; border-color: var(--sc-teal-700) !important; }
+        .btn-primary:hover, .btn-primary:focus { background-color: var(--sc-teal-700) !important; border-color: var(--sc-teal-700) !important; }
+        .btn-success { background-color: var(--sc-teal-600) !important; border-color: var(--sc-teal-700) !important; }
+        .btn-warning { background-color: var(--sc-orange-500) !important; border-color: var(--sc-orange-500) !important; color: #fff !important; }
+        .btn-info { background-color: var(--sc-teal-700) !important; border-color: var(--sc-teal-700) !important; }
+        .text-primary { color: var(--sc-teal-700) !important; }
+        .bg-primary, .navbar-primary, .main-sidebar.sidebar-dark-primary { background-color: var(--sc-teal-700) !important; }
+        a { color: var(--sc-teal-600); }
+        a:hover { color: var(--sc-teal-700); }
+        .badge-info { background-color: var(--sc-teal-100, #e1f3ec) !important; color: var(--sc-teal-700) !important; }
+        .card-header { border-bottom: 1px solid #eef2ee; }
+        .nav-pills .nav-link.active { background-color: var(--sc-teal-600) !important; }
+        body { font-family: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif; }
+    </style>
     @stack('head')
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -27,6 +46,13 @@
                     <i class="fas fa-home mr-1"></i> Beranda
                 </a>
             </li>
+            @if(auth()->check() && auth()->user()->hasRole('mentor'))
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="{{ route('presensi.index') }}" class="nav-link text-muted" style="font-size:13px">
+                    <i class="fas fa-clipboard-check mr-1"></i> Presensi Siswa
+                </a>
+            </li>
+            @endif
         </ul>
         <ul class="navbar-nav ml-auto">
             <li class="nav-item dropdown">

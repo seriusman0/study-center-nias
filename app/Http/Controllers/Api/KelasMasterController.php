@@ -17,9 +17,12 @@ class KelasMasterController extends Controller
 
         if ($request->filled('cabang_id')) {
             $q->where('cabang_id', $request->cabang_id);
-        } elseif (! $user->isAdmin()) {
-            if ($user->cabang_id) $q->where('cabang_id', $user->cabang_id);
-            else return response()->json(['data' => []]);
+        } elseif (! $user->isAdmin() && $user->cabang_id) {
+            // Prefer mentor's own cabang, but if empty fall through to all kelas
+            $own = (clone $q)->where('cabang_id', $user->cabang_id)
+                ->when($request->boolean('active', true), fn($w) => $w->where('is_active', true))
+                ->limit(1)->exists();
+            if ($own) $q->where('cabang_id', $user->cabang_id);
         }
         if ($request->boolean('active', true)) $q->where('is_active', true);
         if ($request->filled('q')) $q->where('nama', 'like', '%' . $request->q . '%');
@@ -38,7 +41,7 @@ class KelasMasterController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        abort_unless($request->user()->isAdmin() || $request->user()->hasRole('mentor'), 403);
 
         $data = $request->validate([
             'nama' => [
@@ -57,7 +60,7 @@ class KelasMasterController extends Controller
 
     public function update(Request $request, KelasMaster $kelas): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        abort_unless($request->user()->isAdmin() || $request->user()->hasRole('mentor'), 403);
 
         $data = $request->validate([
             'nama' => [
@@ -79,7 +82,7 @@ class KelasMasterController extends Controller
 
     public function destroy(Request $request, KelasMaster $kelas): JsonResponse
     {
-        abort_unless($request->user()->isAdmin(), 403);
+        abort_unless($request->user()->isAdmin() || $request->user()->hasRole('mentor'), 403);
 
         if ($kelas->mentorPresensi()->exists()) {
             return response()->json(['message' => 'Kelas dipakai di presensi mentor, tidak bisa dihapus.'], 422);

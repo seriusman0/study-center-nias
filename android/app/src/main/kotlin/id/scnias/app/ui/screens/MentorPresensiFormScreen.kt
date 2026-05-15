@@ -1,10 +1,12 @@
 package id.scnias.app.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,6 +19,7 @@ import id.scnias.app.data.dto.KelasMasterDto
 import id.scnias.app.data.dto.MentorPresensiRequest
 import id.scnias.app.data.repo.ApiResult
 import id.scnias.app.ui.components.*
+import id.scnias.app.ui.formatDateDisplay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -34,6 +37,7 @@ fun MentorPresensiFormScreen(nav: NavHostController, editId: Long? = null) {
     var kelasExpanded by remember { mutableStateOf(false) }
     var selectedKelas by remember { mutableStateOf<KelasMasterDto?>(null) }
     var tanggal by remember { mutableStateOf(today) }
+    var showDatePicker by remember { mutableStateOf(false) }
     var jamDatang by remember { mutableStateOf("08:00") }
     var jamPulang by remember { mutableStateOf("10:00") }
     var jumlah by remember { mutableStateOf("0") }
@@ -49,18 +53,16 @@ fun MentorPresensiFormScreen(nav: NavHostController, editId: Long? = null) {
             is ApiResult.Error   -> error = r.message
         }
         if (isEdit) {
-            // Prefill from the API (show endpoint returns MentorPresensiEnvelope)
-            when (val r = AppGraph.mentorPresensi.list()) {
+            when (val r = AppGraph.mentorPresensi.show(editId!!)) {
                 is ApiResult.Success -> {
-                    val existing = r.value.data.find { it.id == editId }
-                    if (existing != null) {
-                        tanggal = existing.tanggal
-                        jamDatang = existing.jamDatang.take(5)
-                        jamPulang = existing.jamPulang.take(5)
-                        jumlah = existing.jumlahMurid.toString()
-                        catatan = existing.catatan ?: ""
-                        selectedKelas = kelasList.find { it.id == existing.kelasId }
-                    }
+                    val p = r.value
+                    tanggal = p.tanggal
+                    jamDatang = p.jamDatang.take(5)
+                    jamPulang = p.jamPulang.take(5)
+                    jumlah = p.jumlahMurid.toString()
+                    catatan = p.catatan ?: ""
+                    selectedKelas = kelasList.find { it.id == p.kelasId }
+                        ?: p.kelas?.let { km -> kelasList.firstOrNull { it.id == km.id } }
                 }
                 is ApiResult.Error -> error = r.message
             }
@@ -96,7 +98,43 @@ fun MentorPresensiFormScreen(nav: NavHostController, editId: Long? = null) {
                     }
                 }
 
-                OutlinedTextField(value = tanggal, onValueChange = { tanggal = it }, label = { Text("Tanggal (YYYY-MM-DD)") }, modifier = Modifier.fillMaxWidth())
+                if (showDatePicker) {
+                    val cal = remember(tanggal) {
+                        Calendar.getInstance().apply {
+                            runCatching { time = SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(tanggal)!! }
+                        }
+                    }
+                    val dpState = rememberDatePickerState(initialSelectedDateMillis = cal.timeInMillis)
+                    DatePickerDialog(
+                        onDismissRequest = { showDatePicker = false },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                dpState.selectedDateMillis?.let { ms ->
+                                    tanggal = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(ms))
+                                }
+                                showDatePicker = false
+                            }) { Text("OK") }
+                        },
+                        dismissButton = { TextButton(onClick = { showDatePicker = false }) { Text("Batal") } },
+                    ) { DatePicker(state = dpState) }
+                }
+
+                Box(Modifier.fillMaxWidth().clickable { showDatePicker = true }) {
+                    OutlinedTextField(
+                        value = formatDateDisplay(tanggal),
+                        onValueChange = {},
+                        enabled = false,
+                        label = { Text("Tanggal") },
+                        trailingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                    )
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(value = jamDatang, onValueChange = { jamDatang = it }, label = { Text("Jam Datang") }, modifier = Modifier.weight(1f))
                     OutlinedTextField(value = jamPulang, onValueChange = { jamPulang = it }, label = { Text("Jam Pulang") }, modifier = Modifier.weight(1f))

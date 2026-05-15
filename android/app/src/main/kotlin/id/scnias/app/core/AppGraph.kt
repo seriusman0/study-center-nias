@@ -32,6 +32,10 @@ object AppGraph {
         private set
     lateinit var admin: AdminRepository
         private set
+    lateinit var cv: CvRepository
+        private set
+    lateinit var cabang: CabangRepository
+        private set
 
     fun init(ctx: Context) {
         tokenStore = TokenStore(ctx)
@@ -44,5 +48,7 @@ object AppGraph {
         mentorPresensi = MentorPresensiRepository(api)
         presensi = PresensiRepository(api)
         admin = AdminRepository(api)
+        cv = CvRepository(api)
+        cabang = CabangRepository(api)
     }
 }

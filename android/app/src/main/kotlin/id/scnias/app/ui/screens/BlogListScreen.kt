@@ -22,7 +22,7 @@ import id.scnias.app.data.dto.BlogDto
 import id.scnias.app.data.repo.ApiResult
 import id.scnias.app.ui.Route
 import id.scnias.app.ui.components.*
-import id.scnias.app.ui.theme.ScNavy
+import id.scnias.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,7 +84,7 @@ fun BlogListScreen(nav: NavHostController) {
                                 Text(b.title, fontWeight = FontWeight.Bold, color = ScNavy, maxLines = 2, overflow = TextOverflow.Ellipsis)
                                 Spacer(Modifier.height(4.dp))
                                 b.user?.let { Text("oleh ${it.name}", style = MaterialTheme.typography.bodySmall, color = Color(0xFF4B5563)) }
-                                b.cabang?.let { Text(it.nama, style = MaterialTheme.typography.labelSmall, color = Color(0xFF6B7280)) }
+                                b.cabang?.let { Text(it.nama, style = MaterialTheme.typography.labelSmall, color = ScInk500) }
                                 Spacer(Modifier.height(6.dp))
                                 Text(
                                     stripHtmlPreview(b.content ?: ""),

@@ -28,6 +28,11 @@ object Route {
     const val ProfileEdit = "profile/edit"
     fun profilePath(username: String) = "profile/$username"
 
+    // CV + Kartu nama
+    const val Cv = "cv"
+    const val KartuNama = "kartu-nama/{username}"
+    fun kartuNamaPath(u: String) = "kartu-nama/$u"
+
     // Jurnal
     const val Jurnal = "jurnal"
 
@@ -40,14 +45,32 @@ object Route {
     // Student Presensi
     const val PresensiList = "presensi"
     const val PresensiNew = "presensi/new"
+    const val PresensiEdit = "presensi/{id}/edit"
+    fun presensiEditPath(id: Long) = "presensi/$id/edit"
 
     // Admin
     const val AdminDashboard = "admin/dashboard"
     const val AdminUsers = "admin/users"
+    const val AdminUserNew = "admin/users/new"
+    const val AdminUserEdit = "admin/users/{id}/edit"
+    fun adminUserEditPath(id: Long) = "admin/users/$id/edit"
     const val AdminCabang = "admin/cabang"
+    const val AdminKelasMaster = "admin/kelas-master"
+    const val AdminLifeItems = "admin/life-items"
+    const val AdminRoles = "admin/roles"
+    const val AdminPermissions = "admin/permissions"
+    const val AdminBibleSchedules = "admin/bible-schedules"
+    const val AdminWeeklyVerses = "admin/weekly-verses"
+    const val AdminJurnalReports = "admin/jurnal-reports"
+    const val AdminNameTags = "admin/nametags"
+    const val AdminMentorPresensiReports = "admin/mentor-presensi-reports"
+    const val AdminBlogs = "admin/blogs"
+    const val AdminComments = "admin/comments"
 
     // Public Cabang
     const val CabangList = "cabang"
+    const val CabangDetail = "cabang/{slug}"
+    fun cabangDetailPath(slug: String) = "cabang/$slug"
 }
 
 @Composable
@@ -62,26 +85,23 @@ fun NavGraph() {
         // Blog
         composable(Route.BlogList)  { BlogListScreen(nav) }
         composable(Route.BlogNew)   { BlogFormScreen(nav) }
-        composable(
-            Route.BlogDetail,
-            arguments = listOf(navArgument("slug") { type = NavType.StringType })
-        ) { entry ->
+        composable(Route.BlogDetail, arguments = listOf(navArgument("slug") { type = NavType.StringType })) { entry ->
             BlogDetailScreen(nav, entry.arguments!!.getString("slug")!!)
         }
-        composable(
-            Route.BlogEdit,
-            arguments = listOf(navArgument("slug") { type = NavType.StringType })
-        ) { entry ->
+        composable(Route.BlogEdit, arguments = listOf(navArgument("slug") { type = NavType.StringType })) { entry ->
             BlogFormScreen(nav, editSlug = entry.arguments!!.getString("slug")!!)
         }
 
         // Profile
         composable(Route.ProfileEdit) { ProfileEditScreen(nav) }
-        composable(
-            Route.Profile,
-            arguments = listOf(navArgument("username") { type = NavType.StringType })
-        ) { entry ->
+        composable(Route.Profile, arguments = listOf(navArgument("username") { type = NavType.StringType })) { entry ->
             ProfileScreen(nav, entry.arguments!!.getString("username")!!)
+        }
+
+        // CV + Kartu nama
+        composable(Route.Cv) { CvScreen(nav) }
+        composable(Route.KartuNama, arguments = listOf(navArgument("username") { type = NavType.StringType })) { entry ->
+            KartuNamaScreen(nav, entry.arguments!!.getString("username")!!)
         }
 
         // Jurnal
@@ -90,24 +110,42 @@ fun NavGraph() {
         // Mentor presensi
         composable(Route.MentorPresensi)     { MentorPresensiScreen(nav) }
         composable(Route.MentorPresensiForm) { MentorPresensiFormScreen(nav) }
-        composable(
-            Route.MentorPresensiEdit,
-            arguments = listOf(navArgument("id") { type = NavType.LongType })
-        ) { entry ->
+        composable(Route.MentorPresensiEdit, arguments = listOf(navArgument("id") { type = NavType.LongType })) { entry ->
             MentorPresensiFormScreen(nav, editId = entry.arguments!!.getLong("id"))
         }
 
         // Student presensi
         composable(Route.PresensiList) { PresensiScreen(nav) }
         composable(Route.PresensiNew)  { PresensiFormScreen(nav) }
+        composable(Route.PresensiEdit, arguments = listOf(navArgument("id") { type = NavType.LongType })) { entry ->
+            PresensiFormScreen(nav, editId = entry.arguments!!.getLong("id"))
+        }
 
         // Admin
         composable(Route.AdminDashboard) { AdminDashboardScreen(nav) }
         composable(Route.AdminUsers)     { AdminUsersScreen(nav) }
+        composable(Route.AdminUserNew)   { AdminUserFormScreen(nav) }
+        composable(Route.AdminUserEdit, arguments = listOf(navArgument("id") { type = NavType.LongType })) { entry ->
+            AdminUserFormScreen(nav, editId = entry.arguments!!.getLong("id"))
+        }
         composable(Route.AdminCabang)    { AdminCabangScreen(nav) }
+        composable(Route.AdminKelasMaster) { AdminKelasMasterScreen(nav) }
+        composable(Route.AdminLifeItems)   { AdminLifeItemsScreen(nav) }
+        composable(Route.AdminRoles)       { AdminRolesScreen(nav) }
+        composable(Route.AdminPermissions) { AdminPermissionsScreen(nav) }
+        composable(Route.AdminBibleSchedules) { AdminBibleSchedulesScreen(nav) }
+        composable(Route.AdminWeeklyVerses)   { AdminWeeklyVersesScreen(nav) }
+        composable(Route.AdminJurnalReports)  { AdminJurnalReportsScreen(nav) }
+        composable(Route.AdminNameTags)       { AdminNameTagsScreen(nav) }
+        composable(Route.AdminMentorPresensiReports) { AdminMentorPresensiReportsScreen(nav) }
+        composable(Route.AdminBlogs)    { AdminBlogsScreen(nav) }
+        composable(Route.AdminComments) { AdminCommentsScreen(nav) }
 
         // Public Cabang
-        composable(Route.CabangList)     { CabangListScreen(nav) }
+        composable(Route.CabangList)   { CabangListScreen(nav) }
+        composable(Route.CabangDetail, arguments = listOf(navArgument("slug") { type = NavType.StringType })) { entry ->
+            CabangDetailScreen(nav, entry.arguments!!.getString("slug")!!)
+        }
     }
 }
 

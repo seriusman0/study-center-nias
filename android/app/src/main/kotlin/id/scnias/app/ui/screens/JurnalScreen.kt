@@ -1,19 +1,16 @@
 package id.scnias.app.ui.screens
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,13 +21,7 @@ import id.scnias.app.data.dto.JurnalCheckRequest
 import id.scnias.app.data.dto.JurnalSnapshotDto
 import id.scnias.app.data.repo.ApiResult
 import id.scnias.app.ui.components.*
-import id.scnias.app.ui.theme.ScGold
-import id.scnias.app.ui.theme.ScNavy
-import id.scnias.app.ui.theme.ScOrange500
-import id.scnias.app.ui.theme.ScTeal600
-import id.scnias.app.ui.theme.ScTeal700
-import id.scnias.app.ui.theme.ScYellow100
-import id.scnias.app.ui.theme.ScYellow300
+import id.scnias.app.ui.theme.*
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -43,8 +34,9 @@ fun JurnalScreen(nav: NavHostController) {
     var snapshot by remember { mutableStateOf<JurnalSnapshotDto?>(null) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
+    val saving = remember { mutableStateMapOf<String, Boolean>() }
+    val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val userName = remember { AppGraph.auth.cachedName() ?: "User" }
 
     suspend fun load(date: String) {
         loading = true
@@ -54,181 +46,148 @@ fun JurnalScreen(nav: NavHostController) {
         }
         loading = false
     }
-
     LaunchedEffect(currentDate) { load(currentDate) }
 
     fun shiftDate(days: Int) {
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-        val cal = Calendar.getInstance()
-        cal.time = sdf.parse(currentDate)!!
-        cal.add(Calendar.DAY_OF_YEAR, days)
-        val newDate = sdf.format(cal.time)
-        if (newDate <= todayStr) currentDate = newDate
+        val cal = Calendar.getInstance().apply { time = sdf.parse(currentDate)!!; add(Calendar.DAY_OF_YEAR, days) }
+        val n = sdf.format(cal.time)
+        if (n <= todayStr) currentDate = n
     }
 
-    // Format display date
+    fun optimisticCheck(itemType: String, itemId: Long?, newChecked: Boolean) {
+        val current = snapshot ?: return
+        val key = if (itemId != null) "$itemType:$itemId" else itemType
+        val prior = current
+        snapshot = when (itemType) {
+            "pl" -> current.copy(bible = current.bible?.copy(plChecked = newChecked))
+            "pb" -> current.copy(bible = current.bible?.copy(pbChecked = newChecked))
+            "verse" -> current.copy(verse = current.verse?.copy(checked = newChecked))
+            "life" -> current.copy(lifeItems = current.lifeItems?.map { if (it.id == itemId) it.copy(checked = newChecked) else it })
+            else -> current
+        }
+        saving[key] = true
+        scope.launch {
+            val r = AppGraph.jurnal.check(JurnalCheckRequest(itemType, itemId, currentDate, newChecked))
+            saving[key] = false
+            if (r is ApiResult.Error) {
+                snapshot = prior
+                snackbar.showSnackbar("Gagal menyimpan: ${r.message}")
+            }
+        }
+    }
+
     val displayDate = remember(currentDate) {
         try {
             val sdfIn = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-            val sdfOut = SimpleDateFormat("EEEE, d MMMM yyyy", Locale("id"))
-            sdfOut.format(sdfIn.parse(currentDate)!!)
+            val sdfOut = SimpleDateFormat("EEEE · d MMMM yyyy", Locale("id"))
+            sdfOut.format(sdfIn.parse(currentDate)!!).uppercase()
         } catch (_: Exception) { currentDate }
     }
     val isToday = currentDate == todayStr
 
     Scaffold(
-        topBar = { ScTopBar("Jurnal Harian", onBack = { nav.popBackStack() }) }
+        containerColor = ScBg,
+        topBar = {
+            ScBrandTopBar(
+                title = "Jurnal Harian",
+                subtitle = displayDate,
+                onBack = { nav.popBackStack() },
+                actions = {
+                    SmallIconBtn(Icons.AutoMirrored.Filled.ArrowBack) { shiftDate(-1) }
+                    Spacer(Modifier.width(4.dp))
+                    SmallIconBtn(Icons.AutoMirrored.Filled.ArrowForward, enabled = !isToday) { shiftDate(1) }
+                },
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbar) },
     ) { pad ->
         when {
-            loading -> LoadingBox(Modifier.padding(pad))
-            error != null -> ErrorBox(error!!, Modifier.padding(pad)) { scope.launch { load(currentDate) } }
+            loading && snapshot == null -> LoadingBox(Modifier.padding(pad))
+            error != null && snapshot == null -> ErrorBox(error!!, Modifier.padding(pad)) { scope.launch { load(currentDate) } }
             snapshot != null -> {
                 val s = snapshot!!
                 LazyColumn(
                     Modifier.padding(pad).fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    // ── Header card with date nav ──
+                    item { StreakChip("Streak hari ini berlanjut") }
+
                     item {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(14.dp),
-                            color = Color.Transparent,
+                        PhoneSection(number = "1", title = "Pembacaan Alkitab") {
+                            PhoneCheckRow(
+                                title = "Perjanjian Lama",
+                                sub = s.bible?.plPorsi,
+                                checked = s.bible?.plChecked == true,
+                                saving = saving["pl"] == true,
+                            ) { optimisticCheck("pl", null, it) }
+                            PhoneCheckRow(
+                                title = "Perjanjian Baru",
+                                sub = s.bible?.pbPorsi,
+                                checked = s.bible?.pbChecked == true,
+                                saving = saving["pb"] == true,
+                            ) { optimisticCheck("pb", null, it) }
+                        }
+                    }
+
+                    item {
+                        PhoneSection(
+                            number = "2",
+                            title = "Hafal Ayat Mingguan",
+                            eyebrow = s.week?.let { "Minggu ke-${it.minggu} · Bulan ${it.bulan}" },
                         ) {
-                            Box(
-                                Modifier
-                                    .background(
-                                        Brush.linearGradient(listOf(ScTeal700, ScTeal600)),
-                                        shape = RoundedCornerShape(14.dp)
-                                    )
-                                    .padding(16.dp)
-                            ) {
-                                Column {
-                                    Text("Halo, $userName 👋", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.White)
-                                    Text(displayDate, fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
-                                    Spacer(Modifier.height(10.dp))
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        OutlinedButton(
-                                            onClick = { shiftDate(-1) },
-                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                                        ) {
-                                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kemarin", modifier = Modifier.size(16.dp))
-                                        }
-                                        if (!isToday) {
-                                            OutlinedButton(
-                                                onClick = { shiftDate(1) },
-                                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                                            ) {
-                                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Besok", modifier = Modifier.size(16.dp))
-                                            }
-                                        }
-                                        if (!isToday) {
-                                            Button(
-                                                onClick = { currentDate = todayStr },
-                                                colors = ButtonDefaults.buttonColors(containerColor = ScOrange500, contentColor = Color.White),
-                                            ) {
-                                                Icon(Icons.Default.Today, contentDescription = null, modifier = Modifier.size(16.dp))
-                                                Spacer(Modifier.width(4.dp))
-                                                Text("Hari ini", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // ── 1. Pembacaan Alkitab ──
-                    item {
-                        SectionCard(title = "1. Pembacaan Alkitab") {
-                            if (s.bible?.plPorsi != null || s.bible?.pbPorsi != null) {
-                                CheckRow(
-                                    label = "Perjanjian Lama",
-                                    detail = s.bible?.plPorsi,
-                                    checked = s.bible?.plChecked == true,
-                                ) {
-                                    scope.launch { AppGraph.jurnal.check(JurnalCheckRequest("pl", date = currentDate, checked = it)); load(currentDate) }
-                                }
-                                CheckRow(
-                                    label = "Perjanjian Baru",
-                                    detail = s.bible?.pbPorsi,
-                                    checked = s.bible?.pbChecked == true,
-                                ) {
-                                    scope.launch { AppGraph.jurnal.check(JurnalCheckRequest("pb", date = currentDate, checked = it)); load(currentDate) }
-                                }
-                            } else {
-                                Text("Porsi Alkitab belum tersedia untuk tanggal ini.", color = Color(0xFF6B7280), fontSize = 13.sp)
-                                Spacer(Modifier.height(8.dp))
-                                CheckRow(label = "Perjanjian Lama", checked = s.bible?.plChecked == true) {
-                                    scope.launch { AppGraph.jurnal.check(JurnalCheckRequest("pl", date = currentDate, checked = it)); load(currentDate) }
-                                }
-                                CheckRow(label = "Perjanjian Baru", checked = s.bible?.pbChecked == true) {
-                                    scope.launch { AppGraph.jurnal.check(JurnalCheckRequest("pb", date = currentDate, checked = it)); load(currentDate) }
-                                }
-                            }
-                        }
-                    }
-
-                    // ── 2. Hafal Ayat Mingguan ──
-                    item {
-                        SectionCard(title = "2. Hafal Ayat Mingguan") {
-                            s.week?.let { w ->
-                                Text(
-                                    "Minggu ke-${w.minggu}",
-                                    fontSize = 12.sp,
-                                    color = Color(0xFF6B7280),
-                                )
-                                Spacer(Modifier.height(4.dp))
-                            }
                             if (s.verse != null) {
                                 Surface(
                                     color = ScYellow100,
                                     shape = RoundedCornerShape(10.dp),
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, ScYellow300),
+                                    border = BorderStroke(1.dp, ScYellow300),
                                     modifier = Modifier.fillMaxWidth(),
                                 ) {
                                     Column(Modifier.padding(12.dp)) {
-                                        Text(s.verse!!.referensi ?: "—", fontWeight = FontWeight.Bold, color = ScTeal700)
+                                        Text(s.verse!!.referensi ?: "—", fontWeight = FontWeight.ExtraBold, color = ScTeal800, fontSize = 13.sp)
                                         Spacer(Modifier.height(4.dp))
-                                        Text(s.verse!!.isi ?: "", fontSize = 14.sp, color = Color(0xFF15201C), lineHeight = 20.sp)
+                                        Text(
+                                            "“${s.verse!!.isi ?: ""}”",
+                                            style = MaterialTheme.typography.displaySmall.copy(fontSize = 15.sp, lineHeight = 21.sp),
+                                            color = ScInk900,
+                                        )
                                     }
                                 }
-                                Spacer(Modifier.height(8.dp))
-                                CheckRow(label = "Sudah hafal ayat minggu ini", checked = s.verse!!.checked) {
-                                    scope.launch { AppGraph.jurnal.check(JurnalCheckRequest("verse", date = currentDate, checked = it)); load(currentDate) }
-                                }
+                                PhoneCheckRow(
+                                    title = "Sudah hafal ayat minggu ini",
+                                    checked = s.verse!!.checked,
+                                    saving = saving["verse"] == true,
+                                ) { optimisticCheck("verse", null, it) }
                             } else {
-                                Text("Ayat hafalan belum ditetapkan untuk minggu ini.", color = Color(0xFF6B7280), fontSize = 13.sp)
+                                Text("Ayat hafalan belum ditetapkan.", color = ScInk500, fontSize = 13.sp)
                             }
                         }
                     }
-
-                    // ── 3. Jadwal Kehidupan (grouped by kategori) ──
-                    val kategoriList = listOf("kerohanian" to "Kerohanian", "pendidikan" to "Pendidikan", "karakter" to "Karakter")
-                    val grouped = s.lifeItems?.groupBy { it.kategori.lowercase() } ?: emptyMap()
 
                     item {
-                        SectionCard(title = "3. Jadwal Kehidupan") {
+                        val kategoriList = listOf("kerohanian" to "Kerohanian", "pendidikan" to "Pendidikan", "karakter" to "Karakter")
+                        val grouped = s.lifeItems?.groupBy { it.kategori.lowercase() } ?: emptyMap()
+                        PhoneSection(number = "3", title = "Jadwal Kehidupan") {
                             kategoriList.forEach { (key, label) ->
+                                SubHead(label)
                                 val items = grouped[key]
-                                Text(label, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF6B7280))
-                                Spacer(Modifier.height(4.dp))
                                 if (items.isNullOrEmpty()) {
-                                    Text("Belum ada item.", color = Color(0xFF9CA3AF), fontSize = 13.sp, modifier = Modifier.padding(start = 8.dp))
+                                    Text("Belum ada item.", color = ScInk300, fontSize = 12.sp)
                                 } else {
                                     items.forEach { item ->
-                                        CheckRow(label = item.label, checked = item.checked) {
-                                            scope.launch { AppGraph.jurnal.check(JurnalCheckRequest("life", itemId = item.id, date = currentDate, checked = it)); load(currentDate) }
-                                        }
+                                        PhoneCheckRow(
+                                            title = item.label,
+                                            checked = item.checked,
+                                            saving = saving["life:${item.id}"] == true,
+                                            compact = true,
+                                        ) { optimisticCheck("life", item.id, it) }
                                     }
                                 }
-                                Spacer(Modifier.height(8.dp))
                             }
                         }
                     }
 
-                    // Bottom spacer
                     item { Spacer(Modifier.height(16.dp)) }
                 }
             }
@@ -237,26 +196,16 @@ fun JurnalScreen(nav: NavHostController) {
 }
 
 @Composable
-private fun CheckRow(label: String, detail: String? = null, checked: Boolean, onChange: (Boolean) -> Unit) {
+private fun SmallIconBtn(icon: androidx.compose.ui.graphics.vector.ImageVector, enabled: Boolean = true, onClick: () -> Unit) {
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+        color = if (enabled) Color.White.copy(alpha = 0.15f) else Color.Transparent,
         shape = RoundedCornerShape(8.dp),
-        color = if (checked) Color(0xFFF0FDF4) else Color(0xFFF8FAFC),
-        border = ButtonDefaults.outlinedButtonBorder,
+        modifier = Modifier.size(32.dp),
+        onClick = onClick,
+        enabled = enabled,
     ) {
-        Row(
-            Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Checkbox(
-                checked = checked,
-                onCheckedChange = onChange,
-                colors = CheckboxDefaults.colors(checkedColor = ScTeal600, checkmarkColor = Color.White)
-            )
-            Column(Modifier.weight(1f)) {
-                Text(label, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color(0xFF1F2937))
-                detail?.let { Text(it, fontSize = 13.sp, color = Color(0xFF6B7280)) }
-            }
+        Box(contentAlignment = Alignment.Center) {
+            Icon(icon, null, tint = Color.White.copy(alpha = if (enabled) 1f else 0.4f), modifier = Modifier.size(16.dp))
         }
     }
 }

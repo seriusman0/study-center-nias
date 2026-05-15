@@ -186,6 +186,39 @@ data class JurnalHistoryEnvelope(val data: List<JurnalHistoryDay>)
 data class KelasMasterEnvelope(val data: List<KelasMasterDto>)
 
 @JsonClass(generateAdapter = true)
+data class KelasMasterSingleEnvelope(val data: KelasMasterDto)
+
+// ── Admin Jurnal Life Items ──
+@JsonClass(generateAdapter = true)
+data class LifeItemDto(
+    val id: Long,
+    val kategori: String,
+    val label: String,
+    @Json(name = "is_default") val isDefault: Boolean?,
+    @Json(name = "is_active")  val isActive: Boolean?,
+)
+
+@JsonClass(generateAdapter = true)
+data class LifeItemEnvelope(val data: List<LifeItemDto>)
+
+@JsonClass(generateAdapter = true)
+data class LifeItemSingleEnvelope(val data: LifeItemDto)
+
+// ── Admin Roles ──
+@JsonClass(generateAdapter = true)
+data class AdminRoleDto(
+    val id: Long,
+    val name: String,
+    val permissions: List<PermissionDto>?,
+)
+
+@JsonClass(generateAdapter = true)
+data class PermissionDto(val id: Long, val name: String)
+
+@JsonClass(generateAdapter = true)
+data class AdminRoleEnvelope(val data: List<AdminRoleDto>)
+
+@JsonClass(generateAdapter = true)
 data class KelasMasterDto(
     val id: Long,
     val nama: String,
@@ -245,8 +278,19 @@ data class PresensiDto(
     @Json(name = "jam_selesai") val jamSelesai: String,
     val materi: String?,
     val foto: String?,
-    val students: List<UserDto>?,
+    val students: List<PresensiStudentDto>?,
     @Json(name = "students_count") val studentsCount: Int?,
+)
+
+@JsonClass(generateAdapter = true)
+data class PresensiStudentPivot(val status: String?)
+
+@JsonClass(generateAdapter = true)
+data class PresensiStudentDto(
+    val id: Long,
+    val name: String,
+    val username: String?,
+    val pivot: PresensiStudentPivot?,
 )
 
 @JsonClass(generateAdapter = true)
@@ -316,3 +360,188 @@ data class CabangRequest(
 
 @JsonClass(generateAdapter = true)
 data class MessageResponse(val message: String)
+
+// ──────────────────────────────────────────────
+// CV
+// ──────────────────────────────────────────────
+@JsonClass(generateAdapter = true)
+data class CvDto(
+    val id: Long? = null,
+    @Json(name = "user_id") val userId: Long? = null,
+    val pendidikan: List<CvPendidikan>? = null,
+    val pengalaman: List<CvPengalaman>? = null,
+    val keterampilan: List<String>? = null,
+    val portofolio: String? = null,
+    val template: String? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class CvPendidikan(
+    val jenjang: String,
+    val institusi: String,
+    @Json(name = "tahun_lulus") val tahunLulus: String? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class CvPengalaman(
+    val posisi: String,
+    val deskripsi: String? = null,
+    val tahun: String? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class PublicCvResponse(val user: UserDto, val cv: CvDto?)
+
+// ──────────────────────────────────────────────
+// Kartu Nama
+// ──────────────────────────────────────────────
+@JsonClass(generateAdapter = true)
+data class KartuNamaResponse(
+    val user: KartuNamaUser,
+    @Json(name = "social_links") val socialLinks: List<SocialLinkDto>?,
+)
+
+@JsonClass(generateAdapter = true)
+data class KartuNamaUser(
+    val id: Long,
+    val name: String,
+    val username: String?,
+    val avatar: String?,
+    val bio: String?,
+    val role: String?,
+    val cabang: String?,
+)
+
+// ──────────────────────────────────────────────
+// Cabang detail
+// ──────────────────────────────────────────────
+@JsonClass(generateAdapter = true)
+data class CabangDetailResponse(val cabang: CabangDto, val blogs: PaginatedDto<BlogDto>?)
+
+// ──────────────────────────────────────────────
+// Admin role + permission (mutations)
+// ──────────────────────────────────────────────
+@JsonClass(generateAdapter = true)
+data class AdminRoleSingleEnvelope(val data: AdminRoleDto)
+
+@JsonClass(generateAdapter = true)
+data class PermissionEnvelope(val data: List<PermissionDto>)
+
+@JsonClass(generateAdapter = true)
+data class PermissionSingleEnvelope(val data: PermissionDto)
+
+// ──────────────────────────────────────────────
+// Bible schedule
+// ──────────────────────────────────────────────
+@JsonClass(generateAdapter = true)
+data class BibleScheduleDto(
+    val id: Long,
+    val tanggal: String,
+    @Json(name = "pl_porsi") val plPorsi: String?,
+    @Json(name = "pb_porsi") val pbPorsi: String?,
+)
+
+@JsonClass(generateAdapter = true)
+data class BibleScheduleEnvelope(
+    val data: List<BibleScheduleDto>,
+    val bulan: Int? = null,
+    val tahun: Int? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class BibleScheduleSingleEnvelope(val data: BibleScheduleDto)
+
+// ──────────────────────────────────────────────
+// Weekly verse
+// ──────────────────────────────────────────────
+@JsonClass(generateAdapter = true)
+data class WeeklyVerseDto(
+    val id: Long,
+    val tahun: Int,
+    val bulan: Int,
+    val minggu: Int,
+    val referensi: String,
+    val isi: String,
+)
+
+@JsonClass(generateAdapter = true)
+data class WeeklyVerseEnvelope(val data: List<WeeklyVerseDto>, val tahun: Int? = null)
+
+@JsonClass(generateAdapter = true)
+data class WeeklyVerseSingleEnvelope(val data: WeeklyVerseDto)
+
+// ──────────────────────────────────────────────
+// Student life items sync
+// ──────────────────────────────────────────────
+@JsonClass(generateAdapter = true)
+data class StudentLifeItemsResponse(
+    val student: KartuNamaUser? = null,
+    val templates: List<LifeItemDto>?,
+    val custom: List<LifeItemDto>?,
+    @Json(name = "assigned_ids") val assignedIds: List<Long>?,
+)
+
+// ──────────────────────────────────────────────
+// Jurnal reports
+// ──────────────────────────────────────────────
+@JsonClass(generateAdapter = true)
+data class JurnalReportsIndexResponse(
+    val students: PaginatedDto<UserDto>,
+    @Json(name = "total_today") val totalToday: Int,
+    @Json(name = "total_week")  val totalWeek: Int,
+)
+
+@JsonClass(generateAdapter = true)
+data class JurnalReportShowResponse(
+    val student: UserDto,
+    val from: String,
+    val to: String,
+    val matrix: JurnalReportMatrix,
+)
+
+@JsonClass(generateAdapter = true)
+data class JurnalReportMatrix(
+    val headers: List<String>,
+    val rows: List<List<String>>,
+    val pct: Double,
+    val checked: Int,
+    val total: Int,
+)
+
+// ──────────────────────────────────────────────
+// Name tag generate
+// ──────────────────────────────────────────────
+@JsonClass(generateAdapter = true)
+data class NameTagGenerateResponse(
+    @Json(name = "width_cm")  val widthCm: Double,
+    @Json(name = "height_cm") val heightCm: Double,
+    val students: List<UserDto>,
+)
+
+// ──────────────────────────────────────────────
+// Mentor presensi admin reports
+// ──────────────────────────────────────────────
+@JsonClass(generateAdapter = true)
+data class AdminMentorPresensiListResponse(
+    val data: PaginatedDto<MentorPresensiDto>? = null,
+    val from: String?,
+    val to: String?,
+)
+
+@JsonClass(generateAdapter = true)
+data class MentorPresensiReportsResponse(
+    val totals: MentorPresensiTotals?,
+    val perMentor: List<Map<String, @JvmSuppressWildcards Any?>>? = null,
+    val perCabang: List<Map<String, @JvmSuppressWildcards Any?>>? = null,
+    val trend: List<Map<String, @JvmSuppressWildcards Any?>>? = null,
+    val from: String?,
+    val to: String?,
+)
+
+@JsonClass(generateAdapter = true)
+data class MentorPresensiTotals(
+    val sesi: Int,
+    val jam: Double,
+    val murid: Int,
+    @Json(name = "mentor_aktif") val mentorAktif: Int,
+)

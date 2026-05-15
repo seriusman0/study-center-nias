@@ -167,11 +167,9 @@ Route::middleware(['auth', 'role:admin,mentor'])
     ->get('/presensi/api/kelas-master', [MentorPresensiController::class, 'searchKelas'])
     ->name('presensi.kelas-master.search');
 
-// Kelas master (admin write, mentor read-only)
+// Kelas master (admin+mentor full CRUD)
 Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/kelas-master', [KelasMasterController::class, 'index'])->name('kelas-master.index');
-});
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get   ('/kelas-master',          [KelasMasterController::class, 'index'])->name('kelas-master.index');
     Route::post  ('/kelas-master',          [KelasMasterController::class, 'store'])->name('kelas-master.store');
     Route::put   ('/kelas-master/{kelas}',  [KelasMasterController::class, 'update'])->name('kelas-master.update');
     Route::delete('/kelas-master/{kelas}',  [KelasMasterController::class, 'destroy'])->name('kelas-master.destroy');
