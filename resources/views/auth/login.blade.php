@@ -5,8 +5,8 @@
 @section('content')
 <div class="min-h-[80vh] flex items-center justify-center px-4">
     <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
-        <h1 class="text-2xl font-bold text-[#1e3a5f] mb-2 text-center">Masuk</h1>
-        <p class="text-gray-500 text-sm text-center mb-6">Masuk ke akun Study Center Nias</p>
+        <h1 class="text-2xl font-bold text-sc-teal-800 mb-2 text-center">Masuk</h1>
+        <p class="text-sc-ink-500 text-sm text-center mb-6">Masuk ke akun Study Center Nias</p>
 
         {{-- Google Login --}}
         <a href="{{ route('auth.google') }}"
@@ -30,14 +30,14 @@
                 <label class="block text-sm font-medium mb-1">Email atau Username</label>
                 <input type="text" name="login" required autofocus value="{{ old('login') }}"
                        autocomplete="username"
-                       class="w-full border rounded-xl px-4 py-3 outline-[#1e3a5f] text-sm"
+                       class="w-full border border-sc-line rounded-xl px-4 py-3 focus:outline-none focus:border-sc-teal-600 focus:ring-2 focus:ring-sc-teal-600/20 text-sm"
                        placeholder="email@contoh.com / username">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Password</label>
                 <input type="password" name="password" required
                        autocomplete="current-password"
-                       class="w-full border rounded-xl px-4 py-3 outline-[#1e3a5f] text-sm"
+                       class="w-full border border-sc-line rounded-xl px-4 py-3 focus:outline-none focus:border-sc-teal-600 focus:ring-2 focus:ring-sc-teal-600/20 text-sm"
                        placeholder="••••••••">
             </div>
             <label class="flex items-center gap-2 text-sm text-gray-600">
@@ -45,14 +45,14 @@
                 Ingat saya
             </label>
             <button type="submit"
-                    class="w-full py-3 bg-[#1e3a5f] text-white rounded-xl font-semibold hover:bg-[#2d5282] transition">
+                    class="w-full py-3 bg-sc-teal-600 text-white rounded-xl font-semibold hover:bg-sc-teal-700 transition">
                 Masuk
             </button>
         </form>
 
         <p class="text-center text-sm text-gray-500 mt-6">
             Belum punya akun?
-            <a href="{{ route('register') }}" class="text-[#1e3a5f] font-medium hover:underline">Daftar</a>
+            <a href="{{ route('register') }}" class="text-sc-teal-700 font-medium hover:underline">Daftar</a>
         </p>
     </div>
 </div>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=700, initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:transparent;font-family:var(--font-sans);color:var(--sc-ink-900);-webkit-font-smoothing:antialiased}
+  .frame{width:700px;box-sizing:border-box;padding:20px 24px;background:var(--sc-bg);min-height:360px}
+  .hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+  .hdr .ttl{font-weight:700;font-size:13px}
+  .hdr .sub{font-size:11px;color:var(--sc-ink-500);font-family:var(--font-mono)}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .col-label{font-size:11px;color:var(--sc-ink-500);font-family:var(--font-mono);min-width:70px}
+
+  /* button system */
+  .btn{font-family:var(--font-sans);font-size:14px;font-weight:600;border-radius:var(--r-md);padding:10px 18px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;line-height:1;transition:all var(--d-base) var(--ease-out)}
+  .btn--primary{background:var(--sc-teal-600);color:#fff}
+  .btn--primary:hover{background:var(--sc-teal-700)}
+  .btn--orange{background:var(--sc-orange-500);color:#fff}
+  .btn--orange:hover{background:var(--sc-orange-600)}
+  .btn--ghost{background:transparent;color:var(--sc-teal-700);border:1px solid var(--sc-line)}
+  .btn--ghost:hover{background:var(--sc-teal-50);border-color:var(--sc-teal-300)}
+  .btn--quiet{background:transparent;color:var(--sc-ink-700);padding:8px 12px}
+  .btn--quiet:hover{background:var(--sc-line-soft)}
+  .btn--danger{background:#fff;color:var(--sc-danger);border:1px solid #f4ccc7}
+  .btn--danger:hover{background:var(--sc-danger-bg)}
+  .btn--sm{padding:6px 12px;font-size:13px;border-radius:var(--r-sm)}
+  .btn--lg{padding:14px 24px;font-size:16px}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn:focus-visible{outline:none;box-shadow:var(--sh-focus)}
+</style>
+</head><body><div class="frame">
+<div class="hdr"><span class="ttl">Form controls</span><span class="sub">input, select, checkbox, switch</span></div>
+<style>
+  .lbl{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--sc-ink-900)}
+  .hint{font-size:11px;color:var(--sc-ink-500);margin-top:4px}
+  .inp{width:100%;font-family:var(--font-sans);font-size:14px;padding:11px 14px;border:1px solid var(--sc-line);border-radius:var(--r-md);background:#fff;color:var(--sc-ink-900);box-sizing:border-box}
+  .inp:focus{outline:none;border-color:var(--sc-teal-600);box-shadow:var(--sh-focus)}
+  .inp::placeholder{color:var(--sc-ink-300)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .ck{display:inline-flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+  .ck input{width:18px;height:18px;accent-color:var(--sc-teal-600)}
+  .sw{position:relative;width:38px;height:22px;background:var(--sc-line);border-radius:999px;transition:background var(--d-base) var(--ease-out)}
+  .sw::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:var(--sh-1);transition:left var(--d-base) var(--ease-out)}
+  .sw.on{background:var(--sc-teal-600)}
+  .sw.on::after{left:18px}
+</style>
+<div class="grid2">
+  <div><label class="lbl">Email atau Username</label><input class="inp" placeholder="email@contoh.com / username"></div>
+  <div><label class="lbl">Tanggal</label><input class="inp" type="date" value="2026-05-14"></div>
+</div>
+<div style="margin-top:14px">
+  <label class="lbl">Nama Kelas <span style="color:var(--sc-danger);font-weight:400">*</span></label>
+  <input class="inp" placeholder="Pilih atau cari kelas..." style="border-color:var(--sc-teal-600);box-shadow:var(--sh-focus)">
+  <p class="hint">Pilih dari master kelas cabang Anda.</p>
+</div>
+<div style="margin-top:16px;display:flex;gap:24px;align-items:center">
+  <label class="ck"><input type="checkbox" checked> Sudah hafal ayat minggu ini</label>
+  <label class="ck"><input type="checkbox"> Perjanjian Baru</label>
+  <div style="display:flex;align-items:center;gap:8px;font-size:14px">Notifikasi <span class="sw on"></span></div>
+</div>
+</div></body></html>

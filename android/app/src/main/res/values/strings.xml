@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SC NIAS</string>
+    <string name="tagline">Study Center Nias</string>
+    <string name="login">Masuk</string>
+    <string name="register">Daftar</string>
+    <string name="logout">Keluar</string>
+    <string name="email">Email</string>
+    <string name="password">Kata sandi</string>
+    <string name="loading">Memuat…</string>
+</resources>

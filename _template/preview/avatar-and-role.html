@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=700, initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:transparent;font-family:var(--font-sans);color:var(--sc-ink-900);-webkit-font-smoothing:antialiased}
+  .frame{width:700px;box-sizing:border-box;padding:20px 24px;background:var(--sc-bg);min-height:180px}
+  .hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+  .hdr .ttl{font-weight:700;font-size:13px}
+  .hdr .sub{font-size:11px;color:var(--sc-ink-500);font-family:var(--font-mono)}
+</style>
+</head><body><div class="frame">
+<div class="hdr"><span class="ttl">Avatar &amp; role ring</span><span class="sub">orange ring · student / mentor / admin</span></div>
+<style>
+  .av-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .av{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:24px;background:var(--sc-teal-700);font-family:var(--font-sans)}
+  .av.ring-orange{box-shadow:0 0 0 4px var(--sc-orange-500), 0 0 0 5px #fff}
+  .av.ring-teal{box-shadow:0 0 0 4px var(--sc-teal-700), 0 0 0 5px #fff}
+  .av.ring-gold{box-shadow:0 0 0 4px var(--sc-yellow-500), 0 0 0 5px #fff}
+  .name{font-size:13px;font-weight:600;color:var(--sc-ink-900);margin-top:2px}
+  .role{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sc-ink-500)}
+</style>
+<div style="display:flex;gap:36px;justify-content:center;padding:10px 0 6px">
+  <div class="av-wrap"><div class="av ring-orange" style="background:var(--sc-teal-700)">SW</div><div class="name">Seri Waruwu</div><div class="role">Student · Kab. Nias</div></div>
+  <div class="av-wrap"><div class="av ring-teal" style="background:var(--sc-orange-500)">RH</div><div class="name">Ruth Halawa</div><div class="role">Mentor · Gunungsitoli</div></div>
+  <div class="av-wrap"><div class="av ring-gold" style="background:#003a2c">AD</div><div class="name">Andre Daeli</div><div class="role">Admin</div></div>
+</div>
+</div></body></html>

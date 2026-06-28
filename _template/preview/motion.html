@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=700, initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:transparent;font-family:var(--font-sans);color:var(--sc-ink-900);-webkit-font-smoothing:antialiased}
+  .frame{width:700px;box-sizing:border-box;padding:20px 24px;background:var(--sc-bg);min-height:220px}
+  .hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+  .hdr .ttl{font-weight:700;font-size:13px}
+  .hdr .sub{font-size:11px;color:var(--sc-ink-500);font-family:var(--font-mono)}
+</style>
+</head><body><div class="frame">
+<div class="hdr"><span class="ttl">Motion · easing &amp; duration</span><span class="sub">--ease-* / --d-*</span></div>
+<style>
+  @keyframes mv-out { from{transform:translateX(0)} to{transform:translateX(280px)} }
+  @keyframes mv-bc { from{transform:translateX(0)} to{transform:translateX(280px)} }
+  .pill{width:42px;height:42px;border-radius:999px}
+  .track{position:relative;height:42px}
+</style>
+<div style="display:flex;flex-direction:column;gap:10px">
+  <div style="display:flex;align-items:center;gap:14px">
+    <div style="width:120px;font-family:var(--font-mono);font-size:11px;color:var(--sc-ink-700)">--ease-out · 200ms</div>
+    <div class="track" style="flex:1"><div class="pill" style="background:var(--sc-teal-600);animation:mv-out 1.6s var(--ease-out) infinite alternate"></div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <div style="width:120px;font-family:var(--font-mono);font-size:11px;color:var(--sc-ink-700)">--ease-in-out · 200ms</div>
+    <div class="track" style="flex:1"><div class="pill" style="background:var(--sc-orange-500);animation:mv-out 1.6s var(--ease-in-out) infinite alternate"></div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <div style="width:120px;font-family:var(--font-mono);font-size:11px;color:var(--sc-ink-700)">--ease-bounce · 320ms</div>
+    <div class="track" style="flex:1"><div class="pill" style="background:var(--sc-yellow-500);animation:mv-bc 1.8s var(--ease-bounce) infinite alternate"></div></div>
+  </div>
+</div>
+<div style="margin-top:14px;font-size:11px;color:var(--sc-ink-500);line-height:1.5">
+  ease-out for entries · ease-in-out for state changes · bounce reserved for confirmation moments (Tersimpan toast, streak increment)
+</div></div></body></html>

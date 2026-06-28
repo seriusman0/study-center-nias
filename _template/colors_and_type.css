@@ -1,0 +1,181 @@
+/* =========================================================================
+   Study Center Nias — Design Tokens
+   Colors derived from the official Study Center logo (teal-green roof + book
+   spines in yellow and warm orange). Friendly for teens, trusted by parents.
+   ========================================================================= */
+
+/* Fonts — Grandeur is the brand display font (user-supplied); body is Plus
+   Jakarta Sans from Google Fonts. See README for source notes. */
+@font-face {
+  font-family: "Grandeur";
+  src: url("fonts/Grandeur.ttf") format("truetype");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
+
+:root {
+  /* ---------- BRAND CORE (sampled from logo.png) -------------------------- */
+  --sc-teal-900: #003a2c;   /* deepest, AA on white */
+  --sc-teal-800: #005a44;
+  --sc-teal-700: #007a5c;   /* roof / label box on logo                       */
+  --sc-teal-600: #0e8e6d;   /* primary action                                 */
+  --sc-teal-500: #2ba888;   /* hover lift / illustrations                     */
+  --sc-teal-300: #9dd9c5;
+  --sc-teal-100: #e1f3ec;   /* tonal surface                                  */
+  --sc-teal-50:  #f1f9f5;
+
+  --sc-orange-700: #b85a10;
+  --sc-orange-600: #d8731a;
+  --sc-orange-500: #f19121;  /* orange book spine                              */
+  --sc-orange-300: #f8c187;
+  --sc-orange-100: #fde6cf;
+
+  --sc-yellow-700: #97810f;
+  --sc-yellow-600: #c8a91a;
+  --sc-yellow-500: #e0c020;  /* yellow book spine                              */
+  --sc-yellow-300: #f0db77;
+  --sc-yellow-100: #fbf3c5;
+
+  /* ---------- NEUTRALS — warm, cream-leaning ------------------------------ */
+  --sc-ink-900: #15201c;     /* primary text                                   */
+  --sc-ink-700: #324840;     /* secondary text                                 */
+  --sc-ink-500: #61756c;     /* tertiary / metadata                            */
+  --sc-ink-300: #a3b3ac;     /* placeholder                                    */
+  --sc-line:    #d9e2dc;     /* hairline borders                               */
+  --sc-line-soft:#eef2ee;
+  --sc-surface: #ffffff;     /* card / sheet                                   */
+  --sc-bg:      #f7f6f1;     /* warm cream page bg (like name tag)             */
+  --sc-bg-alt:  #fbfaf6;     /* alt section bg                                 */
+  --sc-paper:   #f5efe2;     /* heritage / kartu nama paper                    */
+
+  /* ---------- SEMANTIC ---------------------------------------------------- */
+  --sc-success: #0e8e6d;     /* reuses primary teal                            */
+  --sc-success-bg: #e1f3ec;
+  --sc-warning: #d8731a;
+  --sc-warning-bg: #fde6cf;
+  --sc-danger:  #c1352b;
+  --sc-danger-bg: #fbe5e2;
+  --sc-info:    #1f6fb2;
+  --sc-info-bg: #e3f0fb;
+
+  /* ---------- ROLE BADGES ------------------------------------------------- */
+  --sc-role-student: #0e8e6d;   /* teal                                        */
+  --sc-role-mentor:  #d8731a;   /* orange                                      */
+  --sc-role-admin:   #003a2c;   /* deep teal                                   */
+  --sc-role-fulltimer: #c8a91a; /* gold                                        */
+
+  /* ---------- TYPE ROLES -------------------------------------------------- */
+  --font-sans: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Grandeur", "Plus Jakarta Sans", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+  /* type scale — Major Third (1.25) anchored on 16px body */
+  --fs-display: 48px;        /* hero/heading on landing                        */
+  --fs-h1: 36px;
+  --fs-h2: 28px;
+  --fs-h3: 22px;
+  --fs-h4: 18px;
+  --fs-body: 16px;
+  --fs-small: 14px;
+  --fs-xs: 12px;
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.30;
+  --lh-normal: 1.55;
+  --lh-loose: 1.72;
+
+  --tracking-tight: -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+  --tracking-caps: 0.08em;
+
+  /* ---------- SPACING (4-pt grid) ---------------------------------------- */
+  --sp-0:  0;
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-8:  32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+
+  /* ---------- RADII ------------------------------------------------------ */
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 12px;       /* default card                                         */
+  --r-lg: 16px;       /* large card / sheet                                   */
+  --r-xl: 24px;       /* hero / pictorial card                                */
+  --r-pill: 999px;
+
+  /* ---------- SHADOWS — soft, never blue ---------------------------------- */
+  --sh-1: 0 1px 2px rgba(21, 32, 28, 0.04), 0 1px 1px rgba(21, 32, 28, 0.03);
+  --sh-2: 0 2px 6px rgba(21, 32, 28, 0.05), 0 1px 2px rgba(21, 32, 28, 0.04);
+  --sh-3: 0 8px 24px rgba(21, 32, 28, 0.07), 0 2px 4px rgba(21, 32, 28, 0.04);
+  --sh-4: 0 18px 40px rgba(21, 32, 28, 0.10), 0 4px 8px rgba(21, 32, 28, 0.05);
+  --sh-inset: inset 0 0 0 1px rgba(21, 32, 28, 0.06);
+  --sh-focus: 0 0 0 3px rgba(14, 142, 109, 0.28);
+
+  /* ---------- MOTION ------------------------------------------------------ */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1); /* for confirmations only */
+  --d-fast: 120ms;
+  --d-base: 200ms;
+  --d-slow: 320ms;
+}
+
+/* =========================================================================
+   Semantic element styles — drop-in resets that give an out-of-the-box look
+   matching the Study Center brand. Apply via class on a root, e.g.
+   <body class="sc-doc"> or use individual classes.
+   ========================================================================= */
+
+.sc-doc {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  color: var(--sc-ink-900);
+  background: var(--sc-bg);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.sc-display, h1.sc-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-display);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-normal);
+  color: var(--sc-ink-900);
+}
+.sc-h1 { font-family: var(--font-sans); font-weight: 800; font-size: var(--fs-h1); line-height: var(--lh-tight); letter-spacing: var(--tracking-tight); }
+.sc-h2 { font-family: var(--font-sans); font-weight: 700; font-size: var(--fs-h2); line-height: var(--lh-snug); }
+.sc-h3 { font-family: var(--font-sans); font-weight: 700; font-size: var(--fs-h3); line-height: var(--lh-snug); }
+.sc-h4 { font-family: var(--font-sans); font-weight: 600; font-size: var(--fs-h4); line-height: var(--lh-snug); }
+.sc-body { font-family: var(--font-sans); font-weight: 400; font-size: var(--fs-body); line-height: var(--lh-normal); }
+.sc-small { font-size: var(--fs-small); line-height: var(--lh-normal); }
+.sc-meta { font-size: var(--fs-xs); color: var(--sc-ink-500); letter-spacing: var(--tracking-wide); }
+.sc-eyebrow {
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  font-weight: 700;
+  color: var(--sc-teal-700);
+}
+.sc-quote {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--fs-h3);
+  line-height: var(--lh-snug);
+  color: var(--sc-ink-700);
+  border-left: 3px solid var(--sc-orange-500);
+  padding-left: var(--sp-4);
+}
+code, .sc-code { font-family: var(--font-mono); font-size: 0.92em; background: var(--sc-line-soft); padding: 1px 6px; border-radius: 4px; }

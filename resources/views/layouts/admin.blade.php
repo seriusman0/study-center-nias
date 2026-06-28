@@ -9,6 +9,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        /* AdminLTE → sc-teal/sc-orange brand override */
+        :root {
+            --sc-teal-700: #007a5c; --sc-teal-600: #0e8e6d; --sc-orange-500: #f19121;
+        }
+        .btn-primary { background-color: var(--sc-teal-600) !important; border-color: var(--sc-teal-700) !important; }
+        .btn-primary:hover, .btn-primary:focus { background-color: var(--sc-teal-700) !important; border-color: var(--sc-teal-700) !important; }
+        .btn-success { background-color: var(--sc-teal-600) !important; border-color: var(--sc-teal-700) !important; }
+        .btn-warning { background-color: var(--sc-orange-500) !important; border-color: var(--sc-orange-500) !important; color: #fff !important; }
+        .btn-info { background-color: var(--sc-teal-700) !important; border-color: var(--sc-teal-700) !important; }
+        .text-primary { color: var(--sc-teal-700) !important; }
+        .bg-primary, .navbar-primary, .main-sidebar.sidebar-dark-primary { background-color: var(--sc-teal-700) !important; }
+        a { color: var(--sc-teal-600); }
+        a:hover { color: var(--sc-teal-700); }
+        .badge-info { background-color: var(--sc-teal-100, #e1f3ec) !important; color: var(--sc-teal-700) !important; }
+        .card-header { border-bottom: 1px solid #eef2ee; }
+        .nav-pills .nav-link.active { background-color: var(--sc-teal-600) !important; }
+        body { font-family: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif; }
+    </style>
     @stack('head')
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -27,6 +46,13 @@
                     <i class="fas fa-home mr-1"></i> Beranda
                 </a>
             </li>
+            @if(auth()->check() && auth()->user()->hasRole('mentor'))
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="{{ route('presensi.index') }}" class="nav-link text-muted" style="font-size:13px">
+                    <i class="fas fa-clipboard-check mr-1"></i> Presensi Siswa
+                </a>
+            </li>
+            @endif
         </ul>
         <ul class="navbar-nav ml-auto">
             <li class="nav-item dropdown">
@@ -34,6 +60,10 @@
                     <img src="{{ auth()->user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name).'&size=28&background=1e3a5f&color=fff' }}"
                          class="img-circle mr-2" style="width:24px;height:24px;object-fit:cover" alt="">
                     <span style="font-size:13px">{{ auth()->user()->name }}</span>
+                    @php $primaryRole = auth()->user()->roles->pluck('name')->first(); @endphp
+                    @if($primaryRole)
+                        <span class="badge badge-pill ml-1" style="background:#c9a84c;color:#1e3a5f;font-size:10px;text-transform:uppercase">{{ $primaryRole }}</span>
+                    @endif
                 </a>
                 <div class="dropdown-menu dropdown-menu-right">
                     <a href="{{ route('profile.show', auth()->user()->username) }}" class="dropdown-item">
@@ -110,6 +140,29 @@
                         <a href="{{ route('presensi.index') }}" class="nav-link {{ request()->routeIs('presensi.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-clipboard-check"></i><p>Presensi</p>
                         </a>
+                    </li>
+                    <li class="nav-item has-treeview {{ request()->routeIs('admin.jurnal.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('admin.jurnal.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-book-open"></i>
+                            <p>Jurnal<i class="right fas fa-angle-left"></i></p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item"><a href="{{ route('admin.jurnal.bible-schedules.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal.bible-schedules.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Porsi Alkitab</p></a></li>
+                            <li class="nav-item"><a href="{{ route('admin.jurnal.weekly-verses.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal.weekly-verses.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Hafal Ayat Mingguan</p></a></li>
+                            <li class="nav-item"><a href="{{ route('admin.jurnal.life-items.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal.life-items.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Jadwal Kehidupan</p></a></li>
+                            <li class="nav-item"><a href="{{ route('admin.jurnal.reports.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal.reports.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Laporan</p></a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item has-treeview {{ request()->routeIs('admin.mentor-presensi.*') || request()->routeIs('admin.kelas-master.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('admin.mentor-presensi.*') || request()->routeIs('admin.kelas-master.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-clock"></i>
+                            <p>Presensi Mentor<i class="right fas fa-angle-left"></i></p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item"><a href="{{ route('admin.mentor-presensi.index') }}" class="nav-link {{ request()->routeIs('admin.mentor-presensi.index') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Daftar Presensi</p></a></li>
+                            <li class="nav-item"><a href="{{ route('admin.mentor-presensi.reports') }}" class="nav-link {{ request()->routeIs('admin.mentor-presensi.reports') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Laporan</p></a></li>
+                            <li class="nav-item"><a href="{{ route('admin.kelas-master.index') }}" class="nav-link {{ request()->routeIs('admin.kelas-master.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Master Kelas</p></a></li>
+                        </ul>
                     </li>
                     @endif
 

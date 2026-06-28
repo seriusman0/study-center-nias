@@ -14,6 +14,8 @@ class DatabaseSeeder extends Seeder
             CabangSeeder::class,
             AdminUserSeeder::class,
             StudentCsvSeeder::class,
+            JurnalLifeItemSeeder::class,
+            KelasMasterSeeder::class,
         ]);
     }
 }

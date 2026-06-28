@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=700, initial-scale=1">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:transparent;font-family:var(--font-sans);color:var(--sc-ink-900);-webkit-font-smoothing:antialiased}
+  .frame{width:700px;box-sizing:border-box;padding:20px 24px;background:var(--sc-bg);min-height:200px}
+  .hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+  .hdr .ttl{font-weight:700;font-size:13px}
+  .hdr .sub{font-size:11px;color:var(--sc-ink-500);font-family:var(--font-mono)}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .col-label{font-size:11px;color:var(--sc-ink-500);font-family:var(--font-mono);min-width:70px}
+
+  /* button system */
+  .btn{font-family:var(--font-sans);font-size:14px;font-weight:600;border-radius:var(--r-md);padding:10px 18px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;line-height:1;transition:all var(--d-base) var(--ease-out)}
+  .btn--primary{background:var(--sc-teal-600);color:#fff}
+  .btn--primary:hover{background:var(--sc-teal-700)}
+  .btn--orange{background:var(--sc-orange-500);color:#fff}
+  .btn--orange:hover{background:var(--sc-orange-600)}
+  .btn--ghost{background:transparent;color:var(--sc-teal-700);border:1px solid var(--sc-line)}
+  .btn--ghost:hover{background:var(--sc-teal-50);border-color:var(--sc-teal-300)}
+  .btn--quiet{background:transparent;color:var(--sc-ink-700);padding:8px 12px}
+  .btn--quiet:hover{background:var(--sc-line-soft)}
+  .btn--danger{background:#fff;color:var(--sc-danger);border:1px solid #f4ccc7}
+  .btn--danger:hover{background:var(--sc-danger-bg)}
+  .btn--sm{padding:6px 12px;font-size:13px;border-radius:var(--r-sm)}
+  .btn--lg{padding:14px 24px;font-size:16px}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn:focus-visible{outline:none;box-shadow:var(--sh-focus)}
+</style>
+</head><body><div class="frame">
+<div class="hdr"><span class="ttl">Chips, tags &amp; badges</span><span class="sub">role · cabang · status</span></div>
+<style>
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:var(--r-pill);font-family:var(--font-sans);letter-spacing:.02em}
+  .tone-cabang{background:var(--sc-teal-100);color:var(--sc-teal-800)}
+  .tone-tag{background:var(--sc-line-soft);color:var(--sc-ink-700)}
+  .tone-success{background:var(--sc-success-bg);color:var(--sc-success)}
+  .tone-warning{background:var(--sc-warning-bg);color:var(--sc-warning)}
+  .tone-danger{background:var(--sc-danger-bg);color:var(--sc-danger)}
+  .role{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:var(--r-pill);color:#fff}
+  .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+</style>
+<div class="row" style="margin-bottom:14px">
+  <span class="chip tone-cabang">Gunungsitoli</span>
+  <span class="chip tone-cabang">Kab. Nias</span>
+  <span class="chip tone-cabang">Kab. Nias Selatan</span>
+  <span class="chip tone-tag">remaja</span>
+  <span class="chip tone-tag">pendidikan</span>
+  <span class="chip tone-tag">renungan</span>
+</div>
+<div class="row" style="margin-bottom:14px">
+  <span class="role" style="background:var(--sc-role-student)">student</span>
+  <span class="role" style="background:var(--sc-role-mentor)">mentor</span>
+  <span class="role" style="background:var(--sc-role-admin)">admin</span>
+  <span class="role" style="background:var(--sc-role-fulltimer);color:#15201c">fulltimer</span>
+</div>
+<div class="row">
+  <span class="chip tone-success"><span class="dot"></span>Tersimpan</span>
+  <span class="chip tone-warning"><span class="dot"></span>Menunggu verifikasi</span>
+  <span class="chip tone-danger"><span class="dot"></span>Gagal disimpan</span>
+</div>
+</div></body></html>

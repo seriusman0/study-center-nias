@@ -2,24 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =========================================================================
+   Study Center Nias — Design Tokens (logo-aligned palette)
+   ========================================================================= */
+
+@font-face {
+    font-family: "Grandeur";
+    src: url("/fonts/Grandeur.ttf") format("truetype");
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+}
+
 :root {
-    --navy: #1e3a5f;
-    --gold: #c9a84c;
-    --navy-light: #2d5282;
+    /* Brand core (sampled from logo) */
+    --sc-teal-900: #003a2c;
+    --sc-teal-800: #005a44;
+    --sc-teal-700: #007a5c;
+    --sc-teal-600: #0e8e6d;
+    --sc-teal-500: #2ba888;
+    --sc-teal-300: #9dd9c5;
+    --sc-teal-100: #e1f3ec;
+    --sc-teal-50:  #f1f9f5;
+
+    --sc-orange-700: #b85a10;
+    --sc-orange-600: #d8731a;
+    --sc-orange-500: #f19121;
+    --sc-orange-300: #f8c187;
+    --sc-orange-100: #fde6cf;
+
+    --sc-yellow-700: #97810f;
+    --sc-yellow-600: #c8a91a;
+    --sc-yellow-500: #e0c020;
+    --sc-yellow-300: #f0db77;
+    --sc-yellow-100: #fbf3c5;
+
+    /* Neutrals (warm) */
+    --sc-ink-900: #15201c;
+    --sc-ink-700: #324840;
+    --sc-ink-500: #61756c;
+    --sc-ink-300: #a3b3ac;
+    --sc-line:     #d9e2dc;
+    --sc-line-soft:#eef2ee;
+    --sc-surface:  #ffffff;
+    --sc-bg:       #f7f6f1;
+    --sc-bg-alt:   #fbfaf6;
+    --sc-paper:    #f5efe2;
+
+    /* Type */
+    --font-sans:    "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+    --font-display: "Grandeur", "Plus Jakarta Sans", Georgia, serif;
+    --font-mono:    "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+    /* Shadows (warm) */
+    --sh-1: 0 1px 2px rgba(21, 32, 28, 0.04), 0 1px 1px rgba(21, 32, 28, 0.03);
+    --sh-2: 0 2px 6px rgba(21, 32, 28, 0.05), 0 1px 2px rgba(21, 32, 28, 0.04);
+    --sh-3: 0 8px 24px rgba(21, 32, 28, 0.07), 0 2px 4px rgba(21, 32, 28, 0.04);
+    --sh-focus: 0 0 0 3px rgba(14, 142, 109, 0.28);
+
+    /* Legacy aliases — phasing out */
+    --navy: var(--sc-teal-700);
+    --gold: var(--sc-orange-500);
+    --navy-light: var(--sc-teal-600);
 }
 
 body {
     margin: 0;
-    font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-    background: #f8fafc;
-    color: #1a202c;
+    font-family: var(--font-sans);
+    background: var(--sc-bg);
+    color: var(--sc-ink-900);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
-.tiptap {
-    outline: none;
-}
-
-.tiptap p { margin: 0.75rem 0; }
-.tiptap h2 { font-size: 1.5rem; font-weight: 700; margin: 1rem 0 0.5rem; }
+/* Tiptap / rich-text */
+.tiptap { outline: none; }
+.tiptap p  { margin: 0.75rem 0; }
+.tiptap h2 { font-size: 1.5rem; font-weight: 700; margin: 1rem 0 0.5rem; color: var(--sc-ink-900); }
 .tiptap ul { list-style: disc; padding-left: 1.5rem; }
-.tiptap blockquote { border-left: 3px solid #1e3a5f; padding-left: 1rem; color: #6b7280; font-style: italic; }
+.tiptap blockquote {
+    border-left: 3px solid var(--sc-orange-500);
+    padding-left: 1rem;
+    color: var(--sc-ink-500);
+    font-style: italic;
+}
+
+/* Semantic helpers */
+.sc-display { font-family: var(--font-display); font-weight: 600; line-height: 1.15; }
+.sc-eyebrow {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--sc-teal-700);
+}
+.sc-focus:focus { outline: none; box-shadow: var(--sh-focus); }

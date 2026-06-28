@@ -52,14 +52,18 @@ class GuestAuthController extends Controller
     public function login(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'email' => ['required', 'email'],
+            'login'    => ['required_without:email', 'nullable', 'string'],
+            'email'    => ['required_without:login', 'nullable', 'string'],
             'password' => ['required', 'string'],
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        $credential = $validated['login'] ?? $validated['email'];
+        $user = User::where('email', $credential)
+            ->orWhere('username', $credential)
+            ->first();
 
         if (!$user || !Hash::check($validated['password'], $user->password)) {
-            return response()->json(['message' => 'Email atau password salah.'], 401);
+            return response()->json(['message' => 'Username/email atau password salah.'], 401);
         }
 
         if (!$user->is_active) {
@@ -82,6 +86,23 @@ class GuestAuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json($request->user()->load('roles', 'cabang', 'socialLinks'));
+        $user = $request->user()->load('roles', 'cabang', 'socialLinks');
+        $payload = $user->toArray();
+        $payload['role_names'] = $user->roles->pluck('name')->all();
+        return response()->json($payload);
+    }
+
+    public function refresh(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $current = $user->currentAccessToken();
+        if ($current) {
+            $current->delete();
+        }
+        $token = $user->createToken('auth_token')->plainTextToken;
+        return response()->json([
+            'user'  => $user->load('roles', 'cabang'),
+            'token' => $token,
+        ]);
     }
 }

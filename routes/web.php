@@ -14,6 +14,14 @@ use App\Http\Controllers\Web\Admin\RoleAdminController;
 use App\Http\Controllers\Web\Admin\PermissionAdminController;
 use App\Http\Controllers\Web\Admin\NameTagController;
 use App\Http\Controllers\Web\PresensiController;
+use App\Http\Controllers\Web\JurnalController;
+use App\Http\Controllers\Web\Admin\JurnalBibleScheduleController;
+use App\Http\Controllers\Web\Admin\JurnalWeeklyVerseController;
+use App\Http\Controllers\Web\Admin\JurnalLifeItemController;
+use App\Http\Controllers\Web\Admin\JurnalReportController;
+use App\Http\Controllers\Web\Admin\KelasMasterController;
+use App\Http\Controllers\Web\MentorPresensiController;
+use App\Http\Controllers\Web\Admin\MentorPresensiAdminController;
 
 // Public pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -110,4 +118,67 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/permissions', [PermissionAdminController::class, 'store'])->name('permissions.store');
     Route::put('/permissions/{permission}', [PermissionAdminController::class, 'update'])->name('permissions.update');
     Route::delete('/permissions/{permission}', [PermissionAdminController::class, 'destroy'])->name('permissions.delete');
+});
+
+// Jurnal (student-facing)
+Route::middleware(['auth', 'role:student'])->prefix('jurnal')->name('jurnal.')->group(function () {
+    Route::get('/', [JurnalController::class, 'index'])->name('index');
+    Route::post('/toggle', [JurnalController::class, 'toggle'])->name('toggle');
+});
+
+// Jurnal admin/mentor management
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal')->name('admin.jurnal.')->group(function () {
+    Route::get   ('bible-schedules',                     [JurnalBibleScheduleController::class, 'index'])->name('bible-schedules.index');
+    Route::post  ('bible-schedules',                     [JurnalBibleScheduleController::class, 'store'])->name('bible-schedules.store');
+    Route::put   ('bible-schedules/{bibleSchedule}',     [JurnalBibleScheduleController::class, 'update'])->name('bible-schedules.update');
+    Route::delete('bible-schedules/{bibleSchedule}',     [JurnalBibleScheduleController::class, 'destroy'])->name('bible-schedules.destroy');
+    Route::post  ('bible-schedules/bulk',                [JurnalBibleScheduleController::class, 'bulkStore'])->name('bible-schedules.bulk');
+
+    Route::get   ('weekly-verses',                       [JurnalWeeklyVerseController::class, 'index'])->name('weekly-verses.index');
+    Route::post  ('weekly-verses',                       [JurnalWeeklyVerseController::class, 'store'])->name('weekly-verses.store');
+    Route::put   ('weekly-verses/{weeklyVerse}',         [JurnalWeeklyVerseController::class, 'update'])->name('weekly-verses.update');
+    Route::delete('weekly-verses/{weeklyVerse}',         [JurnalWeeklyVerseController::class, 'destroy'])->name('weekly-verses.destroy');
+
+    Route::get   ('life-items',                          [JurnalLifeItemController::class, 'index'])->name('life-items.index');
+    Route::post  ('life-items',                          [JurnalLifeItemController::class, 'store'])->name('life-items.store');
+    Route::put   ('life-items/{item}',                   [JurnalLifeItemController::class, 'update'])->name('life-items.update');
+    Route::delete('life-items/{item}',                   [JurnalLifeItemController::class, 'destroy'])->name('life-items.destroy');
+    Route::get   ('students/{student}/life-items',       [JurnalLifeItemController::class, 'studentAssignments'])->name('life-items.student');
+    Route::post  ('students/{student}/life-items',       [JurnalLifeItemController::class, 'syncStudent'])->name('life-items.sync');
+
+    Route::get('reports',                                [JurnalReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/{student}',                      [JurnalReportController::class, 'show'])->name('reports.show');
+    Route::get('reports/{student}/export',               [JurnalReportController::class, 'export'])->name('reports.export');
+});
+
+// Mentor self-attendance
+Route::middleware(['auth', 'role:mentor'])->prefix('mentor/presensi')->name('mentor-presensi.')->group(function () {
+    Route::get('/',                [MentorPresensiController::class, 'index'])->name('index');
+    Route::get('/create',          [MentorPresensiController::class, 'create'])->name('create');
+    Route::post('/',               [MentorPresensiController::class, 'store'])->name('store');
+    Route::get('/{presensi}/edit', [MentorPresensiController::class, 'edit'])->name('edit');
+    Route::put('/{presensi}',      [MentorPresensiController::class, 'update'])->name('update');
+    Route::delete('/{presensi}',   [MentorPresensiController::class, 'destroy'])->name('destroy');
+    Route::get('/api/kelas',       [MentorPresensiController::class, 'searchKelas'])->name('kelas.search');
+});
+
+// Shared kelas master search (for /presensi/create form)
+Route::middleware(['auth', 'role:admin,mentor'])
+    ->get('/presensi/api/kelas-master', [MentorPresensiController::class, 'searchKelas'])
+    ->name('presensi.kelas-master.search');
+
+// Kelas master (admin+mentor full CRUD)
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get   ('/kelas-master',          [KelasMasterController::class, 'index'])->name('kelas-master.index');
+    Route::post  ('/kelas-master',          [KelasMasterController::class, 'store'])->name('kelas-master.store');
+    Route::put   ('/kelas-master/{kelas}',  [KelasMasterController::class, 'update'])->name('kelas-master.update');
+    Route::delete('/kelas-master/{kelas}',  [KelasMasterController::class, 'destroy'])->name('kelas-master.destroy');
+});
+
+// Admin: mentor-presensi list, reports, export
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/mentor-presensi')->name('admin.mentor-presensi.')->group(function () {
+    Route::get('/',             [MentorPresensiAdminController::class, 'index'])->name('index');
+    Route::get('/reports',      [MentorPresensiAdminController::class, 'reports'])->name('reports');
+    Route::get('/export/excel', [MentorPresensiAdminController::class, 'exportExcel'])->name('export.excel');
+    Route::get('/export/pdf',   [MentorPresensiAdminController::class, 'exportPdf'])->name('export.pdf');
 });
