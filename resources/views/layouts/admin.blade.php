@@ -133,6 +133,26 @@
                             <i class="nav-icon fas fa-id-card"></i><p>Generator Name Tag</p>
                         </a>
                     </li>
+                    <li class="nav-item has-treeview {{ request()->routeIs('admin.certificates.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('admin.certificates.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-certificate"></i>
+                            <p>Sertifikat<i class="right fas fa-angle-left"></i></p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ route('admin.certificates.templates.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.certificates.templates.*') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i><p>Template</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.certificates.issued.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.certificates.issued.*') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i><p>Terbitkan / Arsip</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                     @endif
 
                     @if(auth()->user()->hasRole(['admin','mentor']))

@@ -22,6 +22,8 @@ use App\Http\Controllers\Web\Admin\JurnalReportController;
 use App\Http\Controllers\Web\Admin\KelasMasterController;
 use App\Http\Controllers\Web\MentorPresensiController;
 use App\Http\Controllers\Web\Admin\MentorPresensiAdminController;
+use App\Http\Controllers\Web\Admin\CertificateTemplateController;
+use App\Http\Controllers\Web\Admin\IssuedCertificateController;
 
 // Public pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -181,4 +183,21 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/mentor-presensi'
     Route::get('/reports',      [MentorPresensiAdminController::class, 'reports'])->name('reports');
     Route::get('/export/excel', [MentorPresensiAdminController::class, 'exportExcel'])->name('export.excel');
     Route::get('/export/pdf',   [MentorPresensiAdminController::class, 'exportPdf'])->name('export.pdf');
+});
+
+// Certificate Generator (admin only)
+Route::middleware(['auth', 'role:admin'])->prefix('admin/certificates')->name('admin.certificates.')->group(function () {
+    Route::get   ('templates',                    [CertificateTemplateController::class, 'index'])         ->name('templates.index');
+    Route::get   ('templates/create',             [CertificateTemplateController::class, 'create'])        ->name('templates.create');
+    Route::post  ('templates',                    [CertificateTemplateController::class, 'store'])         ->name('templates.store');
+    Route::post  ('templates/preview',            [CertificateTemplateController::class, 'preview'])       ->name('templates.preview');
+    Route::get   ('templates/{template}/preview', [CertificateTemplateController::class, 'previewSaved'])  ->name('templates.preview.saved');
+    Route::get   ('templates/{template}/edit',    [CertificateTemplateController::class, 'edit'])          ->name('templates.edit');
+    Route::put   ('templates/{template}',         [CertificateTemplateController::class, 'update'])        ->name('templates.update');
+    Route::delete('templates/{template}',         [CertificateTemplateController::class, 'destroy'])       ->name('templates.destroy');
+
+    Route::get   ('issued',                    [IssuedCertificateController::class, 'index'])     ->name('issued.index');
+    Route::post  ('issued',                    [IssuedCertificateController::class, 'store'])     ->name('issued.store');
+    Route::get   ('issued/{cert}/download',    [IssuedCertificateController::class, 'download'])  ->name('issued.download');
+    Route::delete('issued/{cert}',             [IssuedCertificateController::class, 'destroy'])   ->name('issued.destroy');
 });
