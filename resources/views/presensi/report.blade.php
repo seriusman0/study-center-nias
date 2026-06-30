@@ -54,7 +54,7 @@
         <div class="small-box bg-success" style="min-height:0">
             <div class="inner py-2 px-3">
                 <h5 class="mb-0">{{ $summary['hadir'] }}</h5>
-                <p class="mb-0" style="font-size:12px">Hadir</p>
+                <p class="mb-0" style="font-size:12px">Siswa Hadir</p>
             </div>
         </div>
     </div>
@@ -62,7 +62,7 @@
         <div class="small-box bg-warning" style="min-height:0">
             <div class="inner py-2 px-3">
                 <h5 class="mb-0">{{ $summary['izin'] }}</h5>
-                <p class="mb-0" style="font-size:12px">Izin</p>
+                <p class="mb-0" style="font-size:12px">Siswa Izin</p>
             </div>
         </div>
     </div>
@@ -70,7 +70,7 @@
         <div class="small-box bg-info" style="min-height:0">
             <div class="inner py-2 px-3">
                 <h5 class="mb-0">{{ $summary['sakit'] }}</h5>
-                <p class="mb-0" style="font-size:12px">Sakit</p>
+                <p class="mb-0" style="font-size:12px">Siswa Sakit</p>
             </div>
         </div>
     </div>
@@ -78,7 +78,7 @@
         <div class="small-box bg-danger" style="min-height:0">
             <div class="inner py-2 px-3">
                 <h5 class="mb-0">{{ $summary['alpha'] }}</h5>
-                <p class="mb-0" style="font-size:12px">Alpha</p>
+                <p class="mb-0" style="font-size:12px">Siswa Alpha</p>
             </div>
         </div>
     </div>
@@ -86,7 +86,7 @@
         <div class="small-box bg-dark" style="min-height:0">
             <div class="inner py-2 px-3">
                 <h5 class="mb-0">{{ $summary['total_siswa'] }}</h5>
-                <p class="mb-0" style="font-size:12px">Total Siswa</p>
+                <p class="mb-0" style="font-size:12px">Total Siswa Unik</p>
             </div>
         </div>
     </div>

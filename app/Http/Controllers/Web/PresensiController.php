@@ -94,9 +94,14 @@ class PresensiController extends Controller
 
         $statusCounts = DB::table('presensi_students as ps')
             ->whereIn('ps.presensi_id', $presensiIds)
-            ->select('ps.status', DB::raw('COUNT(*) as total'))
+            ->select('ps.status', DB::raw('COUNT(DISTINCT ps.user_id) as total'))
             ->groupBy('ps.status')
             ->pluck('total', 'status');
+
+        $totalSiswaDistinct = DB::table('presensi_students as ps')
+            ->whereIn('ps.presensi_id', $presensiIds)
+            ->distinct()
+            ->count('ps.user_id');
 
         $summary = [
             'total_kelas' => (clone $presensiQuery)->count(),
@@ -104,7 +109,7 @@ class PresensiController extends Controller
             'izin'        => $statusCounts->get('izin', 0),
             'sakit'       => $statusCounts->get('sakit', 0),
             'alpha'       => $statusCounts->get('alpha', 0),
-            'total_siswa' => $statusCounts->sum(),
+            'total_siswa' => $totalSiswaDistinct,
         ];
 
         $mentors = $this->mentorList();
