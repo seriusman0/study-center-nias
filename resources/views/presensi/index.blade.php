@@ -33,9 +33,14 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <strong>{{ $presensi->total() }} catatan presensi</strong>
+        <div>
+        <a href="{{ route('presensi.report', request()->query()) }}" class="btn btn-sm btn-outline-info mr-1">
+            <i class="fas fa-chart-bar mr-1"></i> Laporan Lengkap
+        </a>
         <a href="{{ route('presensi.create') }}" class="btn btn-sm btn-primary">
             <i class="fas fa-plus mr-1"></i> Catat Presensi
         </a>
+        </div>
     </div>
     <div class="card-body p-0">
         <table class="table table-sm table-hover mb-0">

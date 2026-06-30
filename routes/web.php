@@ -80,6 +80,7 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('presensi')->name('pres
     Route::get('/create', [PresensiController::class, 'create'])->name('create');
     Route::post('/', [PresensiController::class, 'store'])->name('store');
     Route::get('/api/students', [PresensiController::class, 'searchStudents'])->name('students.search');
+    Route::get('/report', [PresensiController::class, 'report'])->name('report');
     Route::get('/{presensi}', [PresensiController::class, 'show'])->name('show');
     Route::get('/{presensi}/edit', [PresensiController::class, 'edit'])->name('edit');
     Route::put('/{presensi}', [PresensiController::class, 'update'])->name('update');

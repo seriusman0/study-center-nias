@@ -52,6 +52,67 @@ class PresensiController extends Controller
         return view('presensi.index', compact('presensi', 'mentors', 'cabangs'));
     }
 
+    public function report(Request $request)
+    {
+        $user = $request->user();
+
+        $presensiQuery = Presensi::query();
+
+        if (! $user->isAdmin()) {
+            $presensiQuery->where('mentor_id', $user->id);
+        }
+        if ($request->filled('mentor_id')) {
+            $presensiQuery->where('mentor_id', $request->mentor_id);
+        }
+        if ($request->filled('cabang_id')) {
+            $presensiQuery->where('cabang_id', $request->cabang_id);
+        }
+        if ($request->filled('tanggal_dari')) {
+            $presensiQuery->whereDate('tanggal', '>=', $request->tanggal_dari);
+        }
+        if ($request->filled('tanggal_sampai')) {
+            $presensiQuery->whereDate('tanggal', '<=', $request->tanggal_sampai);
+        }
+        if ($request->filled('q')) {
+            $term = '%' . $request->q . '%';
+            $presensiQuery->where(fn($w) => $w->where('kelas', 'like', $term)
+                ->orWhere('materi', 'like', $term));
+        }
+
+        $presensiIds = (clone $presensiQuery)->pluck('id');
+
+        $rows = DB::table('presensi_students as ps')
+            ->join('users as u',    'u.id', '=', 'ps.user_id')
+            ->join('presensi as p', 'p.id', '=', 'ps.presensi_id')
+            ->leftJoin('users as m', 'm.id', '=', 'p.mentor_id')
+            ->whereIn('ps.presensi_id', $presensiIds)
+            ->select('u.name as siswa_name', 'p.kelas', 'p.tanggal', 'ps.status', 'm.name as mentor_name')
+            ->orderBy('p.tanggal', 'desc')
+            ->orderBy('u.name')
+            ->paginate(50)
+            ->withQueryString();
+
+        $statusCounts = DB::table('presensi_students as ps')
+            ->whereIn('ps.presensi_id', $presensiIds)
+            ->select('ps.status', DB::raw('COUNT(*) as total'))
+            ->groupBy('ps.status')
+            ->pluck('total', 'status');
+
+        $summary = [
+            'total_kelas' => (clone $presensiQuery)->count(),
+            'hadir'       => $statusCounts->get('hadir', 0),
+            'izin'        => $statusCounts->get('izin', 0),
+            'sakit'       => $statusCounts->get('sakit', 0),
+            'alpha'       => $statusCounts->get('alpha', 0),
+            'total_siswa' => $statusCounts->sum(),
+        ];
+
+        $mentors = $this->mentorList();
+        $cabangs = Cabang::orderBy('nama')->get();
+
+        return view('presensi.report', compact('rows', 'summary', 'mentors', 'cabangs'));
+    }
+
     public function create(Request $request)
     {
         $mentors = $this->mentorList();
