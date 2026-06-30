@@ -52,7 +52,10 @@
                     <th>Kelas</th>
                     <th>Cabang</th>
                     <th>Materi</th>
-                    <th>Siswa</th>
+                    <th class="text-center">Hadir</th>
+                    <th class="text-center">Izin</th>
+                    <th class="text-center">Sakit</th>
+                    <th class="text-center">Alpha</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -65,7 +68,10 @@
                     <td style="font-size:13px">{{ $p->kelas }}</td>
                     <td style="font-size:13px">{{ $p->cabang?->nama ?? '-' }}</td>
                     <td style="font-size:13px;max-width:240px" class="text-truncate" title="{{ $p->materi }}">{{ $p->materi }}</td>
-                    <td><span class="badge badge-info">{{ $p->students_count }}</span></td>
+                    <td class="text-center"><span class="badge badge-success">{{ $p->hadir_count }}</span></td>
+                    <td class="text-center"><span class="badge badge-warning">{{ $p->izin_count }}</span></td>
+                    <td class="text-center"><span class="badge badge-info">{{ $p->sakit_count }}</span></td>
+                    <td class="text-center"><span class="badge badge-danger">{{ $p->alpha_count }}</span></td>
                     <td>
                         <a href="{{ route('presensi.show', $p->id) }}" class="btn btn-xs btn-info">Lihat</a>
                         <a href="{{ route('presensi.edit', $p->id) }}" class="btn btn-xs btn-warning">Edit</a>

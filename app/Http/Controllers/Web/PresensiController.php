@@ -21,7 +21,12 @@ class PresensiController extends Controller
         $user = $request->user();
 
         $query = Presensi::with(['mentor:id,name', 'cabang:id,nama'])
-            ->withCount('students');
+            ->withCount([
+                'students as hadir_count' => fn($q) => $q->where('presensi_students.status', 'hadir'),
+                'students as izin_count'  => fn($q) => $q->where('presensi_students.status', 'izin'),
+                'students as sakit_count' => fn($q) => $q->where('presensi_students.status', 'sakit'),
+                'students as alpha_count' => fn($q) => $q->where('presensi_students.status', 'alpha'),
+            ]);
 
         if (! $user->isAdmin()) {
             $query->where('mentor_id', $user->id);
