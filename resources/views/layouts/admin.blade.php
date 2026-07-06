@@ -173,6 +173,18 @@
                             <li class="nav-item"><a href="{{ route('admin.jurnal.reports.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal.reports.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Laporan</p></a></li>
                         </ul>
                     </li>
+                    <li class="nav-item has-treeview {{ request()->routeIs('admin.jurnal-college.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('admin.jurnal-college.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-university"></i>
+                            <p>Jurnal College<i class="right fas fa-angle-left"></i></p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item"><a href="{{ route('admin.jurnal-college.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal-college.index') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Progress</p></a></li>
+                            <li class="nav-item"><a href="{{ route('admin.jurnal-college.laporan') }}" class="nav-link {{ request()->routeIs('admin.jurnal-college.laporan') || request()->routeIs('admin.jurnal-college.show') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Laporan</p></a></li>
+                            <li class="nav-item"><a href="{{ route('admin.jurnal-college.bible') }}" class="nav-link {{ request()->routeIs('admin.jurnal-college.bible*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Jadwal Alkitab</p></a></li>
+                            <li class="nav-item"><a href="{{ route('admin.jurnal-college.items.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal-college.items.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Item Jurnal</p></a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item has-treeview {{ request()->routeIs('admin.mentor-presensi.*') || request()->routeIs('admin.kelas-master.*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->routeIs('admin.mentor-presensi.*') || request()->routeIs('admin.kelas-master.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-clock"></i>

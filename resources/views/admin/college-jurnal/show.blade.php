@@ -2,7 +2,7 @@
 @section('page-title', 'Laporan Jurnal: ' . $collegeUser->name)
 
 @section('content')
-<a href="{{ route('admin.college-jurnal.index') }}" class="btn btn-sm btn-link mb-2"><i class="fas fa-arrow-left"></i> Kembali</a>
+<a href="{{ route('admin.jurnal-college.laporan') }}" class="btn btn-sm btn-link mb-2"><i class="fas fa-arrow-left"></i> Kembali</a>
 
 <div class="card mb-3">
     <div class="card-body d-flex flex-wrap align-items-center">
@@ -25,7 +25,7 @@
             <label class="mr-2 mb-0 small">Sampai</label>
             <input type="date" name="to" value="{{ $to->toDateString() }}" class="form-control form-control-sm mr-2">
             <button class="btn btn-sm btn-outline-primary mr-2">Tampilkan</button>
-            <a href="{{ route('admin.college-jurnal.export', ['user' => $collegeUser->id, 'from' => $from->toDateString(), 'to' => $to->toDateString()]) }}"
+            <a href="{{ route('admin.jurnal-college.export', ['user' => $collegeUser->id, 'from' => $from->toDateString(), 'to' => $to->toDateString()]) }}"
                class="btn btn-sm btn-success"><i class="fas fa-file-csv"></i> Export CSV</a>
         </form>
     </div>

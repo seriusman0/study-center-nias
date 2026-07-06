@@ -11,10 +11,11 @@ class CollegeBibleController extends Controller
 {
     public function index(Request $request)
     {
-        $config = CollegeConfig::current();
-        $items  = CollegeBibleItem::orderBy('day_no')->paginate(50)->withQueryString();
+        $config   = CollegeConfig::current();
+        $items    = CollegeBibleItem::orderBy('day_no')->paginate(50)->withQueryString();
+        $allItems = CollegeBibleItem::orderBy('day_no')->get(['day_no', 'pl_text', 'pb_text']);
 
-        return view('admin.college-jurnal.bible-schedule', compact('config', 'items'));
+        return view('admin.college-jurnal.bible-schedule', compact('config', 'items', 'allItems'));
     }
 
     public function update(Request $request, CollegeBibleItem $item)

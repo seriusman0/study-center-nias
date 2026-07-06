@@ -13,7 +13,7 @@
         <div class="card">
             <div class="card-header"><h3 class="card-title">Tambah Item</h3></div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.college.items.store') }}">
+                <form method="POST" action="{{ route('admin.jurnal-college.items.store') }}">
                     @csrf
                     <div class="form-group">
                         <label class="small font-weight-bold">Kategori</label>
@@ -80,7 +80,7 @@
                             <td>
                                 <button class="btn btn-xs btn-outline-primary"
                                     data-toggle="modal" data-target="#editModal{{ $item->id }}">Edit</button>
-                                <form method="POST" action="{{ route('admin.college.items.destroy', $item) }}"
+                                <form method="POST" action="{{ route('admin.jurnal-college.items.destroy', $item) }}"
                                     class="d-inline" onsubmit="return confirm('Hapus item ini?')">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-xs btn-outline-danger">Hapus</button>
@@ -92,7 +92,7 @@
                         <div class="modal fade" id="editModal{{ $item->id }}" tabindex="-1">
                             <div class="modal-dialog">
                                 <div class="modal-content">
-                                    <form method="POST" action="{{ route('admin.college.items.update', $item) }}">
+                                    <form method="POST" action="{{ route('admin.jurnal-college.items.update', $item) }}">
                                         @csrf @method('PUT')
                                         <div class="modal-header">
                                             <h5 class="modal-title">Edit Item</h5>

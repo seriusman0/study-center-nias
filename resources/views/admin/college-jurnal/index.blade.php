@@ -37,10 +37,10 @@
                     <td><code>{{ $user->username }}</code></td>
                     <td>{{ $user->collegeProfile?->institution_name ?? '—' }}</td>
                     <td>
-                        <a href="{{ route('admin.college-jurnal.show', $user) }}" class="btn btn-xs btn-info">
+                        <a href="{{ route('admin.jurnal-college.show', $user) }}" class="btn btn-xs btn-info">
                             <i class="fas fa-chart-bar"></i> Laporan
                         </a>
-                        <a href="{{ route('admin.college-jurnal.export', $user) }}" class="btn btn-xs btn-success">
+                        <a href="{{ route('admin.jurnal-college.export', $user) }}" class="btn btn-xs btn-success">
                             <i class="fas fa-download"></i> CSV
                         </a>
                     </td>
