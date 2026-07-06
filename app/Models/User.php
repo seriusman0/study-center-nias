@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\JurnalEntry;
+use App\Models\JurnalLifeCheck;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -75,6 +77,26 @@ class User extends Authenticatable
     public function adminProfile()
     {
         return $this->hasOne(AdminProfile::class);
+    }
+
+    public function collegeProfile()
+    {
+        return $this->hasOne(CollegeProfile::class);
+    }
+
+    public function scholarshipJournals()
+    {
+        return $this->hasMany(ScholarshipJournal::class);
+    }
+
+    public function jurnalEntries()
+    {
+        return $this->hasMany(JurnalEntry::class, 'student_id');
+    }
+
+    public function jurnalLifeChecks()
+    {
+        return $this->hasMany(JurnalLifeCheck::class, 'student_id');
     }
 
     public function hasRole(string|array $roles): bool

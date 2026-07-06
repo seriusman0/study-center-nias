@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
             StudentCsvSeeder::class,
             JurnalLifeItemSeeder::class,
             KelasMasterSeeder::class,
+            ScholarshipSeeder::class,
+            CollegeBibleItemSeeder::class,
         ]);
     }
 }

@@ -13,7 +13,7 @@ class JurnalLifeItem extends Model
     protected $table = 'jurnal_life_items';
 
     protected $fillable = [
-        'kategori', 'label', 'is_default', 'student_id',
+        'kategori', 'response_type', 'label', 'is_default', 'student_id',
         'is_active', 'created_by',
     ];
 

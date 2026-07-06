@@ -202,3 +202,49 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin/certificates')->name('a
     Route::get   ('issued/{cert}/download',    [IssuedCertificateController::class, 'download'])  ->name('issued.download');
     Route::delete('issued/{cert}',             [IssuedCertificateController::class, 'destroy'])   ->name('issued.destroy');
 });
+
+// Scholarship Journal (student)
+use App\Http\Controllers\Web\ScholarshipJournalController;
+Route::middleware(['auth', 'role:student'])->prefix('jurnal-mahasiswa')->name('scholarship-journal.')->group(function () {
+    Route::get('/',          [ScholarshipJournalController::class, 'index'])->name('index');
+    Route::get('/buat',      [ScholarshipJournalController::class, 'create'])->name('create');
+    Route::post('/',         [ScholarshipJournalController::class, 'store'])->name('store');
+    Route::get('/{id}',      [ScholarshipJournalController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [ScholarshipJournalController::class, 'edit'])->name('edit');
+    Route::put('/{id}',      [ScholarshipJournalController::class, 'update'])->name('update');
+});
+
+// College: jurnal harian (daily check-in) + review dashboard
+use App\Http\Controllers\Web\College\JournalReviewController;
+use App\Http\Controllers\Web\College\CollegeJurnalController;
+Route::middleware(['auth', 'role:college,admin'])->prefix('college')->name('college.')->group(function () {
+    Route::get('/dashboard',              [JournalReviewController::class, 'dashboard'])->name('dashboard');
+    Route::get('/jurnal/{id}',            [JournalReviewController::class, 'show'])->name('journal.show');
+    Route::post('/jurnal/{id}/review',    [JournalReviewController::class, 'review'])->name('journal.review');
+});
+
+Route::middleware(['auth', 'role:college'])->prefix('jurnal-college')->name('college-jurnal.')->group(function () {
+    Route::get('/',        [CollegeJurnalController::class, 'index'])->name('index');
+    Route::post('/toggle', [CollegeJurnalController::class, 'toggle'])->name('toggle');
+});
+
+// Admin: Jurnal College (progress, laporan, alkitab, items)
+use App\Http\Controllers\Web\Admin\CollegeJurnalAdminController;
+use App\Http\Controllers\Web\Admin\CollegeBibleController;
+use App\Http\Controllers\Web\Admin\CollegeItemController;
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-college')->name('admin.jurnal-college.')->group(function () {
+    Route::get('/',                         [CollegeJurnalAdminController::class, 'dashboard'])->name('index');
+    Route::get('/laporan',                  [CollegeJurnalAdminController::class, 'index'])->name('laporan');
+    Route::get('/laporan/{user}',           [CollegeJurnalAdminController::class, 'show'])->name('show');
+    Route::get('/laporan/{user}/export',    [CollegeJurnalAdminController::class, 'export'])->name('export');
+
+    Route::get('/bible',                    [CollegeBibleController::class, 'index'])->name('bible');
+    Route::put('/bible/anchor',             [CollegeBibleController::class, 'updateAnchor'])->name('bible.anchor');
+    Route::post('/bible/import',            [CollegeBibleController::class, 'importJson'])->name('bible.import');
+    Route::put('/bible/{item}',             [CollegeBibleController::class, 'update'])->name('bible.update');
+
+    Route::get('/items',                    [CollegeItemController::class, 'index'])->name('items.index');
+    Route::post('/items',                   [CollegeItemController::class, 'store'])->name('items.store');
+    Route::put('/items/{item}',             [CollegeItemController::class, 'update'])->name('items.update');
+    Route::delete('/items/{item}',          [CollegeItemController::class, 'destroy'])->name('items.destroy');
+});

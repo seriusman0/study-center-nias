@@ -43,6 +43,12 @@ class AuthWebController extends Controller
         }
 
         $request->session()->regenerate();
+
+        $user = Auth::user();
+        if ($user->hasRole('college')) {
+            return redirect()->intended(route('college-jurnal.index'))->with('success', 'Selamat datang kembali!');
+        }
+
         return redirect()->intended('/')->with('success', 'Selamat datang kembali!');
     }
 
