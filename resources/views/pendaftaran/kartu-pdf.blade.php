@@ -3,90 +3,123 @@
 <head>
 <meta charset="UTF-8">
 <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page { margin: 0; }
+    html, body { margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
     body {
-        font-family: Arial, sans-serif;
-        font-size: 11px;
+        font-family: "DejaVu Sans", Arial, sans-serif;
+        font-size: 11pt;
         color: #1a1a1a;
         background: #fff;
-        width: 595px;
-        height: 420px;
+        width: 595pt;
+        height: 420pt;
         overflow: hidden;
+        margin: 0;
+        padding: 0;
     }
     .card {
-        width: 595px;
-        height: 420px;
-        border: 2px solid #0e8e6d;
+        width: 100%;
+        height: 100%;
+        border: 2pt solid #0e8e6d;
         display: block;
+        overflow: hidden;
     }
+
+    /* ── HEADER ── */
     .header {
         background-color: #0e8e6d;
         color: #ffffff;
-        padding: 10px 20px;
-        display: block;
-        height: 56px;
-    }
-    .header-inner {
+        padding: 0 20pt;
+        height: 60pt;
         display: table;
         width: 100%;
     }
     .header-left {
         display: table-cell;
         vertical-align: middle;
+        width: 68%;
+    }
+    .header-logo {
+        height: 34pt;
+        vertical-align: middle;
+        margin-right: 10pt;
+    }
+    .header-title {
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .header-title h1 {
+        font-size: 13pt;
+        font-weight: bold;
+        letter-spacing: 0.5pt;
+        margin: 0;
+        line-height: 1.2;
+    }
+    .header-title p {
+        font-size: 8pt;
+        opacity: 0.82;
+        margin: 2pt 0 0;
     }
     .header-right {
         display: table-cell;
         vertical-align: middle;
         text-align: right;
+        width: 32%;
     }
-    .header h1 {
-        font-size: 15px;
-        font-weight: bold;
-        letter-spacing: 0.5px;
-        margin: 0;
-    }
-    .header p {
-        font-size: 9px;
-        opacity: 0.85;
-        margin: 2px 0 0;
-    }
-    .badge {
+    .header-badge {
         display: inline-block;
-        background: rgba(255,255,255,0.2);
-        border: 1px solid rgba(255,255,255,0.5);
+        background: rgba(255,255,255,0.18);
+        border: 1pt solid rgba(255,255,255,0.5);
         color: #fff;
-        font-size: 9px;
+        font-size: 8pt;
         font-weight: bold;
-        padding: 3px 10px;
-        border-radius: 20px;
-        letter-spacing: 1px;
+        padding: 5pt 12pt;
+        border-radius: 20pt;
+        letter-spacing: 1pt;
         text-transform: uppercase;
     }
+
+    /* ── BODY ── */
     .body {
-        padding: 14px 20px;
+        padding: 12pt 20pt;
         display: table;
         width: 100%;
-        height: 300px;
+        height: 296pt;
     }
     .foto-col {
         display: table-cell;
-        width: 110px;
+        width: 116pt;
         vertical-align: top;
-        padding-right: 16px;
+        padding-right: 16pt;
     }
-    .foto-col img {
-        width: 100px;
-        height: 130px;
+    .foto-col img.foto {
+        width: 100pt;
+        height: 133pt;
         object-fit: cover;
-        border: 2px solid #0e8e6d;
-        border-radius: 4px;
+        border: 2pt solid #0e8e6d;
+        border-radius: 4pt;
         display: block;
+    }
+    .foto-placeholder {
+        width: 100pt;
+        height: 133pt;
+        border: 2pt solid #0e8e6d;
+        border-radius: 4pt;
+        background: #f3f4f6;
+        display: table;
+    }
+    .foto-placeholder-inner {
+        display: table-cell;
+        vertical-align: middle;
+        text-align: center;
+        font-size: 8pt;
+        color: #aaa;
     }
     .foto-label {
         text-align: center;
-        font-size: 8px;
-        color: #666;
-        margin-top: 4px;
+        font-size: 7pt;
+        color: #888;
+        margin-top: 5pt;
     }
     .data-col {
         display: table-cell;
@@ -97,32 +130,37 @@
         border-collapse: collapse;
     }
     .data-col td {
-        padding: 3px 4px;
+        padding: 3pt 4pt;
         vertical-align: top;
-        font-size: 10.5px;
+        font-size: 10pt;
     }
     .data-col td.label {
         color: #555;
-        width: 130px;
+        width: 130pt;
         white-space: nowrap;
     }
     .data-col td.colon {
-        width: 10px;
-        color: #555;
+        width: 10pt;
+        color: #bbb;
     }
     .data-col td.value {
         font-weight: bold;
-        color: #1a1a1a;
+        color: #111;
     }
+
+    /* ── DIVIDER ── */
     .divider {
         border: none;
-        border-top: 1px solid #d4ede6;
-        margin: 8px 20px;
+        border-top: 1pt solid #c8e8df;
+        margin: 0 20pt;
     }
+
+    /* ── FOOTER ── */
     .footer {
-        padding: 8px 20px 10px;
+        padding: 8pt 20pt;
         display: table;
         width: 100%;
+        height: 59pt;
     }
     .footer-left {
         display: table-cell;
@@ -132,71 +170,109 @@
         display: table-cell;
         vertical-align: middle;
         text-align: right;
+        width: 90pt;
     }
     .status-badge {
         display: inline-block;
-        background: #fff7e0;
-        border: 1.5px solid #f59e0b;
-        color: #b45309;
-        font-size: 9px;
+        font-size: 8pt;
         font-weight: bold;
-        padding: 3px 10px;
-        border-radius: 4px;
+        padding: 3pt 10pt;
+        border-radius: 4pt;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.5pt;
     }
+    .status-pending   { background: #fff7e0; border: 1pt solid #f59e0b; color: #b45309; }
+    .status-diterima  { background: #ecfdf5; border: 1pt solid #10b981; color: #065f46; }
+    .status-ditolak   { background: #fef2f2; border: 1pt solid #ef4444; color: #991b1b; }
+    .status-perbaikan { background: #fff7e0; border: 1pt solid #f59e0b; color: #b45309; }
     .footer-text {
-        font-size: 8.5px;
-        color: #555;
+        font-size: 8pt;
+        color: #444;
+        margin-top: 3pt;
     }
-    .footer-url {
-        font-size: 8px;
-        color: #0e8e6d;
-        font-family: "Courier New", monospace;
-        margin-top: 2px;
-    }
-    .reg-date {
-        font-size: 9px;
+    .footer-formal {
+        font-size: 7pt;
         color: #777;
+        margin-top: 2pt;
+        font-style: italic;
     }
-    .watermark {
-        font-size: 7.5px;
-        color: #aaa;
-        margin-top: 2px;
+    .qr-wrap {
+        width: 70pt;
+        height: 70pt;
+        display: block;
+        margin-left: auto;
+        overflow: hidden;
+    }
+    .qr-wrap svg {
+        width: 70pt !important;
+        height: 70pt !important;
+        display: block;
+    }
+    .qr-label {
+        font-size: 7pt;
+        color: #888;
+        text-align: center;
+        margin-top: 2pt;
     }
 </style>
 </head>
 <body>
 @php
     $profile = $user->studentProfile;
+
+    // Foto pendaftar → base64
     $fotoBase64 = null;
     if ($profile->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($profile->photo)) {
-        $fotoBytes   = \Illuminate\Support\Facades\Storage::disk('public')->get($profile->photo);
-        $mime        = mime_content_type(\Illuminate\Support\Facades\Storage::disk('public')->path($profile->photo));
-        $fotoBase64  = 'data:' . $mime . ';base64,' . base64_encode($fotoBytes);
+        $fotoBytes  = \Illuminate\Support\Facades\Storage::disk('public')->get($profile->photo);
+        $mime       = mime_content_type(\Illuminate\Support\Facades\Storage::disk('public')->path($profile->photo));
+        $fotoBase64 = 'data:' . $mime . ';base64,' . base64_encode($fotoBytes);
     }
+
+    // Logo institusi → base64
+    $logoPath   = public_path('assets/img/logo.png');
+    $logoBase64 = file_exists($logoPath)
+        ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath))
+        : null;
+
+    // QR Code → inline SVG, strip XML declaration agar dompdf tidak crash
+    $cekUrl = url('/cek-pendaftaran/' . $user->username);
+    $qrSvg  = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(80)->margin(1)->generate($cekUrl);
+    $qrSvg  = preg_replace('/^<\?xml[^>]+\?>\s*/i', '', $qrSvg);
+    $qrSvg  = preg_replace('/<!DOCTYPE[^>]+>\s*/i', '', $qrSvg);
+
+    // Status
     $statusLabel = match($profile->status ?? 'pending') {
         'diterima'  => 'DITERIMA',
         'ditolak'   => 'DITOLAK',
         'perbaikan' => 'PERLU PERBAIKAN',
         default     => 'MENUNGGU VALIDASI',
     };
-    $cekUrl = url('/cek-pendaftaran/' . $user->username);
+    $statusClass = match($profile->status ?? 'pending') {
+        'diterima'  => 'status-diterima',
+        'ditolak'   => 'status-ditolak',
+        'perbaikan' => 'status-perbaikan',
+        default     => 'status-pending',
+    };
+
     $tglDaftar = $user->created_at->isoFormat('D MMMM YYYY');
+    $tglCetak  = now()->isoFormat('D MMMM YYYY');
 @endphp
 
 <div class="card">
 
     {{-- Header --}}
     <div class="header">
-        <div class="header-inner">
-            <div class="header-left">
+        <div class="header-left">
+            @if($logoBase64)
+            <img src="{{ $logoBase64 }}" class="header-logo" alt="Logo">
+            @endif
+            <div class="header-title">
                 <h1>STUDY CENTER NIAS</h1>
                 <p>Sebagai Rumah Kedua Komunitas Remaja Sehat, Positif dan Berprestasi</p>
             </div>
-            <div class="header-right">
-                <span class="badge">Kartu Pendaftaran Siswa</span>
-            </div>
+        </div>
+        <div class="header-right">
+            <span class="header-badge">Kartu Pendaftaran Siswa</span>
         </div>
     </div>
 
@@ -204,10 +280,10 @@
     <div class="body">
         <div class="foto-col">
             @if($fotoBase64)
-            <img src="{{ $fotoBase64 }}" alt="Foto Pendaftar">
+            <img src="{{ $fotoBase64 }}" class="foto" alt="Foto Pendaftar">
             @else
-            <div style="width:100px;height:130px;border:2px solid #0e8e6d;border-radius:4px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;">
-                <span style="font-size:8px;color:#aaa;text-align:center">Tidak ada<br>foto</span>
+            <div class="foto-placeholder">
+                <div class="foto-placeholder-inner">Tidak ada<br>foto</div>
             </div>
             @endif
             <p class="foto-label">Foto Pendaftar</p>
@@ -263,13 +339,13 @@
     {{-- Footer --}}
     <div class="footer">
         <div class="footer-left">
-            <span class="status-badge">{{ $statusLabel }}</span>
-            <div class="footer-text" style="margin-top:4px">Terdaftar: {{ $tglDaftar }}</div>
-            <div class="watermark">Kartu ini adalah bukti pendaftaran, belum merupakan bukti penerimaan.</div>
+            <span class="status-badge {{ $statusClass }}">{{ $statusLabel }}</span>
+            <div class="footer-text">Terdaftar: {{ $tglDaftar }}</div>
+            <div class="footer-formal">Dokumen sah hasil sistem pendaftaran &middot; Dicetak: {{ $tglCetak }}</div>
         </div>
         <div class="footer-right">
-            <div class="footer-text">Pantau status pendaftaran:</div>
-            <div class="footer-url">{{ $cekUrl }}</div>
+            <div class="qr-wrap">{!! $qrSvg !!}</div>
+            <p class="qr-label">Scan cek status</p>
         </div>
     </div>
 

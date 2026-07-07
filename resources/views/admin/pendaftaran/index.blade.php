@@ -76,7 +76,7 @@
                                 <td>{{ $pendaftar->firstItem() + $i }}</td>
                                 <td>
                                     <strong>{{ $user->name }}</strong><br>
-                                    <small class="text-muted">@{{ $user->username }}</small>
+                                    <small class="text-muted">{{ $user->username }}</small>
                                 </td>
                                 <td>{{ $profile?->school_name ?? '-' }}</td>
                                 <td>{{ $profile?->grade_class ?? '-' }}</td>

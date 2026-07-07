@@ -34,12 +34,12 @@ Route::get('/cabang', [CabangWebController::class, 'index'])->name('cabang.index
 Route::get('/cabang/{slug}', [CabangWebController::class, 'show'])->name('cabang.show');
 
 // Student registration (public) — static sub-paths before wildcard
-Route::get('/daftar-siswa/preview', [PendaftaranController::class, 'preview'])->name('pendaftaran.preview');
-Route::post('/daftar-siswa/konfirmasi', [PendaftaranController::class, 'konfirmasi'])->name('pendaftaran.konfirmasi');
-Route::get('/daftar-siswa/sukses', [PendaftaranController::class, 'sukses'])->name('pendaftaran.sukses');
-Route::get('/daftar-siswa/kartu', [PendaftaranController::class, 'kartu'])->name('pendaftaran.kartu');
-Route::get('/daftar-siswa', [PendaftaranController::class, 'showForm'])->name('pendaftaran.form');
-Route::post('/daftar-siswa', [PendaftaranController::class, 'store'])->name('pendaftaran.store');
+Route::get('/pendaftaran/preview', [PendaftaranController::class, 'preview'])->name('pendaftaran.preview');
+Route::post('/pendaftaran/konfirmasi', [PendaftaranController::class, 'konfirmasi'])->name('pendaftaran.konfirmasi');
+Route::get('/pendaftaran/sukses', [PendaftaranController::class, 'sukses'])->name('pendaftaran.sukses');
+Route::get('/pendaftaran/kartu', [PendaftaranController::class, 'kartu'])->name('pendaftaran.kartu');
+Route::get('/pendaftaran', [PendaftaranController::class, 'showForm'])->name('pendaftaran.form');
+Route::post('/pendaftaran', [PendaftaranController::class, 'store'])->name('pendaftaran.store');
 Route::get('/cek-pendaftaran/{username}', [PendaftaranController::class, 'cekStatus'])->name('pendaftaran.cek');
 
 // Auth pages (guest only)

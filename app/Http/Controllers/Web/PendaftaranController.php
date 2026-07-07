@@ -194,11 +194,11 @@ class PendaftaranController extends Controller
         $user = User::with('studentProfile')->where('username', $username)->firstOrFail();
 
         $pdf = Pdf::loadView('pendaftaran.kartu-pdf', compact('user'))
-            ->setPaper([0, 0, 595, 420], 'landscape')
+            ->setPaper([0, 0, 595, 420])
             ->setOptions([
-                'isRemoteEnabled'    => false,
-                'isHtml5ParserEnabled' => true,
-                'dpi'                => 120,
+                'isRemoteEnabled'         => false,
+                'isHtml5ParserEnabled'    => true,
+                'dpi'                     => 120,
                 'isFontSubsettingEnabled' => true,
             ]);
 

@@ -25,70 +25,63 @@
                 <p class="text-white font-bold text-lg">{{ $data['name'] }}</p>
             </div>
 
-            <div class="p-6 md:flex md:gap-8">
+            <div class="p-6 grid grid-cols-1 md:grid-cols-[auto_1fr] gap-8">
 
                 {{-- Foto --}}
-                <div class="flex-shrink-0 mb-6 md:mb-0 text-center">
-                    <img src="{{ asset('storage/' . $fotoTemp) }}"
-                         alt="Foto {{ $data['name'] }}"
-                         class="w-36 h-44 object-cover rounded-xl border-2 border-sc-line mx-auto shadow-sm">
+                <div class="text-center">
+                    <div class="w-36 aspect-[3/4] mx-auto overflow-hidden rounded-xl border-2 border-sc-line shadow-sm">
+                        <img src="{{ asset('storage/' . $fotoTemp) }}"
+                             alt="Foto {{ $data['name'] }}"
+                             class="w-full h-full object-cover">
+                    </div>
                     <p class="text-xs text-gray-400 mt-2">Foto untuk sertifikat</p>
                 </div>
 
                 {{-- Data --}}
-                <div class="flex-1">
-                    <dl class="grid grid-cols-1 gap-3 text-sm">
+                <div>
+                    <div class="text-sm" style="display:grid; grid-template-columns: max-content auto 1fr; gap: 0.625rem 0.75rem; align-items: start;">
 
-                        <div class="flex gap-2">
-                            <dt class="w-44 text-gray-500 flex-shrink-0">Nama Lengkap</dt>
-                            <dd class="font-semibold text-gray-800">{{ $data['name'] }}</dd>
-                        </div>
+                        <span class="text-gray-400 text-xs font-medium uppercase tracking-wide">Nama Lengkap</span>
+                        <span class="text-gray-300">:</span>
+                        <span class="font-semibold text-gray-800">{{ $data['name'] }}</span>
 
-                        <div class="flex gap-2">
-                            <dt class="w-44 text-gray-500 flex-shrink-0">Jenis Kelamin</dt>
-                            <dd class="text-gray-800">{{ $data['gender'] === 'laki-laki' ? 'Laki-laki' : 'Perempuan' }}</dd>
-                        </div>
+                        <span class="text-gray-400 text-xs font-medium uppercase tracking-wide">Jenis Kelamin</span>
+                        <span class="text-gray-300">:</span>
+                        <span class="text-gray-800">{{ $data['gender'] === 'laki-laki' ? 'Laki-laki' : 'Perempuan' }}</span>
 
-                        <div class="flex gap-2">
-                            <dt class="w-44 text-gray-500 flex-shrink-0">Tanggal Lahir</dt>
-                            <dd class="text-gray-800">{{ \Carbon\Carbon::parse($data['birth_date'])->isoFormat('D MMMM YYYY') }}</dd>
-                        </div>
+                        <span class="text-gray-400 text-xs font-medium uppercase tracking-wide">Tanggal Lahir</span>
+                        <span class="text-gray-300">:</span>
+                        <span class="text-gray-800">{{ \Carbon\Carbon::parse($data['birth_date'])->isoFormat('D MMMM YYYY') }}</span>
 
-                        <div class="flex gap-2">
-                            <dt class="w-44 text-gray-500 flex-shrink-0">Nama Sekolah</dt>
-                            <dd class="text-gray-800">{{ $data['school_name'] }}</dd>
-                        </div>
+                        <span class="text-gray-400 text-xs font-medium uppercase tracking-wide">Nama Sekolah</span>
+                        <span class="text-gray-300">:</span>
+                        <span class="text-gray-800">{{ $data['school_name'] }}</span>
 
-                        <div class="flex gap-2">
-                            <dt class="w-44 text-gray-500 flex-shrink-0">Kelas</dt>
-                            <dd class="text-gray-800">{{ $data['grade_class'] }}</dd>
-                        </div>
+                        <span class="text-gray-400 text-xs font-medium uppercase tracking-wide">Kelas</span>
+                        <span class="text-gray-300">:</span>
+                        <span class="text-gray-800">{{ $data['grade_class'] }}</span>
 
-                        <div class="flex gap-2">
-                            <dt class="w-44 text-gray-500 flex-shrink-0">Alamat</dt>
-                            <dd class="text-gray-800">{{ $data['address'] }}</dd>
-                        </div>
+                        <span class="text-gray-400 text-xs font-medium uppercase tracking-wide">Alamat</span>
+                        <span class="text-gray-300">:</span>
+                        <span class="text-gray-800">{{ $data['address'] }}</span>
 
-                        <div class="flex gap-2">
-                            <dt class="w-44 text-gray-500 flex-shrink-0">HP Orangtua/Wali</dt>
-                            <dd class="text-gray-800">{{ $data['guardian_phone'] }}</dd>
-                        </div>
+                        <span class="text-gray-400 text-xs font-medium uppercase tracking-wide">HP Orangtua/Wali</span>
+                        <span class="text-gray-300">:</span>
+                        <span class="text-gray-800">{{ $data['guardian_phone'] }}</span>
 
                         @if($data['student_phone'])
-                        <div class="flex gap-2">
-                            <dt class="w-44 text-gray-500 flex-shrink-0">HP Siswa</dt>
-                            <dd class="text-gray-800">{{ $data['student_phone'] }}</dd>
-                        </div>
+                        <span class="text-gray-400 text-xs font-medium uppercase tracking-wide">HP Siswa</span>
+                        <span class="text-gray-300">:</span>
+                        <span class="text-gray-800">{{ $data['student_phone'] }}</span>
                         @endif
 
                         @if($data['note'])
-                        <div class="flex gap-2">
-                            <dt class="w-44 text-gray-500 flex-shrink-0">Catatan Jadwal</dt>
-                            <dd class="text-gray-800 italic">{{ $data['note'] }}</dd>
-                        </div>
+                        <span class="text-gray-400 text-xs font-medium uppercase tracking-wide">Catatan Jadwal</span>
+                        <span class="text-gray-300">:</span>
+                        <span class="text-gray-800 italic">{{ $data['note'] }}</span>
                         @endif
 
-                    </dl>
+                    </div>
                 </div>
             </div>
         </div>
