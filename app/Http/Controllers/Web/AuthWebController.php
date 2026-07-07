@@ -52,6 +52,11 @@ class AuthWebController extends Controller
         return redirect()->intended('/')->with('success', 'Selamat datang kembali!');
     }
 
+    public function pilihRegistrasi()
+    {
+        return view('auth.pilih-registrasi');
+    }
+
     public function registerForm()
     {
         return view('auth.register');

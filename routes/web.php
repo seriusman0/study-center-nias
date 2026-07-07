@@ -46,8 +46,9 @@ Route::get('/cek-pendaftaran/{username}', [PendaftaranController::class, 'cekSta
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthWebController::class, 'loginForm'])->name('login');
     Route::post('/login', [AuthWebController::class, 'login']);
-    Route::get('/daftar', [AuthWebController::class, 'registerForm'])->name('register');
-    Route::post('/daftar', [AuthWebController::class, 'register']);
+    Route::get('/daftar', [AuthWebController::class, 'pilihRegistrasi'])->name('register');
+    Route::get('/daftar/tamu', [AuthWebController::class, 'registerForm'])->name('register.tamu');
+    Route::post('/daftar/tamu', [AuthWebController::class, 'register']);
 });
 Route::get('/auth/google', [GoogleWebController::class, 'redirect'])->name('auth.google');
 Route::get('/auth/google/callback', [GoogleWebController::class, 'callback']);

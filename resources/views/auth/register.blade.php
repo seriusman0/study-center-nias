@@ -10,7 +10,7 @@
             Bergabung untuk membaca dan berkomentar di blog Study Center Nias
         </p>
 
-        <form method="POST" action="{{ route('register') }}" class="space-y-4">
+        <form method="POST" action="{{ route('register.tamu') }}" class="space-y-4">
             @csrf
             <div>
                 <label class="block text-sm font-medium mb-1">Nama Lengkap</label>
