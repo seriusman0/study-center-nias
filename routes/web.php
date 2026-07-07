@@ -24,12 +24,23 @@ use App\Http\Controllers\Web\MentorPresensiController;
 use App\Http\Controllers\Web\Admin\MentorPresensiAdminController;
 use App\Http\Controllers\Web\Admin\CertificateTemplateController;
 use App\Http\Controllers\Web\Admin\IssuedCertificateController;
+use App\Http\Controllers\Web\Admin\PendaftaranAdminController;
+use App\Http\Controllers\Web\PendaftaranController;
 
 // Public pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/blog', [BlogWebController::class, 'index'])->name('blog.index');
 Route::get('/cabang', [CabangWebController::class, 'index'])->name('cabang.index');
 Route::get('/cabang/{slug}', [CabangWebController::class, 'show'])->name('cabang.show');
+
+// Student registration (public) — static sub-paths before wildcard
+Route::get('/daftar-siswa/preview', [PendaftaranController::class, 'preview'])->name('pendaftaran.preview');
+Route::post('/daftar-siswa/konfirmasi', [PendaftaranController::class, 'konfirmasi'])->name('pendaftaran.konfirmasi');
+Route::get('/daftar-siswa/sukses', [PendaftaranController::class, 'sukses'])->name('pendaftaran.sukses');
+Route::get('/daftar-siswa/kartu', [PendaftaranController::class, 'kartu'])->name('pendaftaran.kartu');
+Route::get('/daftar-siswa', [PendaftaranController::class, 'showForm'])->name('pendaftaran.form');
+Route::post('/daftar-siswa', [PendaftaranController::class, 'store'])->name('pendaftaran.store');
+Route::get('/cek-pendaftaran/{username}', [PendaftaranController::class, 'cekStatus'])->name('pendaftaran.cek');
 
 // Auth pages (guest only)
 Route::middleware('guest')->group(function () {
@@ -91,6 +102,10 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('presensi')->name('pres
 Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/users', [AdminController::class, 'users'])->name('users');
+
+    Route::get('/pendaftaran', [PendaftaranAdminController::class, 'index'])->name('pendaftaran.index');
+    Route::get('/pendaftaran/{user}', [PendaftaranAdminController::class, 'show'])->name('pendaftaran.show');
+    Route::patch('/pendaftaran/{user}/validasi', [PendaftaranAdminController::class, 'validasi'])->name('pendaftaran.validasi');
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {

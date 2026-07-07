@@ -115,6 +115,11 @@
                             <i class="nav-icon fas fa-users"></i><p>{{ auth()->user()->isAdmin() ? 'Pengguna' : 'Daftar Siswa' }}</p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.pendaftaran.index') }}" class="nav-link {{ request()->routeIs('admin.pendaftaran.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-plus"></i><p>Pendaftaran Siswa</p>
+                        </a>
+                    </li>
                     @endif
 
                     @if(auth()->user()->isAdmin())
