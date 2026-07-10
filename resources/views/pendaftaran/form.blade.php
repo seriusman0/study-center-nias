@@ -160,7 +160,9 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-1">
                         Foto <span class="text-red-500">*</span>
                     </label>
-                    <p class="text-xs text-gray-500 mb-2">Foto terbaru dengan latar belakang bersih atau polos. Foto ini akan digunakan untuk sertifikat. Ukuran maksimal 500 KB (JPG, PNG, WEBP).</p>
+                    <p class="text-xs text-gray-500 mb-2">Foto terbaru dengan latar belakang bersih atau polos. Foto ini akan digunakan untuk sertifikat.<br>
+                        <span class="font-semibold text-orange-600">Maks. 500 KB</span> &middot; JPG, PNG, WEBP &mdash; Jika foto terlalu besar, kompres dulu di <a href="https://squoosh.app" target="_blank" class="underline text-sc-teal-600">squoosh.app</a>
+                    </p>
                     @if(isset($prevFoto) && $prevFoto)
                     <div class="flex items-center gap-4 mb-3 p-3 bg-green-50 border border-green-200 rounded-xl">
                         <img src="{{ asset('storage/' . $prevFoto) }}" alt="Foto sebelumnya"
@@ -177,6 +179,9 @@
                     @error('photo')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
+                    <p id="photo-size-error" class="text-red-500 text-xs mt-1 hidden">
+                        Ukuran foto terlalu besar (maks. 500 KB). Kompres dulu di <a href="https://squoosh.app" target="_blank" class="underline">squoosh.app</a>, lalu pilih ulang.
+                    </p>
                 </div>
 
                 {{-- CATATAN / NOTE --}}
@@ -198,13 +203,11 @@
                 </div>
 
                 <div class="pt-2">
-                    <button type="submit" id="submit-btn" disabled
-                            class="w-full py-3 bg-sc-teal-600 text-white rounded-xl font-semibold hover:bg-sc-teal-700 transition text-base disabled:opacity-40 disabled:cursor-not-allowed">
+                    <button type="submit" id="submit-btn"
+                            class="w-full py-3 bg-sc-teal-600 text-white rounded-xl font-semibold hover:bg-sc-teal-700 transition text-base">
                         Kirim Pendaftaran
                     </button>
-                    <p id="submit-hint" class="text-center text-xs text-orange-500 mt-2 hidden">
-                        Lengkapi semua field yang bertanda * sebelum mengirim.
-                    </p>
+                    <p id="submit-hint" class="text-center text-xs text-orange-500 mt-2 hidden"></p>
                     <p class="text-center text-xs text-gray-400 mt-2">
                         Dengan mengirim form ini, data Anda akan disimpan dan menunggu validasi dari pengurus.
                     </p>
@@ -217,46 +220,103 @@
 </div>
 @push('scripts')
 <script>
-    // Flag: apakah foto dari session sudah ada
     window._fotoSudahAda = document.getElementById('foto-status')?.dataset?.ada === 'true';
 
-    // --- Cek kelengkapan form → enable/disable tombol submit ---
-    function checkForm() {
-        const name     = document.getElementById('name')?.value.trim() || '';
-        const gender   = document.querySelector('input[name="gender"]:checked');
-        const school   = document.getElementById('school_name')?.value.trim() || '';
-        const grade    = document.getElementById('grade_class')?.value.trim() || '';
-        const birth    = document.getElementById('birth_date')?.value || '';
-        const address  = document.getElementById('address')?.value.trim() || '';
-        const guardian = document.getElementById('guardian_phone')?.value.trim() || '';
-        const photo    = document.getElementById('photo_input');
-        const hasPhoto = (photo && photo.files && photo.files.length > 0) || window._fotoSudahAda;
+    var FIELD_DEFS = [
+        { id: 'name',           label: 'Nama Lengkap' },
+        { id: null,             label: 'Jenis Kelamin', isRadio: true },
+        { id: 'school_name',    label: 'Nama Sekolah' },
+        { id: 'grade_class',    label: 'Kelas' },
+        { id: 'birth_date',     label: 'Tanggal Lahir' },
+        { id: 'address',        label: 'Alamat' },
+        { id: 'guardian_phone', label: 'No. HP Wali', minLen: 7 },
+        { id: 'photo_input',    label: 'Foto', isFile: true },
+    ];
 
-        const ok = name && gender && school && grade && birth && address && guardian.length >= 7 && hasPhoto;
-        const btn  = document.getElementById('submit-btn');
-        const hint = document.getElementById('submit-hint');
-        btn.disabled = !ok;
-        if (hint) hint.classList.toggle('hidden', ok);
+    function validateAndHighlight() {
+        var missing = [];
+        var firstError = null;
+
+        FIELD_DEFS.forEach(function(f) {
+            var valid = false;
+            var el = f.id ? document.getElementById(f.id) : null;
+
+            if (f.isRadio) {
+                valid = !!document.querySelector('input[name="gender"]:checked');
+            } else if (f.isFile) {
+                valid = (el && el.files && el.files.length > 0) || window._fotoSudahAda;
+            } else if (f.minLen) {
+                valid = el && el.value.trim().length >= f.minLen;
+            } else {
+                valid = el && el.value.trim().length > 0;
+            }
+
+            if (!valid) {
+                missing.push(f.label);
+                if (el && !firstError) firstError = el;
+                if (el) el.classList.add('border-red-500', 'ring-1', 'ring-red-400');
+            } else {
+                if (el) el.classList.remove('border-red-500', 'ring-1', 'ring-red-400');
+            }
+        });
+
+        return { valid: missing.length === 0, missing: missing, firstError: firstError };
     }
 
-    // Pantau semua required field
-    ['name','school_name','grade_class','birth_date','address','guardian_phone'].forEach(function(id) {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('input', checkForm);
-    });
-    document.querySelectorAll('input[name="gender"]').forEach(function(el) {
-        el.addEventListener('change', checkForm);
-    });
-    const photoInput = document.getElementById('photo_input');
-    if (photoInput) {
-        photoInput.addEventListener('change', function() {
-            if (this.files.length > 0) window._fotoSudahAda = true;
-            checkForm();
+    // Submit: validate & highlight, or allow
+    var pendaftaranForm = document.querySelector('form[action]');
+    if (pendaftaranForm) {
+        pendaftaranForm.addEventListener('submit', function(e) {
+            var result = validateAndHighlight();
+            if (!result.valid) {
+                e.preventDefault();
+                var hint = document.getElementById('submit-hint');
+                if (hint) {
+                    hint.innerHTML = 'Belum lengkap: <strong>' + result.missing.join(', ') + '</strong>';
+                    hint.classList.remove('hidden');
+                }
+                if (result.firstError) {
+                    result.firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
         });
     }
 
-    // Run on page load (restore state setelah kembali dari preview)
-    checkForm();
+    // Reset highlight saat field diisi
+    ['name','school_name','grade_class','birth_date','address','guardian_phone'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', function() {
+            this.classList.remove('border-red-500', 'ring-1', 'ring-red-400');
+            document.getElementById('submit-hint')?.classList.add('hidden');
+        });
+    });
+    document.querySelectorAll('input[name="gender"]').forEach(function(el) {
+        el.addEventListener('change', function() {
+            document.getElementById('submit-hint')?.classList.add('hidden');
+        });
+    });
+
+    // Foto: validasi ukuran & reset highlight
+    var photoInput = document.getElementById('photo_input');
+    var photoSizeError = document.getElementById('photo-size-error');
+    if (photoInput) {
+        photoInput.addEventListener('change', function() {
+            var file = this.files[0];
+            if (file && file.size > 500 * 1024) {
+                if (photoSizeError) photoSizeError.classList.remove('hidden');
+                this.value = '';
+                window._fotoSudahAda = false;
+            } else {
+                if (photoSizeError) photoSizeError.classList.add('hidden');
+                if (this.files.length > 0) {
+                    window._fotoSudahAda = true;
+                    this.classList.remove('border-red-500', 'ring-1', 'ring-red-400');
+                    document.getElementById('submit-hint')?.classList.add('hidden');
+                }
+            }
+        });
+    }
 
     // --- Nama sekolah: live uppercase ---
     document.getElementById('school_name').addEventListener('input', function () {
