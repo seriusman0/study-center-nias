@@ -7,7 +7,9 @@ use App\Models\Role;
 use App\Models\StudentProfile;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -136,47 +138,59 @@ class PendaftaranController extends Controller
             session()->forget(['pendaftaran_data', 'pendaftaran_foto_temp']);
             Storage::disk('public')->delete($fotoTemp);
             return redirect()->route('pendaftaran.form')
-                ->withErrors(['name' => 'Nama ini sudah terdaftar saat proses konfirmasi. Hubungi pengurus.']);
+                ->withErrors(['name' => 'Nama ini sudah terdaftar. Jika ini adalah Anda, hubungi pengurus.']);
         }
 
-        $baseUsername = Str::slug($data['name']);
-        $username     = $baseUsername;
-        $counter      = 2;
-        while (User::where('username', $username)->exists()) {
-            $username = $baseUsername . '-' . $counter++;
+        $username  = null;
+        $finalPath = null;
+
+        try {
+            DB::transaction(function () use ($data, $fotoTemp, &$username, &$finalPath) {
+                $baseUsername = Str::slug($data['name']);
+                $username     = $baseUsername;
+                $counter      = 2;
+                while (User::where('username', $username)->exists()) {
+                    $username = $baseUsername . '-' . $counter++;
+                }
+
+                $ext       = pathinfo($fotoTemp, PATHINFO_EXTENSION);
+                $finalPath = 'pendaftaran/foto/' . $username . '.' . $ext;
+
+                $user = User::create([
+                    'name'      => $data['name'],
+                    'username'  => $username,
+                    'password'  => Hash::make('12345'),
+                    'is_active' => false,
+                ]);
+
+                $studentRole = Role::where('name', 'student')->first();
+                if ($studentRole) {
+                    $user->roles()->attach($studentRole->id);
+                }
+
+                StudentProfile::create([
+                    'user_id'        => $user->id,
+                    'gender'         => $data['gender'],
+                    'student_phone'  => $data['student_phone'],
+                    'school_name'    => $data['school_name'],
+                    'grade_class'    => $data['grade_class'],
+                    'birth_date'     => $data['birth_date'],
+                    'address'        => $data['address'],
+                    'guardian_phone' => $data['guardian_phone'],
+                    'note'           => $data['note'],
+                    'photo'          => $finalPath,
+                    'is_pending'     => true,
+                    'status'         => 'pending',
+                    'entry_year'     => now()->year,
+                ]);
+            });
+        } catch (UniqueConstraintViolationException $e) {
+            session()->forget(['pendaftaran_data', 'pendaftaran_foto_temp']);
+            return redirect()->route('pendaftaran.form')
+                ->withErrors(['name' => 'Pendaftaran atas nama "' . $data['name'] . '" baru saja diproses. Jika ini adalah Anda, silakan cek status pendaftaran. Jika bukan, hubungi pengurus.']);
         }
 
-        $ext          = pathinfo($fotoTemp, PATHINFO_EXTENSION);
-        $finalPath    = 'pendaftaran/foto/' . $username . '.' . $ext;
         Storage::disk('public')->move($fotoTemp, $finalPath);
-
-        $user = User::create([
-            'name'      => $data['name'],
-            'username'  => $username,
-            'password'  => Hash::make('12345'),
-            'is_active' => false,
-        ]);
-
-        $studentRole = Role::where('name', 'student')->first();
-        if ($studentRole) {
-            $user->roles()->attach($studentRole->id);
-        }
-
-        StudentProfile::create([
-            'user_id'        => $user->id,
-            'gender'         => $data['gender'],
-            'student_phone'  => $data['student_phone'],
-            'school_name'    => $data['school_name'],
-            'grade_class'    => $data['grade_class'],
-            'birth_date'     => $data['birth_date'],
-            'address'        => $data['address'],
-            'guardian_phone' => $data['guardian_phone'],
-            'note'           => $data['note'],
-            'photo'          => $finalPath,
-            'is_pending'     => true,
-            'status'         => 'pending',
-            'entry_year'     => now()->year,
-        ]);
 
         session()->forget(['pendaftaran_data', 'pendaftaran_foto_temp']);
         session(['pendaftaran_username' => $username]);
