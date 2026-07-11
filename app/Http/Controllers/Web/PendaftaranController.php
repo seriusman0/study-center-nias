@@ -41,7 +41,7 @@ class PendaftaranController extends Controller
             'address'        => 'required|string|max:500',
             'guardian_phone' => ['required', 'string', 'max:13', 'regex:/^[0-9]{7,13}$/'],
             'note'           => 'nullable|string|max:1000',
-            'photo'          => $request->hasFile('photo') ? 'image|mimes:jpg,jpeg,png,webp|max:512' : 'nullable',
+            'photo'          => $request->hasFile('photo') ? 'image|mimes:jpg,jpeg,png,webp|max:2048' : 'nullable',
         ], [
             'name.required'           => 'Nama lengkap wajib diisi.',
             'name.max'                => 'Nama lengkap maksimal 100 karakter.',
@@ -63,7 +63,7 @@ class PendaftaranController extends Controller
             'photo.required'          => 'Foto wajib diunggah.',
             'photo.image'             => 'File harus berupa gambar.',
             'photo.mimes'             => 'Format foto harus JPG, JPEG, PNG, atau WEBP.',
-            'photo.max'               => 'Ukuran foto maksimal 500 KB.',
+            'photo.max'               => 'Ukuran foto maksimal 2 MB.',
         ]);
 
         $name          = ucwords(strtolower(trim($request->input('name'))));
@@ -75,12 +75,6 @@ class PendaftaranController extends Controller
         $studentPhone  = $request->filled('student_phone')
             ? '+62' . ltrim(preg_replace('/\D/', '', $request->input('student_phone')), '0')
             : null;
-
-        if (User::whereRaw('LOWER(name) = ?', [strtolower($name)])->exists()) {
-            return back()
-                ->withInput()
-                ->withErrors(['name' => 'Nama ini sudah terdaftar. Jika ini adalah Anda, hubungi pengurus.']);
-        }
 
         if ($request->hasFile('photo')) {
             $ext      = $request->file('photo')->getClientOriginalExtension();
@@ -132,13 +126,6 @@ class PendaftaranController extends Controller
         if (! $data || ! $fotoTemp) {
             return redirect()->route('pendaftaran.form')
                 ->withErrors(['name' => 'Sesi habis. Silakan isi ulang form.']);
-        }
-
-        if (User::whereRaw('LOWER(name) = ?', [strtolower($data['name'])])->exists()) {
-            session()->forget(['pendaftaran_data', 'pendaftaran_foto_temp']);
-            Storage::disk('public')->delete($fotoTemp);
-            return redirect()->route('pendaftaran.form')
-                ->withErrors(['name' => 'Nama ini sudah terdaftar. Jika ini adalah Anda, hubungi pengurus.']);
         }
 
         $username  = null;
