@@ -36,15 +36,10 @@
                 <span class="text-white/80 text-sm font-normal hidden sm:block">Nias</span>
             </a>
             <div class="flex items-center gap-1 text-sm">
-                <a href="{{ route('blog.index') }}"
-                   class="px-3 py-2 rounded hover:bg-white/10 {{ request()->routeIs('blog.*') ? 'text-sc-yellow-300' : '' }}">
-                    Blog
-                </a>
-                <a href="{{ route('cabang.index') }}"
-                   class="px-3 py-2 rounded hover:bg-white/10 {{ request()->routeIs('cabang.*') ? 'text-sc-yellow-300' : '' }}">
-                    Cabang
-                </a>
                 @auth
+                    @if(auth()->user()->hasRole(['student','college']))
+                    <a href="{{ route('beranda') }}" class="px-3 py-2 rounded hover:bg-white/10 {{ request()->routeIs('beranda') ? 'text-sc-yellow-300' : '' }}">Beranda</a>
+                    @endif
                     @if(auth()->user()->hasRole('college'))
                         <a href="{{ route('college-jurnal.index') }}"
                            class="px-3 py-2 rounded hover:bg-white/10 {{ request()->routeIs('college-jurnal.*') ? 'text-sc-yellow-300' : '' }}">Jurnal</a>
@@ -55,9 +50,6 @@
                     @if(auth()->user()->hasRole('mentor'))
                         <a href="{{ route('mentor-presensi.index') }}"
                            class="px-3 py-2 rounded hover:bg-white/10 {{ request()->routeIs('mentor-presensi.*') ? 'text-sc-yellow-300' : '' }}">Presensi Saya</a>
-                    @endif
-                    @if(auth()->user()->hasRole(['admin','fulltimer','mentor','student']))
-                        <a href="{{ route('blog.create') }}" class="px-3 py-2 rounded hover:bg-white/10">Tulis</a>
                     @endif
                     @if(auth()->user()->hasRole(['admin','mentor']))
                         <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded hover:bg-white/10">

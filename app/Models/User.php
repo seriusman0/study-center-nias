@@ -117,6 +117,27 @@ class User extends Authenticatable
             ->exists();
     }
 
+    public function getAvatarAttribute(): ?string
+    {
+        $raw = $this->getRawOriginal('avatar');
+
+        if ($raw) {
+            return filter_var($raw, FILTER_VALIDATE_URL)
+                ? $raw
+                : asset('storage/' . $raw);
+        }
+
+        $photo = $this->relationLoaded('studentProfile')
+            ? $this->studentProfile?->photo
+            : $this->studentProfile()->value('photo');
+
+        if ($photo) {
+            return asset('storage/' . $photo);
+        }
+
+        return null;
+    }
+
     public function getRoleNamesAttribute()
     {
         return $this->roles->pluck('name')->all();

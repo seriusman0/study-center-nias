@@ -17,14 +17,14 @@ async function login(page) {
 
 test.describe('Nametag Template QR Code', () => {
 
-    test('template index loads 3 system templates', async ({ page }) => {
+    test('template index loads system templates', async ({ page }) => {
         await login(page);
         await page.goto(BASE + '/admin/nametag-templates');
-        await expect(page.locator('.card').filter({ has: page.locator('h6') })).toHaveCount(4);
+        await expect(page.locator('.card').filter({ has: page.locator('h6') })).toHaveCount(5);
         await expect(page.locator('h6:has-text("Standard")')).toBeVisible();
         await expect(page.locator('h6:has-text("Dengan Foto")')).toBeVisible();
         await expect(page.locator('h6:has-text("Landscape")')).toBeVisible();
-        await expect(page.locator('h6:has-text("Portrait Besar")')).toBeVisible();
+        await expect(page.locator('h6').filter({ hasText: 'Portrait Besar' }).first()).toBeVisible();
     });
 
     test('template editor shows {qr_html} in placeholder reference', async ({ page }) => {
@@ -57,7 +57,7 @@ test.describe('Nametag Template QR Code', () => {
     test('nametag index shows template cards from DB', async ({ page }) => {
         await login(page);
         await page.goto(BASE + '/admin/nametags');
-        await expect(page.locator('.tpl-card')).toHaveCount(4);
+        await expect(page.locator('.tpl-card')).toHaveCount(5);
         await expect(page.locator('a:has-text("Kelola / Edit Template")')).toBeVisible();
     });
 

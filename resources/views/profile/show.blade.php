@@ -63,6 +63,25 @@
         </div>
     </div>
 
+    {{-- Quick links for own profile --}}
+    @auth
+    @if(auth()->id() === $user->id)
+    <div class="bg-white rounded-2xl shadow-sc-2 border border-sc-line p-5 mb-6">
+        <h2 class="text-sm font-bold text-sc-ink-500 uppercase tracking-wide mb-3">Tautan Cepat</h2>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('blog.index') }}"
+               class="text-sm px-4 py-2 bg-sc-teal-50 text-sc-teal-800 rounded-lg font-semibold hover:bg-sc-teal-100 transition">Blog</a>
+            <a href="{{ route('cabang.index') }}"
+               class="text-sm px-4 py-2 bg-sc-teal-50 text-sc-teal-800 rounded-lg font-semibold hover:bg-sc-teal-100 transition">Cabang</a>
+            @if(auth()->user()->hasRole(['admin','fulltimer','mentor','student']))
+            <a href="{{ route('blog.create') }}"
+               class="text-sm px-4 py-2 bg-sc-orange-50 text-sc-orange-700 rounded-lg font-semibold hover:bg-sc-orange-100 transition">Tulis Artikel</a>
+            @endif
+        </div>
+    </div>
+    @endif
+    @endauth
+
     {{-- Blog list --}}
     <h2 class="text-xl font-bold text-sc-ink-900 mb-4">Artikel ({{ $blogs->count() }})</h2>
     @if($blogs->isEmpty())

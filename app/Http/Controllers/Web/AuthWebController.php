@@ -45,8 +45,8 @@ class AuthWebController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
-        if ($user->hasRole('college')) {
-            return redirect()->intended(route('college-jurnal.index'));
+        if ($user->hasRole(['student', 'college'])) {
+            return redirect()->intended(route('beranda'));
         }
 
         return redirect()->intended('/');

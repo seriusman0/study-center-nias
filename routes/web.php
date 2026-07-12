@@ -26,6 +26,7 @@ use App\Http\Controllers\Web\Admin\CertificateTemplateController;
 use App\Http\Controllers\Web\Admin\IssuedCertificateController;
 use App\Http\Controllers\Web\Admin\PendaftaranAdminController;
 use App\Http\Controllers\Web\PendaftaranController;
+use App\Http\Controllers\Web\BerandaController;
 
 // Public pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -154,6 +155,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/permissions', [PermissionAdminController::class, 'store'])->name('permissions.store');
     Route::put('/permissions/{permission}', [PermissionAdminController::class, 'update'])->name('permissions.update');
     Route::delete('/permissions/{permission}', [PermissionAdminController::class, 'destroy'])->name('permissions.delete');
+});
+
+// Beranda (student + college)
+Route::middleware(['auth', 'role:student,college'])->group(function () {
+    Route::get('/beranda', [BerandaController::class, 'index'])->name('beranda');
 });
 
 // Jurnal (student-facing)

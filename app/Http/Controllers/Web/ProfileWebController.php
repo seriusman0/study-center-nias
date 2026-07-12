@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserSocialLink;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Hash;
 
 class ProfileWebController extends Controller
 {
@@ -41,25 +42,34 @@ class ProfileWebController extends Controller
         $user = auth()->user();
 
         $validated = $request->validate([
-            'name'           => 'sometimes|string|max:255',
-            'bio'            => 'nullable|string|max:500',
-            'cabang_id'      => 'nullable|exists:cabangs,id',
-            'avatar'         => 'nullable|image|max:2048',
-            'profile_public' => 'sometimes|boolean',
-            'cv_enabled'     => 'sometimes|boolean',
-            'social_links'   => 'nullable|array',
+            'name'                => 'sometimes|string|max:255',
+            'bio'                 => 'nullable|string|max:500',
+            'avatar'              => 'nullable|image|max:2048',
+            'profile_public'      => 'sometimes|boolean',
+            'cv_enabled'          => 'sometimes|boolean',
+            'social_links'        => 'nullable|array',
             'social_links.*.platform' => 'required|in:instagram,whatsapp,email,facebook',
             'social_links.*.value'    => 'nullable|string|max:255',
+            'current_password'    => 'nullable|string',
+            'new_password'        => 'nullable|string|min:8|confirmed',
         ]);
 
         if ($request->hasFile('avatar')) {
             $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
 
+        // Password change
+        if (! empty($validated['new_password'])) {
+            if (empty($validated['current_password']) || ! Hash::check($validated['current_password'], $user->password)) {
+                return back()->withErrors(['current_password' => 'Password saat ini tidak sesuai.'])->withInput();
+            }
+            $validated['password'] = Hash::make($validated['new_password']);
+        }
+
         $validated['profile_public'] = $request->boolean('profile_public');
         $validated['cv_enabled']     = $request->boolean('cv_enabled');
 
-        $userFields = Arr::except($validated, ['social_links']);
+        $userFields = Arr::except($validated, ['social_links', 'current_password', 'new_password', 'new_password_confirmation']);
         $user->update($userFields);
 
         if ($request->has('social_links')) {
