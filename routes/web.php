@@ -102,6 +102,7 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('presensi')->name('pres
     Route::get('/{presensi}/edit', [PresensiController::class, 'edit'])->name('edit');
     Route::put('/{presensi}', [PresensiController::class, 'update'])->name('update');
     Route::delete('/{presensi}', [PresensiController::class, 'destroy'])->name('destroy');
+    Route::post('/{presensi}/scan', [PresensiController::class, 'scanStudent'])->name('scan');
 });
 
 // Admin panel — dashboard + read-only users list shared with mentor
@@ -119,6 +120,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/users/create', [AdminController::class, 'createUser'])->name('users.create');
     Route::post('/users', [AdminController::class, 'storeUser'])->name('users.store');
     Route::get('/users/{user}/edit', [AdminController::class, 'editUser'])->name('users.edit');
+    Route::get('/users/{user}/qr-print', [AdminController::class, 'printQr'])->name('users.qr-print');
     Route::put('/users/{user}', [AdminController::class, 'updateUser'])->name('users.update');
     Route::post('/users/{user}/role', [AdminController::class, 'updateRole'])->name('users.role');
     Route::post('/users/{user}/toggle-active', [AdminController::class, 'toggleActive'])->name('users.toggle');

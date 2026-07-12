@@ -22,7 +22,7 @@
                 </div>
                 <div class="col">
                     <strong>{{ $user->name }}</strong><br>
-                    <small class="text-muted">@{{ $user->username }}</small>
+                    <small class="text-muted">{{ $user->username }}</small>
                 </div>
             </div>
 
@@ -203,6 +203,21 @@
         </form>
     </div>
 </div>
+
+@if(in_array('student', $userRoleNames))
+<div class="card mt-3">
+    <div class="card-header"><h6 class="mb-0"><i class="fas fa-qrcode mr-1"></i> QR Code Absensi</h6></div>
+    <div class="card-body text-center">
+        <p class="text-muted small mb-3">Tunjukkan QR ini ke kamera saat absensi. Berisi ID siswa: <strong>{{ $user->id }}</strong></p>
+        {!! QrCode::size(200)->generate($user->id) !!}
+        <div class="mt-3">
+            <a href="{{ route('admin.users.qr-print', $user->id) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-print mr-1"></i> Cetak Kartu QR
+            </a>
+        </div>
+    </div>
+</div>
+@endif
 
 @push('scripts')
 <script>

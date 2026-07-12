@@ -23,9 +23,18 @@
                         <label>Kontak</label>
                         <input type="text" name="kontak" class="form-control form-control-sm">
                     </div>
+                    <div class="form-group">
+                        <label>Link Grup WhatsApp <span class="text-muted">(opsional)</span></label>
+                        <input type="url" name="whatsapp_link" class="form-control form-control-sm"
+                               placeholder="https://chat.whatsapp.com/...">
+                    </div>
                     <div class="form-group form-check">
                         <input type="checkbox" class="form-check-input" id="foto_wajib_add" name="foto_wajib" value="1" checked>
                         <label class="form-check-label" for="foto_wajib_add">Foto wajib saat pendaftaran</label>
+                    </div>
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="pendaftaran_buka_add" name="pendaftaran_buka" value="1" checked>
+                        <label class="form-check-label" for="pendaftaran_buka_add">Pendaftaran dibuka</label>
                     </div>
                     <button type="submit" class="btn btn-sm btn-primary btn-block">Tambah</button>
                 </form>
@@ -46,6 +55,8 @@
                             <th>Alamat</th>
                             <th>Kontak</th>
                             <th>Foto</th>
+                            <th>Pendaftaran</th>
+                            <th>WA</th>
                             <th>Blog</th>
                             <th>Aksi</th>
                         </tr>
@@ -64,10 +75,24 @@
                                     <span class="badge badge-secondary">Opsional</span>
                                 @endif
                             </td>
+                            <td>
+                                @if($cabang->pendaftaran_buka)
+                                    <span class="badge badge-success">Buka</span>
+                                @else
+                                    <span class="badge badge-danger">Tutup</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($cabang->whatsapp_link)
+                                    <span class="badge badge-success">Ada</span>
+                                @else
+                                    <span class="badge badge-secondary">-</span>
+                                @endif
+                            </td>
                             <td>{{ $cabang->blogs_count }}</td>
                             <td>
                                 <button type="button" class="btn btn-xs btn-info"
-                                        onclick="openEdit({{ $cabang->id }}, '{{ addslashes($cabang->nama) }}', '{{ addslashes($cabang->alamat) }}', '{{ addslashes($cabang->kontak) }}', {{ $cabang->foto_wajib ? 'true' : 'false' }})">
+                                        onclick="openEdit({{ $cabang->id }}, '{{ addslashes($cabang->nama) }}', '{{ addslashes($cabang->alamat) }}', '{{ addslashes($cabang->kontak) }}', {{ $cabang->foto_wajib ? 'true' : 'false' }}, {{ $cabang->pendaftaran_buka ? 'true' : 'false' }}, '{{ addslashes($cabang->whatsapp_link ?? '') }}')">
                                     Edit
                                 </button>
                                 <form method="POST" action="{{ route('admin.cabangs.delete', $cabang->id) }}"
@@ -91,7 +116,6 @@
     <div class="modal-dialog">
         <form method="POST" id="editForm" class="modal-content">
             @csrf
-            @method('PUT')
             <div class="modal-header">
                 <h5 class="modal-title">Edit Cabang</h5>
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
@@ -109,9 +133,18 @@
                     <label>Kontak</label>
                     <input type="text" name="kontak" id="edit-kontak" class="form-control">
                 </div>
+                <div class="form-group">
+                    <label>Link Grup WhatsApp <span class="text-muted">(opsional)</span></label>
+                    <input type="url" name="whatsapp_link" id="edit-whatsapp-link" class="form-control"
+                           placeholder="https://chat.whatsapp.com/...">
+                </div>
                 <div class="form-group form-check">
                     <input type="checkbox" class="form-check-input" id="edit-foto-wajib" name="foto_wajib" value="1">
                     <label class="form-check-label" for="edit-foto-wajib">Foto wajib saat pendaftaran</label>
+                </div>
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" id="edit-pendaftaran-buka" name="pendaftaran_buka" value="1">
+                    <label class="form-check-label" for="edit-pendaftaran-buka">Pendaftaran dibuka</label>
                 </div>
             </div>
             <div class="modal-footer">
@@ -125,12 +158,14 @@
 
 @push('scripts')
 <script>
-function openEdit(id, nama, alamat, kontak, fotoWajib) {
+function openEdit(id, nama, alamat, kontak, fotoWajib, pendaftaranBuka, waLink) {
     document.getElementById('editForm').action = '/admin/cabangs/' + id;
     document.getElementById('edit-nama').value = nama;
     document.getElementById('edit-alamat').value = alamat;
     document.getElementById('edit-kontak').value = kontak;
+    document.getElementById('edit-whatsapp-link').value = waLink || '';
     document.getElementById('edit-foto-wajib').checked = fotoWajib;
+    document.getElementById('edit-pendaftaran-buka').checked = pendaftaranBuka;
     $('#editModal').modal('show');
 }
 </script>

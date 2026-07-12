@@ -25,6 +25,11 @@ class PendaftaranController extends Controller
 
     public function showForm(Cabang $cabang)
     {
+        if (! $cabang->pendaftaran_buka) {
+            return redirect()->route('pendaftaran.pilih-cabang')
+                ->with('info', 'Pendaftaran cabang ' . $cabang->nama . ' sedang ditutup.');
+        }
+
         $prevData = session('pendaftaran_data');
         $prevFoto = session('pendaftaran_foto_temp');
         return view('pendaftaran.form', compact('cabang', 'prevData', 'prevFoto'));
@@ -38,6 +43,11 @@ class PendaftaranController extends Controller
 
     public function store(Request $request, Cabang $cabang)
     {
+        if (! $cabang->pendaftaran_buka) {
+            return redirect()->route('pendaftaran.pilih-cabang')
+                ->with('info', 'Pendaftaran cabang ' . $cabang->nama . ' sedang ditutup.');
+        }
+
         $request->validate([
             'name'           => 'required|string|max:100',
             'gender'         => 'required|in:laki-laki,perempuan',

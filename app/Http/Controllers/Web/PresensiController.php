@@ -292,6 +292,53 @@ class PresensiController extends Controller
         return redirect()->route('presensi.index')->with('success', 'Presensi dihapus.');
     }
 
+    public function scanStudent(Request $request, Presensi $presensi): JsonResponse
+    {
+        $this->authorizeAccess($request, $presensi);
+
+        $request->validate(['student_id' => 'required|integer']);
+        $studentId = (int) $request->student_id;
+
+        $studentRoleId = Role::where('name', 'student')->value('id');
+        $student = User::with(['studentProfile:id,user_id,grade_class,school_name', 'cabang:id,nama'])
+            ->where('id', $studentId)
+            ->where('is_active', true)
+            ->whereHas('roles', fn($q) => $q->where('roles.id', $studentRoleId))
+            ->first();
+
+        if (! $student) {
+            return response()->json(['status' => 'not_found']);
+        }
+
+        $alreadyIn = $presensi->students()->where('user_id', $studentId)->exists();
+
+        if ($alreadyIn) {
+            return response()->json([
+                'status'  => 'already',
+                'student' => [
+                    'id'     => $student->id,
+                    'name'   => $student->name,
+                    'kelas'  => $student->studentProfile?->grade_class,
+                    'school' => $student->studentProfile?->school_name,
+                    'cabang' => $student->cabang?->nama,
+                ],
+            ]);
+        }
+
+        $presensi->students()->attach($studentId, ['status' => 'hadir', 'keterangan' => null]);
+
+        return response()->json([
+            'status'  => 'added',
+            'student' => [
+                'id'     => $student->id,
+                'name'   => $student->name,
+                'kelas'  => $student->studentProfile?->grade_class,
+                'school' => $student->studentProfile?->school_name,
+                'cabang' => $student->cabang?->nama,
+            ],
+        ]);
+    }
+
     public function searchStudents(Request $request): JsonResponse
     {
         $studentRoleId = Role::where('name', 'student')->value('id');
@@ -356,7 +403,7 @@ class PresensiController extends Controller
             'jam_selesai'      => 'required|date_format:H:i|after:jam_mulai',
             'materi'           => 'required|string|max:5000',
             'foto'             => 'nullable|image|max:4096',
-            'student_ids'      => 'required|array|min:1',
+            'student_ids'      => 'nullable|array',
             'student_ids.*'    => 'integer|exists:users,id',
             'student_status'   => 'nullable|array',
             'student_status.*' => 'in:hadir,izin,sakit,alpha',

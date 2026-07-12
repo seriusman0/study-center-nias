@@ -149,6 +149,12 @@ class AdminController extends Controller
         return view('admin.users_edit', compact('user', 'roles', 'cabangs'));
     }
 
+    public function printQr(User $user)
+    {
+        $user->load('roles');
+        return view('admin.users_qr_print', compact('user'));
+    }
+
     public function updateUser(Request $request, User $user)
     {
         $data = $this->validateUser($request, $user);
@@ -313,18 +319,22 @@ class AdminController extends Controller
     public function storeCabang(Request $request)
     {
         $request->validate([
-            'nama'       => 'required|string|max:255',
-            'alamat'     => 'nullable|string',
-            'kontak'     => 'nullable|string',
-            'foto_wajib' => 'nullable|boolean',
+            'nama'             => 'required|string|max:255',
+            'alamat'           => 'nullable|string',
+            'kontak'           => 'nullable|string',
+            'foto_wajib'       => 'nullable|boolean',
+            'pendaftaran_buka' => 'nullable|boolean',
+            'whatsapp_link'    => 'nullable|url|max:500',
         ]);
 
         Cabang::create([
-            'nama'       => $request->nama,
-            'slug'       => \Illuminate\Support\Str::slug($request->nama),
-            'alamat'     => $request->alamat,
-            'kontak'     => $request->kontak,
-            'foto_wajib' => $request->boolean('foto_wajib', true),
+            'nama'             => $request->nama,
+            'slug'             => \Illuminate\Support\Str::slug($request->nama),
+            'alamat'           => $request->alamat,
+            'kontak'           => $request->kontak,
+            'foto_wajib'       => $request->boolean('foto_wajib', true),
+            'pendaftaran_buka' => $request->boolean('pendaftaran_buka', true),
+            'whatsapp_link'    => $request->input('whatsapp_link') ?: null,
         ]);
 
         return back()->with('success', 'Cabang ditambahkan.');
@@ -333,18 +343,22 @@ class AdminController extends Controller
     public function updateCabang(Request $request, Cabang $cabang)
     {
         $request->validate([
-            'nama'       => 'required|string|max:255',
-            'alamat'     => 'nullable|string',
-            'kontak'     => 'nullable|string',
-            'foto_wajib' => 'nullable|boolean',
+            'nama'             => 'required|string|max:255',
+            'alamat'           => 'nullable|string',
+            'kontak'           => 'nullable|string',
+            'foto_wajib'       => 'nullable|boolean',
+            'pendaftaran_buka' => 'nullable|boolean',
+            'whatsapp_link'    => 'nullable|url|max:500',
         ]);
 
         $cabang->update([
-            'nama'       => $request->nama,
-            'slug'       => \Illuminate\Support\Str::slug($request->nama),
-            'alamat'     => $request->alamat,
-            'kontak'     => $request->kontak,
-            'foto_wajib' => $request->boolean('foto_wajib', false),
+            'nama'             => $request->nama,
+            'slug'             => \Illuminate\Support\Str::slug($request->nama),
+            'alamat'           => $request->alamat,
+            'kontak'           => $request->kontak,
+            'foto_wajib'       => $request->boolean('foto_wajib', false),
+            'pendaftaran_buka' => $request->boolean('pendaftaran_buka', false),
+            'whatsapp_link'    => $request->input('whatsapp_link') ?: null,
         ]);
 
         return back()->with('success', 'Cabang diperbarui.');

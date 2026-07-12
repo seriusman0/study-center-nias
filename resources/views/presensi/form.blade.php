@@ -119,14 +119,218 @@
 
     <div class="text-right mt-4 mb-5">
         <a href="{{ route('presensi.index') }}" class="btn btn-secondary">Batal</a>
+        @if($presensi)
+        <button type="button" class="btn btn-success" id="btnAktifkanKamera">
+            <i class="fas fa-qrcode mr-1"></i> Aktifkan Kamera
+        </button>
+        @endif
         <button type="submit" class="btn btn-primary">
             <i class="fas fa-save mr-1"></i> {{ $presensi ? 'Simpan Perubahan' : 'Simpan Presensi' }}
         </button>
     </div>
 </form>
 
+@if($presensi)
+<div class="modal fade" id="scannerModal" tabindex="-1" role="dialog" aria-labelledby="scannerModalLabel">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="scannerModalLabel"><i class="fas fa-qrcode mr-1"></i> Scan QR Siswa</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="qr-reader" style="width:100%"></div>
+                <div id="scan-result" class="mt-3" style="display:none">
+                    <div id="scan-result-inner" class="alert mb-0"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" id="btnInputManual" data-dismiss="modal">
+                    <i class="fas fa-keyboard mr-1"></i> Input Manual
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+@if($presensi)
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+(function() {
+    const scanUrl = '/presensi/{{ $presensi->id }}/scan';
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+    let scanner = null;
+    let scanning = false;
+
+    function escapeHtml(s) {
+        if (!s) return '';
+        return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // --- Web Audio beeps (guarded — some mobile browsers restrict AudioContext) ---
+    let audioCtx = null;
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+
+    function beep(freq, duration, type, gain) {
+        if (!audioCtx) return;
+        try {
+            type = type || 'sine'; gain = gain || 0.3;
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.frequency.value = freq;
+            osc.type = type;
+            gainNode.gain.setValueAtTime(gain, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + duration);
+        } catch(e) {}
+    }
+
+    function playSuccess()  { beep(880, 0.15); }
+    function playWarning()  { beep(600, 0.12); setTimeout(() => beep(600, 0.12), 180); }
+    function playError()    { beep(200, 0.4, 'sawtooth'); }
+
+    // --- Scanner init/stop ---
+    function initScanner() {
+        scanner = new Html5Qrcode('qr-reader');
+        scanning = false;
+        scanner.start(
+            { facingMode: 'environment' },
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            onScanSuccess,
+            () => {}
+        ).catch(err => {
+            showResult('danger', '<strong>Kamera tidak dapat diakses.</strong> Pastikan izin kamera sudah diberikan.');
+        });
+    }
+
+    function stopScanner() {
+        if (scanner) {
+            scanner.stop().catch(() => {}).finally(() => { scanner = null; scanning = false; });
+        }
+    }
+
+    // --- Handle scan result ---
+    function onScanSuccess(decodedText) {
+        if (scanning) return;
+        scanning = true;
+
+        const studentId = parseInt(decodedText.trim(), 10);
+        if (isNaN(studentId)) {
+            showResult('danger', '<strong>QR tidak valid.</strong> Format tidak dikenali.');
+            playError();
+            setTimeout(() => { scanning = false; }, 2000);
+            return;
+        }
+
+        fetch(scanUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ student_id: studentId }),
+        })
+        .then(function(r) {
+            if (!r.ok) {
+                return r.text().then(function(t) {
+                    throw new Error('HTTP ' + r.status + ': ' + t.substring(0, 120));
+                });
+            }
+            return r.json();
+        })
+        .then(function(data) {
+            try {
+                if (data.status === 'added') {
+                    playSuccess();
+                    var s = data.student;
+                    showResult('success',
+                        '<strong><i class="fas fa-check-circle mr-1"></i>' + escapeHtml(s.name) + '</strong> berhasil ditambahkan.' +
+                        (s.kelas ? '<br><small class="text-muted">' + escapeHtml(s.kelas) + (s.cabang ? ' · ' + escapeHtml(s.cabang) : '') + '</small>' : '')
+                    );
+                    addStudentToList(s);
+                    autoSave();
+                } else if (data.status === 'already') {
+                    playWarning();
+                    var s2 = data.student;
+                    showResult('warning',
+                        '<i class="fas fa-exclamation-triangle mr-1"></i><strong>' + escapeHtml(s2.name) + '</strong> sudah melakukan presensi.'
+                    );
+                } else {
+                    playError();
+                    showResult('danger', '<i class="fas fa-times-circle mr-1"></i> ID siswa tidak ditemukan.');
+                }
+            } catch(displayErr) {
+                showResult('warning', 'Scan OK tapi display error: ' + displayErr.message);
+            }
+            setTimeout(function() { scanning = false; }, 2500);
+        })
+        .catch(function(err) {
+            playError();
+            showResult('danger', 'Error: ' + (err && err.message ? err.message : 'koneksi gagal'));
+            setTimeout(function() { scanning = false; }, 2000);
+        });
+    }
+
+    function showResult(type, html) {
+        const wrap = document.getElementById('scan-result');
+        const inner = document.getElementById('scan-result-inner');
+        inner.className = `alert alert-${type} mb-0`;
+        inner.innerHTML = html;
+        wrap.style.display = 'block';
+    }
+
+    function addStudentToList(student) {
+        if (typeof window.__presensiAddStudent === 'function') {
+            window.__presensiAddStudent(student);
+        }
+    }
+
+    function autoSave() {
+        var form = document.getElementById('presensiForm');
+        if (!form) return;
+        var formData = new FormData(form);
+        fetch('/presensi/{{ $presensi->id }}', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken },
+            body: formData,
+        }).catch(function() {});
+    }
+
+    // --- Modal lifecycle ---
+    document.getElementById('btnAktifkanKamera')?.addEventListener('click', function() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        $('#scannerModal').modal('show');
+    });
+
+    $('#scannerModal').on('shown.bs.modal', function() {
+        document.getElementById('scan-result').style.display = 'none';
+        initScanner();
+    });
+
+    $('#scannerModal').on('hidden.bs.modal', function() {
+        stopScanner();
+    });
+
+    document.getElementById('btnInputManual')?.addEventListener('click', function() {
+        setTimeout(() => {
+            const input = document.querySelector('#studentPicker-ts-control input');
+            if (input) input.focus();
+        }, 400);
+    });
+})();
+</script>
+@endif
 <script>
 (function() {
     // === Kelas master picker ===
@@ -254,13 +458,15 @@
         ensureRow(s);
     });
 
-    // Validate at submit
-    document.getElementById('presensiForm').addEventListener('submit', function(e) {
-        if (!document.querySelectorAll('.student-row').length) {
-            e.preventDefault();
-            alert('Pilih minimal satu siswa.');
+    // Exposed for QR scanner: add a scanned student without going through TomSelect search
+    window.__presensiAddStudent = function(student) {
+        if (!ts.options[String(student.id)]) {
+            ts.addOption(student);
         }
-    });
+        ts.addItem(String(student.id), true);
+        ensureRow(student);
+    };
+
 })();
 </script>
 @endpush
