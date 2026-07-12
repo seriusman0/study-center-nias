@@ -141,6 +141,15 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/nametags', [NameTagController::class, 'index'])->name('nametags');
     Route::post('/nametags/generate', [NameTagController::class, 'generate'])->name('nametags.generate');
 
+    Route::prefix('nametag-templates')->name('nametag-templates.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Web\Admin\NameTagTemplateController::class, 'index'])->name('index');
+        Route::get('/{template}/edit', [\App\Http\Controllers\Web\Admin\NameTagTemplateController::class, 'edit'])->name('edit');
+        Route::put('/{template}', [\App\Http\Controllers\Web\Admin\NameTagTemplateController::class, 'update'])->name('update');
+        Route::post('/{template}/duplicate', [\App\Http\Controllers\Web\Admin\NameTagTemplateController::class, 'duplicate'])->name('duplicate');
+        Route::delete('/{template}', [\App\Http\Controllers\Web\Admin\NameTagTemplateController::class, 'destroy'])->name('destroy');
+        Route::post('/{template}/preview', [\App\Http\Controllers\Web\Admin\NameTagTemplateController::class, 'preview'])->name('preview');
+    });
+
     Route::get('/permissions', [PermissionAdminController::class, 'index'])->name('permissions');
     Route::post('/permissions', [PermissionAdminController::class, 'store'])->name('permissions.store');
     Route::put('/permissions/{permission}', [PermissionAdminController::class, 'update'])->name('permissions.update');
