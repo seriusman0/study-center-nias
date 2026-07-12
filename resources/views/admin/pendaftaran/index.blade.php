@@ -104,6 +104,12 @@
                                        class="btn btn-sm btn-info">
                                         <i class="fas fa-eye"></i> Detail
                                     </a>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary ml-1"
+                                            title="Salin link cek status"
+                                            onclick="copyLink(this, '{{ route('pendaftaran.cek', $user->username) }}')">
+                                        <i class="fas fa-link"></i>
+                                    </button>
                                 </td>
                             </tr>
                             @empty
@@ -129,3 +135,19 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+function copyLink(btn, url) {
+    navigator.clipboard.writeText(url).then(function() {
+        var orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        btn.classList.replace('btn-outline-secondary', 'btn-success');
+        setTimeout(function() {
+            btn.innerHTML = orig;
+            btn.classList.replace('btn-success', 'btn-outline-secondary');
+        }, 2000);
+    });
+}
+</script>
+@endpush

@@ -173,6 +173,40 @@
                     </div>
                 </div>
 
+                {{-- Link Cek Status --}}
+                @php
+                    $cekStatusUrl = route('pendaftaran.cek', $user->username);
+                    $waPhone = $profile->student_phone ?? $profile->guardian_phone ?? null;
+                    if ($waPhone) {
+                        $waPhone = '62' . ltrim(preg_replace('/\D/', '', $waPhone), '0');
+                        $waMsg = 'Halo ' . $user->name . ', berikut link untuk cek status pendaftaran kamu: ' . $cekStatusUrl;
+                        $waUrl = 'https://wa.me/' . $waPhone . '?text=' . urlencode($waMsg);
+                    }
+                @endphp
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-link mr-2"></i>Link Cek Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="input-group mb-2">
+                            <input type="text" id="cekStatusUrl" class="form-control form-control-sm"
+                                   value="{{ $cekStatusUrl }}" readonly>
+                            <div class="input-group-append">
+                                <button class="btn btn-sm btn-outline-secondary" type="button"
+                                        onclick="copyStatusLink()" id="btnCopy">
+                                    <i class="fas fa-copy"></i> Salin
+                                </button>
+                            </div>
+                        </div>
+                        @if(!empty($waUrl))
+                        <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer"
+                           class="btn btn-success btn-sm btn-block">
+                            <i class="fab fa-whatsapp mr-1"></i> Kirim via WhatsApp
+                        </a>
+                        @endif
+                    </div>
+                </div>
+
                 {{-- Form Validasi --}}
                 <div class="card card-primary">
                     <div class="card-header">
@@ -247,3 +281,20 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+function copyStatusLink() {
+    var input = document.getElementById('cekStatusUrl');
+    var btn = document.getElementById('btnCopy');
+    navigator.clipboard.writeText(input.value).then(function() {
+        btn.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+        btn.classList.replace('btn-outline-secondary', 'btn-success');
+        setTimeout(function() {
+            btn.innerHTML = '<i class="fas fa-copy"></i> Salin';
+            btn.classList.replace('btn-success', 'btn-outline-secondary');
+        }, 2000);
+    });
+}
+</script>
+@endpush
