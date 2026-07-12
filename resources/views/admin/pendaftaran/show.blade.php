@@ -207,6 +207,59 @@
                     </div>
                 </div>
 
+                {{-- Link Perbaikan --}}
+                @if($profile->status === 'perbaikan')
+                @php
+                    $hasValidToken = $profile->update_token && $profile->update_token_expires_at && $profile->update_token_expires_at->isFuture();
+                    $updateUrl = $hasValidToken ? route('pendaftaran.update.form', $profile->update_token) : null;
+                @endphp
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-edit mr-2"></i>Link Perbaikan Data</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-sm text-muted mb-3">Kirim link ini ke pendaftar agar mereka dapat memperbarui data (termasuk foto). Link berlaku 7 hari.</p>
+
+                        <div id="updateLinkSection" class="{{ $hasValidToken ? '' : 'd-none' }}">
+                            <div class="input-group mb-2">
+                                <input type="text" id="updateLinkUrl" class="form-control form-control-sm"
+                                       value="{{ $updateUrl }}" readonly>
+                                <div class="input-group-append">
+                                    <button class="btn btn-sm btn-outline-secondary" type="button"
+                                            onclick="copyUpdateLink()" id="btnCopyUpdate">
+                                        <i class="fas fa-copy"></i> Salin
+                                    </button>
+                                </div>
+                            </div>
+                            @if($hasValidToken)
+                            <p class="text-xs text-muted mb-2">Berlaku hingga: {{ $profile->update_token_expires_at->translatedFormat('d M Y, H:i') }}</p>
+                            @php
+                                $waUpdatePhone = $profile->student_phone ?? $profile->guardian_phone ?? null;
+                                $waUpdateUrl = null;
+                                if ($waUpdatePhone) {
+                                    $waUpdatePhoneNum = '62' . ltrim(preg_replace('/\D/', '', $waUpdatePhone), '0');
+                                    $waUpdateMsg = 'Halo ' . $user->name . ', pengurus meminta Anda untuk memperbarui data pendaftaran melalui link berikut: ' . $updateUrl . ' (Link berlaku 7 hari)';
+                                    $waUpdateUrl = 'https://wa.me/' . $waUpdatePhoneNum . '?text=' . urlencode($waUpdateMsg);
+                                }
+                            @endphp
+                            @if($waUpdateUrl)
+                            <a href="{{ $waUpdateUrl }}" target="_blank" rel="noopener noreferrer"
+                               class="btn btn-success btn-sm btn-block">
+                                <i class="fab fa-whatsapp mr-1"></i> Kirim via WhatsApp
+                            </a>
+                            @endif
+                            @endif
+                        </div>
+
+                        <button type="button" id="btnGenerateLink" onclick="generateUpdateLink()"
+                                class="btn btn-warning btn-sm btn-block {{ $hasValidToken ? 'mt-2' : '' }}">
+                            <i class="fas fa-redo mr-1"></i> {{ $hasValidToken ? 'Generate Ulang Link' : 'Generate Link Perbaikan' }}
+                        </button>
+                        <div id="generateError" class="text-danger text-sm mt-2 d-none"></div>
+                    </div>
+                </div>
+                @endif
+
                 {{-- Form Validasi --}}
                 <div class="card card-primary">
                     <div class="card-header">
@@ -294,6 +347,54 @@ function copyStatusLink() {
             btn.innerHTML = '<i class="fas fa-copy"></i> Salin';
             btn.classList.replace('btn-success', 'btn-outline-secondary');
         }, 2000);
+    });
+}
+
+function copyUpdateLink() {
+    var input = document.getElementById('updateLinkUrl');
+    var btn = document.getElementById('btnCopyUpdate');
+    navigator.clipboard.writeText(input.value).then(function() {
+        btn.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+        btn.classList.replace('btn-outline-secondary', 'btn-success');
+        setTimeout(function() {
+            btn.innerHTML = '<i class="fas fa-copy"></i> Salin';
+            btn.classList.replace('btn-success', 'btn-outline-secondary');
+        }, 2000);
+    });
+}
+
+function generateUpdateLink() {
+    var btn = document.getElementById('btnGenerateLink');
+    var errEl = document.getElementById('generateError');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Memproses...';
+    if (errEl) errEl.classList.add('d-none');
+
+    fetch('{{ route('admin.pendaftaran.generate-update-link', $user) }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+        },
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        var section = document.getElementById('updateLinkSection');
+        var urlInput = document.getElementById('updateLinkUrl');
+        if (section && urlInput) {
+            urlInput.value = data.url;
+            section.classList.remove('d-none');
+        }
+        btn.innerHTML = '<i class="fas fa-redo mr-1"></i> Generate Ulang Link';
+        btn.disabled = false;
+    })
+    .catch(function() {
+        if (errEl) {
+            errEl.textContent = 'Gagal generate link. Coba lagi.';
+            errEl.classList.remove('d-none');
+        }
+        btn.innerHTML = '<i class="fas fa-redo mr-1"></i> Generate Link Perbaikan';
+        btn.disabled = false;
     });
 }
 </script>

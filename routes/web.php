@@ -41,6 +41,8 @@ Route::get('/pendaftaran/kartu', [PendaftaranController::class, 'kartu'])->name(
 Route::get('/pendaftaran', [PendaftaranController::class, 'showForm'])->name('pendaftaran.form');
 Route::post('/pendaftaran', [PendaftaranController::class, 'store'])->name('pendaftaran.store');
 Route::get('/cek-pendaftaran/{username}', [PendaftaranController::class, 'cekStatus'])->name('pendaftaran.cek');
+Route::get('/pendaftaran/perbaikan/{token}', [PendaftaranController::class, 'showUpdateForm'])->name('pendaftaran.update.form');
+Route::post('/pendaftaran/perbaikan/{token}', [PendaftaranController::class, 'processUpdate'])->name('pendaftaran.update.store');
 
 // Auth pages (guest only)
 Route::middleware('guest')->group(function () {
@@ -107,6 +109,7 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin')->name('admin.'
     Route::get('/pendaftaran', [PendaftaranAdminController::class, 'index'])->name('pendaftaran.index');
     Route::get('/pendaftaran/{user}', [PendaftaranAdminController::class, 'show'])->name('pendaftaran.show');
     Route::patch('/pendaftaran/{user}/validasi', [PendaftaranAdminController::class, 'validasi'])->name('pendaftaran.validasi');
+    Route::post('/pendaftaran/{user}/generate-update-link', [PendaftaranAdminController::class, 'generateUpdateLink'])->name('pendaftaran.generate-update-link');
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {

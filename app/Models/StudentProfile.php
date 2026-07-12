@@ -10,10 +10,12 @@ class StudentProfile extends Model
         'user_id', 'student_number', 'birth_date', 'birth_place', 'gender',
         'address', 'guardian_name', 'guardian_phone', 'student_phone', 'school_name', 'grade_class', 'entry_year',
         'campus_name', 'current_semester', 'photo', 'note', 'is_pending', 'status', 'catatan_admin',
+        'update_token', 'update_token_expires_at',
     ];
 
     protected $casts = [
-        'birth_date' => 'date',
+        'birth_date'              => 'date',
+        'update_token_expires_at' => 'datetime',
     ];
 
     public function user()

@@ -215,4 +215,103 @@ class PendaftaranController extends Controller
 
         return view('pendaftaran.cek-status', compact('user'));
     }
+
+    public function showUpdateForm(string $token)
+    {
+        $profile = StudentProfile::with('user')
+            ->where('update_token', $token)
+            ->where('update_token_expires_at', '>', now())
+            ->firstOrFail();
+
+        $user = $profile->user;
+        return view('pendaftaran.update-form', compact('user', 'profile', 'token'));
+    }
+
+    public function processUpdate(Request $request, string $token)
+    {
+        $profile = StudentProfile::with('user')
+            ->where('update_token', $token)
+            ->where('update_token_expires_at', '>', now())
+            ->firstOrFail();
+
+        $request->validate([
+            'name'           => 'required|string|max:100',
+            'gender'         => 'required|in:laki-laki,perempuan',
+            'student_phone'  => ['nullable', 'string', 'max:13', 'regex:/^[0-9]{7,13}$/'],
+            'school_name'    => 'required|string|max:150',
+            'grade_class'    => 'required|integer|min:1|max:12',
+            'birth_date'     => 'required|date|before:today',
+            'address'        => 'required|string|max:500',
+            'guardian_phone' => ['required', 'string', 'max:13', 'regex:/^[0-9]{7,13}$/'],
+            'note'           => 'nullable|string|max:1000',
+            'photo'          => $request->hasFile('photo') ? 'image|mimes:jpg,jpeg,png,webp|max:2048' : 'nullable',
+        ], [
+            'name.required'           => 'Nama lengkap wajib diisi.',
+            'name.max'                => 'Nama lengkap maksimal 100 karakter.',
+            'gender.required'         => 'Jenis kelamin wajib dipilih.',
+            'gender.in'               => 'Pilih jenis kelamin yang valid.',
+            'student_phone.regex'     => 'Nomor HP siswa hanya boleh berisi angka (7-13 digit, tanpa 0 di depan).',
+            'student_phone.max'       => 'Nomor HP siswa maksimal 13 digit.',
+            'school_name.required'    => 'Nama sekolah wajib diisi.',
+            'grade_class.required'    => 'Kelas wajib diisi.',
+            'grade_class.integer'     => 'Kelas harus berupa angka.',
+            'grade_class.min'         => 'Kelas minimal 1.',
+            'grade_class.max'         => 'Kelas maksimal 12.',
+            'birth_date.required'     => 'Tanggal lahir wajib diisi.',
+            'birth_date.before'       => 'Tanggal lahir harus sebelum hari ini.',
+            'address.required'        => 'Alamat rumah wajib diisi.',
+            'guardian_phone.required' => 'Nomor HP orangtua/wali wajib diisi.',
+            'guardian_phone.regex'    => 'Nomor HP orangtua hanya boleh berisi angka (7-13 digit, tanpa 0 di depan).',
+            'guardian_phone.max'      => 'Nomor HP orangtua maksimal 13 digit.',
+            'photo.image'             => 'File harus berupa gambar.',
+            'photo.mimes'             => 'Format foto harus JPG, JPEG, PNG, atau WEBP.',
+            'photo.max'               => 'Ukuran foto maksimal 2 MB.',
+        ]);
+
+        $user = $profile->user;
+
+        $name          = ucwords(strtolower(trim($request->input('name'))));
+        $schoolName    = strtoupper(trim($request->input('school_name')));
+        $gradeClass    = (int) $request->input('grade_class');
+        $address       = ucwords(strtolower(trim($request->input('address'))));
+        $gender        = strtolower(trim($request->input('gender')));
+        $guardianPhone = '+62' . ltrim(preg_replace('/\D/', '', $request->input('guardian_phone')), '0');
+        $studentPhone  = $request->filled('student_phone')
+            ? '+62' . ltrim(preg_replace('/\D/', '', $request->input('student_phone')), '0')
+            : null;
+
+        if ($request->hasFile('photo')) {
+            $ext      = $request->file('photo')->getClientOriginalExtension();
+            $newPath  = 'pendaftaran/foto/' . $user->username . '.' . $ext;
+            if ($profile->photo && $profile->photo !== $newPath && Storage::disk('public')->exists($profile->photo)) {
+                Storage::disk('public')->delete($profile->photo);
+            }
+            Storage::disk('public')->put($newPath, file_get_contents($request->file('photo')->getRealPath()));
+            $photoPath = $newPath;
+        } else {
+            $photoPath = $profile->photo;
+        }
+
+        $user->update(['name' => $name]);
+
+        $profile->update([
+            'gender'                  => $gender,
+            'student_phone'           => $studentPhone,
+            'school_name'             => $schoolName,
+            'grade_class'             => $gradeClass,
+            'birth_date'              => $request->input('birth_date'),
+            'address'                 => $address,
+            'guardian_phone'          => $guardianPhone,
+            'note'                    => $request->filled('note') ? trim($request->input('note')) : null,
+            'photo'                   => $photoPath,
+            'status'                  => 'pending',
+            'is_pending'              => true,
+            'catatan_admin'           => null,
+            'update_token'            => null,
+            'update_token_expires_at' => null,
+        ]);
+
+        return redirect()->route('pendaftaran.cek', $user->username)
+            ->with('success', 'Data berhasil diperbarui. Silakan tunggu validasi ulang dari pengurus.');
+    }
 }

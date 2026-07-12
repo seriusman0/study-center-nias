@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PendaftaranAdminController extends Controller
 {
@@ -77,5 +78,23 @@ class PendaftaranAdminController extends Controller
         return redirect()
             ->route('admin.pendaftaran.index')
             ->with('success', 'Validasi pendaftaran berhasil disimpan.');
+    }
+
+    public function generateUpdateLink(User $user)
+    {
+        abort_unless($user->studentProfile !== null, 404);
+
+        $token   = Str::random(64);
+        $expires = now()->addDays(7);
+
+        $user->studentProfile->update([
+            'update_token'            => $token,
+            'update_token_expires_at' => $expires,
+        ]);
+
+        return response()->json([
+            'url'        => route('pendaftaran.update.form', $token),
+            'expires_at' => $expires->translatedFormat('d M Y, H:i'),
+        ]);
     }
 }
