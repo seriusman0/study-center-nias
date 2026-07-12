@@ -130,38 +130,20 @@
 <script>
 (function() {
     // === Kelas master picker ===
-    const kelasSearchUrl = @json(route('presensi.kelas-master.search'));
+    const allKelas = @json($kelasList);
     const cabangSelect = document.querySelector('select[name="cabang_id"]');
     @php
-        $initKelasObj = null;
-        if ($presensi?->kelasMaster) {
-            $initKelasObj = [
-                'id' => $presensi->kelasMaster->id,
-                'nama' => $presensi->kelasMaster->nama,
-                'cabang' => $presensi->kelasMaster->cabang?->nama,
-                'label' => $presensi->kelasMaster->nama . ($presensi->kelasMaster->cabang ? ' — ' . $presensi->kelasMaster->cabang->nama : '')
-            ];
-        }
+        $initKelasId = $presensi?->kelas_id ? (string) $presensi->kelas_id : null;
     @endphp
-    const initialKelas = @json($initKelasObj);
+    const initialKelasId = @json($initKelasId);
 
     const tsKelas = new TomSelect('#kelasPicker', {
         valueField: 'id',
         labelField: 'label',
         searchField: ['nama', 'cabang', 'label'],
-        preload: true,
+        options: allKelas,
         maxOptions: 50,
         placeholder: 'Pilih atau cari kelas...',
-        load: function(query, callback) {
-            const params = new URLSearchParams();
-            if (query) params.set('q', query);
-            const cid = cabangSelect?.value;
-            if (cid) params.set('cabang_id', cid);
-            fetch(kelasSearchUrl + '?' + params.toString())
-                .then(r => r.json())
-                .then(json => callback(json.data || []))
-                .catch(() => callback([]));
-        },
         render: {
             option: function(item, escape) {
                 return `<div><strong>${escape(item.nama)}</strong>` +
@@ -170,13 +152,16 @@
             },
         },
     });
-    if (initialKelas) {
-        tsKelas.addOption(initialKelas);
-        tsKelas.addItem(String(initialKelas.id), true);
+    if (initialKelasId) {
+        tsKelas.addItem(initialKelasId, true);
     }
-    cabangSelect?.addEventListener('change', () => {
+    cabangSelect?.addEventListener('change', function() {
+        const cid = this.value;
         tsKelas.clear();
         tsKelas.clearOptions();
+        const filtered = cid ? allKelas.filter(k => String(k.cabang_id) === cid) : allKelas;
+        filtered.forEach(k => tsKelas.addOption(k));
+        tsKelas.refreshOptions(false);
     });
 
     // === Student picker (existing) ===

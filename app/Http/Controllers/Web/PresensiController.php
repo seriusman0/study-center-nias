@@ -125,16 +125,32 @@ class PresensiController extends Controller
 
     public function create(Request $request)
     {
+        $user = $request->user();
         $mentors = $this->mentorList();
         $cabangs = Cabang::orderBy('nama')->get();
-        $defaultMentorId = $request->user()->isAdmin() ? null : $request->user()->id;
+        $defaultMentorId = $user->isAdmin() ? null : $user->id;
+
+        $kelasQuery = KelasMaster::active()->with('cabang:id,nama')->orderBy('nama');
+        if (! $user->isAdmin() && $user->cabang_id) {
+            $kelasQuery->where('cabang_id', $user->cabang_id);
+        } elseif (! $user->isAdmin()) {
+            $kelasQuery->whereRaw('0=1');
+        }
+        $kelasList = $kelasQuery->get()->map(fn($k) => [
+            'id'        => $k->id,
+            'cabang_id' => $k->cabang_id,
+            'nama'      => $k->nama,
+            'cabang'    => $k->cabang?->nama,
+            'label'     => $k->cabang ? "{$k->nama} — {$k->cabang->nama}" : $k->nama,
+        ]);
 
         return view('presensi.form', [
-            'mentors'         => $mentors,
-            'cabangs'         => $cabangs,
-            'defaultMentorId' => $defaultMentorId,
-            'presensi'        => null,
+            'mentors'          => $mentors,
+            'cabangs'          => $cabangs,
+            'defaultMentorId'  => $defaultMentorId,
+            'presensi'         => null,
             'selectedStudents' => $this->selectedStudentsFromOld(),
+            'kelasList'        => $kelasList,
         ]);
     }
 
@@ -194,12 +210,28 @@ class PresensiController extends Controller
             });
         }
 
+        $editUser = $request->user();
+        $kelasQuery = KelasMaster::active()->with('cabang:id,nama')->orderBy('nama');
+        if (! $editUser->isAdmin() && $editUser->cabang_id) {
+            $kelasQuery->where('cabang_id', $editUser->cabang_id);
+        } elseif (! $editUser->isAdmin()) {
+            $kelasQuery->whereRaw('0=1');
+        }
+        $kelasList = $kelasQuery->get()->map(fn($k) => [
+            'id'        => $k->id,
+            'cabang_id' => $k->cabang_id,
+            'nama'      => $k->nama,
+            'cabang'    => $k->cabang?->nama,
+            'label'     => $k->cabang ? "{$k->nama} — {$k->cabang->nama}" : $k->nama,
+        ]);
+
         return view('presensi.form', [
             'mentors'           => $mentors,
             'cabangs'           => $cabangs,
             'defaultMentorId'   => $presensi->mentor_id,
             'presensi'          => $presensi,
             'selectedStudents'  => $selectedStudents,
+            'kelasList'         => $kelasList,
         ]);
     }
 
