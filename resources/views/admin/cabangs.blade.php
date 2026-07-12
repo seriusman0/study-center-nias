@@ -23,6 +23,10 @@
                         <label>Kontak</label>
                         <input type="text" name="kontak" class="form-control form-control-sm">
                     </div>
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="foto_wajib_add" name="foto_wajib" value="1" checked>
+                        <label class="form-check-label" for="foto_wajib_add">Foto wajib saat pendaftaran</label>
+                    </div>
                     <button type="submit" class="btn btn-sm btn-primary btn-block">Tambah</button>
                 </form>
             </div>
@@ -41,6 +45,7 @@
                             <th>Slug</th>
                             <th>Alamat</th>
                             <th>Kontak</th>
+                            <th>Foto</th>
                             <th>Blog</th>
                             <th>Aksi</th>
                         </tr>
@@ -52,10 +57,17 @@
                             <td class="text-muted" style="font-size:12px">{{ $cabang->slug }}</td>
                             <td style="font-size:13px">{{ $cabang->alamat ?? '-' }}</td>
                             <td style="font-size:13px">{{ $cabang->kontak ?? '-' }}</td>
+                            <td>
+                                @if($cabang->foto_wajib)
+                                    <span class="badge badge-danger">Wajib</span>
+                                @else
+                                    <span class="badge badge-secondary">Opsional</span>
+                                @endif
+                            </td>
                             <td>{{ $cabang->blogs_count }}</td>
                             <td>
                                 <button type="button" class="btn btn-xs btn-info"
-                                        onclick="openEdit({{ $cabang->id }}, '{{ addslashes($cabang->nama) }}', '{{ addslashes($cabang->alamat) }}', '{{ addslashes($cabang->kontak) }}')">
+                                        onclick="openEdit({{ $cabang->id }}, '{{ addslashes($cabang->nama) }}', '{{ addslashes($cabang->alamat) }}', '{{ addslashes($cabang->kontak) }}', {{ $cabang->foto_wajib ? 'true' : 'false' }})">
                                     Edit
                                 </button>
                                 <form method="POST" action="{{ route('admin.cabangs.delete', $cabang->id) }}"
@@ -79,6 +91,7 @@
     <div class="modal-dialog">
         <form method="POST" id="editForm" class="modal-content">
             @csrf
+            @method('PUT')
             <div class="modal-header">
                 <h5 class="modal-title">Edit Cabang</h5>
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
@@ -96,6 +109,10 @@
                     <label>Kontak</label>
                     <input type="text" name="kontak" id="edit-kontak" class="form-control">
                 </div>
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" id="edit-foto-wajib" name="foto_wajib" value="1">
+                    <label class="form-check-label" for="edit-foto-wajib">Foto wajib saat pendaftaran</label>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
@@ -108,11 +125,12 @@
 
 @push('scripts')
 <script>
-function openEdit(id, nama, alamat, kontak) {
+function openEdit(id, nama, alamat, kontak, fotoWajib) {
     document.getElementById('editForm').action = '/admin/cabangs/' + id;
     document.getElementById('edit-nama').value = nama;
     document.getElementById('edit-alamat').value = alamat;
     document.getElementById('edit-kontak').value = kontak;
+    document.getElementById('edit-foto-wajib').checked = fotoWajib;
     $('#editModal').modal('show');
 }
 </script>

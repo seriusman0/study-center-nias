@@ -162,7 +162,7 @@
                 {{-- FOTO --}}
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">
-                        Foto <span class="text-red-500">*</span>
+                        Foto @if($cabang->foto_wajib)<span class="text-red-500">*</span>@else<span class="text-gray-400 font-normal">(Opsional)</span>@endif
                     </label>
                     <p class="text-xs text-gray-500 mb-2">Foto terbaru dengan latar belakang bersih atau polos. Foto ini akan digunakan untuk sertifikat.<br>
                         <span class="font-semibold text-orange-600">Maks. 2 MB</span> &middot; JPG, PNG, WEBP &mdash; Jika foto terlalu besar, kompres dulu di <a href="https://squoosh.app" target="_blank" class="underline text-sc-teal-600">squoosh.app</a>
@@ -225,6 +225,7 @@
 @push('scripts')
 <script>
     window._fotoSudahAda = document.getElementById('foto-status')?.dataset?.ada === 'true';
+    var fotoWajib = @json($cabang->foto_wajib);
 
     var FIELD_DEFS = [
         { id: 'name',           label: 'Nama Lengkap' },
@@ -234,8 +235,8 @@
         { id: 'birth_date',     label: 'Tanggal Lahir' },
         { id: 'address',        label: 'Alamat' },
         { id: 'guardian_phone', label: 'No. HP Wali', minLen: 7 },
-        { id: 'photo_input',    label: 'Foto', isFile: true },
-    ];
+        fotoWajib ? { id: 'photo_input', label: 'Foto', isFile: true } : null,
+    ].filter(Boolean);
 
     function validateAndHighlight() {
         var missing = [];

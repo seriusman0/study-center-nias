@@ -313,16 +313,18 @@ class AdminController extends Controller
     public function storeCabang(Request $request)
     {
         $request->validate([
-            'nama'    => 'required|string|max:255',
-            'alamat'  => 'nullable|string',
-            'kontak'  => 'nullable|string',
+            'nama'       => 'required|string|max:255',
+            'alamat'     => 'nullable|string',
+            'kontak'     => 'nullable|string',
+            'foto_wajib' => 'nullable|boolean',
         ]);
 
         Cabang::create([
-            'nama'   => $request->nama,
-            'slug'   => \Illuminate\Support\Str::slug($request->nama),
-            'alamat' => $request->alamat,
-            'kontak' => $request->kontak,
+            'nama'       => $request->nama,
+            'slug'       => \Illuminate\Support\Str::slug($request->nama),
+            'alamat'     => $request->alamat,
+            'kontak'     => $request->kontak,
+            'foto_wajib' => $request->boolean('foto_wajib', true),
         ]);
 
         return back()->with('success', 'Cabang ditambahkan.');
@@ -331,16 +333,18 @@ class AdminController extends Controller
     public function updateCabang(Request $request, Cabang $cabang)
     {
         $request->validate([
-            'nama'   => 'required|string|max:255',
-            'alamat' => 'nullable|string',
-            'kontak' => 'nullable|string',
+            'nama'       => 'required|string|max:255',
+            'alamat'     => 'nullable|string',
+            'kontak'     => 'nullable|string',
+            'foto_wajib' => 'nullable|boolean',
         ]);
 
         $cabang->update([
-            'nama'   => $request->nama,
-            'slug'   => \Illuminate\Support\Str::slug($request->nama),
-            'alamat' => $request->alamat,
-            'kontak' => $request->kontak,
+            'nama'       => $request->nama,
+            'slug'       => \Illuminate\Support\Str::slug($request->nama),
+            'alamat'     => $request->alamat,
+            'kontak'     => $request->kontak,
+            'foto_wajib' => $request->boolean('foto_wajib', false),
         ]);
 
         return back()->with('success', 'Cabang diperbarui.');

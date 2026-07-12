@@ -87,10 +87,16 @@ class PendaftaranController extends Controller
             $ext      = $request->file('photo')->getClientOriginalExtension();
             $tempPath = 'pendaftaran/temp/' . uniqid('foto_', true) . '.' . $ext;
             Storage::disk('public')->put($tempPath, file_get_contents($request->file('photo')->getRealPath()));
-        } else {
+        } elseif ($cabang->foto_wajib) {
             $tempPath = session('pendaftaran_foto_temp');
             if (! $tempPath || ! Storage::disk('public')->exists($tempPath)) {
                 return back()->withInput()->withErrors(['photo' => 'Foto wajib diunggah.']);
+            }
+        } else {
+            // Foto opsional — ambil dari session jika ada, null jika tidak
+            $tempPath = session('pendaftaran_foto_temp') ?: null;
+            if ($tempPath && ! Storage::disk('public')->exists($tempPath)) {
+                $tempPath = null;
             }
         }
 
@@ -118,9 +124,14 @@ class PendaftaranController extends Controller
         $data     = session('pendaftaran_data');
         $fotoTemp = session('pendaftaran_foto_temp');
 
-        if (! $data || ! $fotoTemp) {
+        if (! $data) {
             return redirect()->route('pendaftaran.form', $cabang->slug)
                 ->withErrors(['name' => 'Sesi habis atau tidak valid. Silakan isi ulang form.']);
+        }
+
+        if ($cabang->foto_wajib && ! $fotoTemp) {
+            return redirect()->route('pendaftaran.form', $cabang->slug)
+                ->withErrors(['photo' => 'Foto wajib diunggah.']);
         }
 
         return view('pendaftaran.preview', compact('cabang', 'data', 'fotoTemp'));
@@ -131,9 +142,14 @@ class PendaftaranController extends Controller
         $data     = session('pendaftaran_data');
         $fotoTemp = session('pendaftaran_foto_temp');
 
-        if (! $data || ! $fotoTemp) {
+        if (! $data) {
             return redirect()->route('pendaftaran.form', $cabang->slug)
                 ->withErrors(['name' => 'Sesi habis. Silakan isi ulang form.']);
+        }
+
+        if ($cabang->foto_wajib && ! $fotoTemp) {
+            return redirect()->route('pendaftaran.form', $cabang->slug)
+                ->withErrors(['photo' => 'Foto wajib diunggah.']);
         }
 
         $username  = null;
@@ -148,8 +164,10 @@ class PendaftaranController extends Controller
                     $username = $baseUsername . '-' . $counter++;
                 }
 
-                $ext       = pathinfo($fotoTemp, PATHINFO_EXTENSION);
-                $finalPath = 'pendaftaran/foto/' . $username . '.' . $ext;
+                if ($fotoTemp) {
+                    $ext       = pathinfo($fotoTemp, PATHINFO_EXTENSION);
+                    $finalPath = 'pendaftaran/foto/' . $username . '.' . $ext;
+                }
 
                 $user = User::create([
                     'name'      => $data['name'],
@@ -186,7 +204,9 @@ class PendaftaranController extends Controller
                 ->withErrors(['name' => 'Pendaftaran atas nama "' . $data['name'] . '" baru saja diproses. Jika ini adalah Anda, silakan cek status pendaftaran. Jika bukan, hubungi pengurus.']);
         }
 
-        Storage::disk('public')->move($fotoTemp, $finalPath);
+        if ($fotoTemp && $finalPath) {
+            Storage::disk('public')->move($fotoTemp, $finalPath);
+        }
 
         session()->forget(['pendaftaran_data', 'pendaftaran_foto_temp']);
         session(['pendaftaran_username' => $username]);
