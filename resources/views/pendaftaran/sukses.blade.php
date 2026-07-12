@@ -39,7 +39,7 @@
 
             {{-- Download Kartu — Primary CTA --}}
             @if(session('pendaftaran_username'))
-            <a href="{{ route('pendaftaran.kartu') }}"
+            <a href="{{ route('pendaftaran.kartu', $cabang->slug) }}"
                class="flex items-center justify-center gap-3 w-full py-4 mb-4
                       bg-sc-teal-600 hover:bg-sc-teal-700 text-white font-bold
                       rounded-2xl transition-all duration-200 shadow-md hover:shadow-lg

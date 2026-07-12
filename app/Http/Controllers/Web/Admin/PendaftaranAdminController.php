@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cabang;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -11,10 +12,11 @@ class PendaftaranAdminController extends Controller
 {
     public function index(Request $request)
     {
-        $status = $request->query('status', 'semua');
-        $search = trim($request->query('search', ''));
+        $status   = $request->query('status', 'semua');
+        $search   = trim($request->query('search', ''));
+        $cabangId = $request->query('cabang_id', '');
 
-        $query = User::with(['studentProfile'])
+        $query = User::with(['studentProfile', 'cabang'])
             ->whereHas('studentProfile')
             ->whereHas('roles', fn($q) => $q->where('name', 'student'));
 
@@ -26,16 +28,22 @@ class PendaftaranAdminController extends Controller
             $query->where('name', 'like', '%' . $search . '%');
         }
 
-        $pendaftar = $query->orderByDesc('created_at')->paginate(20)->withQueryString();
+        if ($cabangId !== '') {
+            $query->where('cabang_id', $cabangId);
+        }
 
-        return view('admin.pendaftaran.index', compact('pendaftar', 'status', 'search'));
+        $pendaftar = $query->orderByDesc('created_at')->paginate(20)->withQueryString();
+        $cabangs   = Cabang::orderBy('nama')->get();
+
+        return view('admin.pendaftaran.index', compact('pendaftar', 'status', 'search', 'cabangId', 'cabangs'));
     }
 
     public function show(User $user)
     {
         abort_unless($user->studentProfile !== null, 404);
-        $user->load('studentProfile');
-        return view('admin.pendaftaran.show', compact('user'));
+        $user->load(['studentProfile', 'cabang']);
+        $cabangs = Cabang::orderBy('nama')->get();
+        return view('admin.pendaftaran.show', compact('user', 'cabangs'));
     }
 
     public function validasi(Request $request, User $user)
@@ -45,11 +53,17 @@ class PendaftaranAdminController extends Controller
         $data = $request->validate([
             'status'        => 'required|in:diterima,ditolak,perbaikan',
             'catatan_admin' => 'nullable|string|max:1000',
+            'cabang_id'     => 'nullable|exists:cabangs,id',
         ], [
-            'status.required' => 'Status validasi wajib dipilih.',
-            'status.in'       => 'Pilih status yang valid.',
+            'status.required'   => 'Status validasi wajib dipilih.',
+            'status.in'         => 'Pilih status yang valid.',
             'catatan_admin.max' => 'Catatan maksimal 1000 karakter.',
+            'cabang_id.exists'  => 'Cabang tidak valid.',
         ]);
+
+        if (!empty($data['cabang_id'])) {
+            $user->update(['cabang_id' => $data['cabang_id']]);
+        }
 
         $profile = $user->studentProfile;
 

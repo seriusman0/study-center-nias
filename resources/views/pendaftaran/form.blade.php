@@ -7,8 +7,12 @@
     <div class="max-w-2xl mx-auto">
 
         <div class="text-center mb-8">
+            <span class="inline-block bg-sc-teal-100 text-sc-teal-700 text-xs font-semibold px-3 py-1 rounded-full mb-3 tracking-wide uppercase">
+                {{ $cabang->nama }}
+            </span>
             <h1 class="text-3xl font-bold text-sc-teal-800">Pendaftaran Siswa Baru</h1>
             <p class="text-sc-ink-500 mt-2">Isi form berikut dengan lengkap dan benar. Pengurus akan memvalidasi data Anda sebelum akun diaktifkan.</p>
+            <a href="{{ route('pendaftaran.pilih-cabang') }}" class="text-xs text-gray-400 hover:text-sc-teal-600 mt-1 inline-block">← Ganti cabang</a>
         </div>
 
         @if ($errors->any())
@@ -23,7 +27,7 @@
         @endif
 
         <div class="bg-white rounded-2xl shadow-sm border border-sc-line p-8">
-            <form method="POST" action="{{ route('pendaftaran.store') }}" enctype="multipart/form-data" class="space-y-6">
+            <form method="POST" action="{{ route('pendaftaran.store', $cabang->slug) }}" enctype="multipart/form-data" class="space-y-6">
                 @csrf
 
                 {{-- NAMA LENGKAP --}}

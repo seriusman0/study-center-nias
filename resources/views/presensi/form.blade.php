@@ -149,6 +149,7 @@
         valueField: 'id',
         labelField: 'label',
         searchField: ['nama', 'cabang', 'label'],
+        preload: true,
         maxOptions: 50,
         placeholder: 'Pilih atau cari kelas...',
         load: function(query, callback) {

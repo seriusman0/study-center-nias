@@ -101,6 +101,10 @@
                                 </td>
                             </tr>
                             <tr>
+                                <td class="text-muted">Cabang</td>
+                                <td>{{ $user->cabang?->nama ?? '-' }}</td>
+                            </tr>
+                            <tr>
                                 <td class="text-muted">Tanggal Daftar</td>
                                 <td>{{ $user->created_at->format('d F Y, H:i') }} WIB</td>
                             </tr>
@@ -309,6 +313,17 @@
                             </div>
 
                             <div class="form-group">
+                                <label class="font-weight-bold">Cabang</label>
+                                <select name="cabang_id" class="form-control">
+                                    <option value="">— Tidak ubah cabang —</option>
+                                    @foreach($cabangs as $c)
+                                    <option value="{{ $c->id }}" {{ $user->cabang_id == $c->id ? 'selected' : '' }}>{{ $c->nama }}</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted">Ubah hanya jika pendaftar mendaftar ke cabang yang salah.</small>
+                            </div>
+
+                            <div class="form-group">
                                 <label for="catatan_admin">Catatan untuk Pendaftar <small class="text-muted">(opsional, disarankan jika tolak/perbaikan)</small></label>
                                 <textarea name="catatan_admin" id="catatan_admin" rows="4"
                                           class="form-control" maxlength="1000"
@@ -377,7 +392,14 @@ function generateUpdateLink() {
             'Accept': 'application/json',
         },
     })
-    .then(function(r) { return r.json(); })
+    .then(function(r) {
+        if (!r.ok) {
+            return r.text().then(function(text) {
+                throw new Error('HTTP ' + r.status + ': ' + text.substring(0, 200));
+            });
+        }
+        return r.json();
+    })
     .then(function(data) {
         var section = document.getElementById('updateLinkSection');
         var urlInput = document.getElementById('updateLinkUrl');
@@ -388,13 +410,14 @@ function generateUpdateLink() {
         btn.innerHTML = '<i class="fas fa-redo mr-1"></i> Generate Ulang Link';
         btn.disabled = false;
     })
-    .catch(function() {
+    .catch(function(err) {
         if (errEl) {
-            errEl.textContent = 'Gagal generate link. Coba lagi.';
+            errEl.textContent = 'Gagal generate link: ' + (err.message || 'Coba lagi.');
             errEl.classList.remove('d-none');
         }
         btn.innerHTML = '<i class="fas fa-redo mr-1"></i> Generate Link Perbaikan';
         btn.disabled = false;
+        console.error('generateUpdateLink error:', err);
     });
 }
 </script>

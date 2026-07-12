@@ -21,7 +21,7 @@
 
             {{-- Header kartu --}}
             <div class="bg-sc-teal-600 px-6 py-4">
-                <p class="text-white text-xs font-semibold tracking-widest uppercase opacity-80">Pratinjau Data Pendaftaran</p>
+                <p class="text-white text-xs font-semibold tracking-widest uppercase opacity-80">Pratinjau Data Pendaftaran · {{ $cabang->nama }}</p>
                 <p class="text-white font-bold text-lg">{{ $data['name'] }}</p>
             </div>
 
@@ -88,11 +88,11 @@
 
         {{-- Aksi --}}
         <div class="flex flex-col sm:flex-row gap-3">
-            <a href="{{ route('pendaftaran.form') }}"
+            <a href="{{ route('pendaftaran.form', $cabang->slug) }}"
                class="flex-1 text-center py-3 border-2 border-sc-teal-600 text-sc-teal-700 rounded-xl font-semibold hover:bg-sc-teal-50 transition text-sm">
                 ← Perbaiki Data
             </a>
-            <form method="POST" action="{{ route('pendaftaran.konfirmasi') }}" class="flex-1">
+            <form method="POST" action="{{ route('pendaftaran.konfirmasi', $cabang->slug) }}" class="flex-1">
                 @csrf
                 <button type="submit"
                         class="w-full py-3 bg-sc-teal-600 text-white rounded-xl font-semibold hover:bg-sc-teal-700 transition text-sm">

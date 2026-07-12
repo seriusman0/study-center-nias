@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cabang;
 use App\Models\Role;
 use App\Models\StudentProfile;
 use App\Models\User;
@@ -16,20 +17,26 @@ use Illuminate\Support\Str;
 
 class PendaftaranController extends Controller
 {
-    public function showForm()
+    public function pilihCabang()
+    {
+        $cabangs = Cabang::orderBy('nama')->get();
+        return view('pendaftaran.pilih-cabang', compact('cabangs'));
+    }
+
+    public function showForm(Cabang $cabang)
     {
         $prevData = session('pendaftaran_data');
         $prevFoto = session('pendaftaran_foto_temp');
-        return view('pendaftaran.form', compact('prevData', 'prevFoto'));
+        return view('pendaftaran.form', compact('cabang', 'prevData', 'prevFoto'));
     }
 
-    public function sukses()
+    public function sukses(Cabang $cabang)
     {
         $username = session('pendaftaran_username');
-        return view('pendaftaran.sukses', compact('username'));
+        return view('pendaftaran.sukses', compact('cabang', 'username'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, Cabang $cabang)
     {
         $request->validate([
             'name'           => 'required|string|max:100',
@@ -98,33 +105,34 @@ class PendaftaranController extends Controller
                 'address'        => $address,
                 'guardian_phone' => $guardianPhone,
                 'note'           => $request->filled('note') ? trim($request->input('note')) : null,
+                'cabang_id'      => $cabang->id,
             ],
             'pendaftaran_foto_temp' => $tempPath,
         ]);
 
-        return redirect()->route('pendaftaran.preview');
+        return redirect()->route('pendaftaran.preview', $cabang->slug);
     }
 
-    public function preview()
+    public function preview(Cabang $cabang)
     {
         $data     = session('pendaftaran_data');
         $fotoTemp = session('pendaftaran_foto_temp');
 
         if (! $data || ! $fotoTemp) {
-            return redirect()->route('pendaftaran.form')
+            return redirect()->route('pendaftaran.form', $cabang->slug)
                 ->withErrors(['name' => 'Sesi habis atau tidak valid. Silakan isi ulang form.']);
         }
 
-        return view('pendaftaran.preview', compact('data', 'fotoTemp'));
+        return view('pendaftaran.preview', compact('cabang', 'data', 'fotoTemp'));
     }
 
-    public function konfirmasi()
+    public function konfirmasi(Cabang $cabang)
     {
         $data     = session('pendaftaran_data');
         $fotoTemp = session('pendaftaran_foto_temp');
 
         if (! $data || ! $fotoTemp) {
-            return redirect()->route('pendaftaran.form')
+            return redirect()->route('pendaftaran.form', $cabang->slug)
                 ->withErrors(['name' => 'Sesi habis. Silakan isi ulang form.']);
         }
 
@@ -132,7 +140,7 @@ class PendaftaranController extends Controller
         $finalPath = null;
 
         try {
-            DB::transaction(function () use ($data, $fotoTemp, &$username, &$finalPath) {
+            DB::transaction(function () use ($data, $fotoTemp, $cabang, &$username, &$finalPath) {
                 $baseUsername = Str::slug($data['name']);
                 $username     = $baseUsername;
                 $counter      = 2;
@@ -148,6 +156,7 @@ class PendaftaranController extends Controller
                     'username'  => $username,
                     'password'  => Hash::make('12345'),
                     'is_active' => false,
+                    'cabang_id' => $cabang->id,
                 ]);
 
                 $studentRole = Role::where('name', 'student')->first();
@@ -173,7 +182,7 @@ class PendaftaranController extends Controller
             });
         } catch (UniqueConstraintViolationException $e) {
             session()->forget(['pendaftaran_data', 'pendaftaran_foto_temp']);
-            return redirect()->route('pendaftaran.form')
+            return redirect()->route('pendaftaran.form', $cabang->slug)
                 ->withErrors(['name' => 'Pendaftaran atas nama "' . $data['name'] . '" baru saja diproses. Jika ini adalah Anda, silakan cek status pendaftaran. Jika bukan, hubungi pengurus.']);
         }
 
@@ -182,10 +191,10 @@ class PendaftaranController extends Controller
         session()->forget(['pendaftaran_data', 'pendaftaran_foto_temp']);
         session(['pendaftaran_username' => $username]);
 
-        return redirect()->route('pendaftaran.sukses');
+        return redirect()->route('pendaftaran.sukses', $cabang->slug);
     }
 
-    public function kartu()
+    public function kartu(Cabang $cabang)
     {
         $username = session('pendaftaran_username');
         if (! $username) {
@@ -194,7 +203,7 @@ class PendaftaranController extends Controller
 
         $user = User::with('studentProfile')->where('username', $username)->firstOrFail();
 
-        $pdf = Pdf::loadView('pendaftaran.kartu-pdf', compact('user'))
+        $pdf = Pdf::loadView('pendaftaran.kartu-pdf', compact('user', 'cabang'))
             ->setPaper([0, 0, 595, 420])
             ->setOptions([
                 'isRemoteEnabled'         => false,

@@ -33,16 +33,19 @@ Route::get('/blog', [BlogWebController::class, 'index'])->name('blog.index');
 Route::get('/cabang', [CabangWebController::class, 'index'])->name('cabang.index');
 Route::get('/cabang/{slug}', [CabangWebController::class, 'show'])->name('cabang.show');
 
-// Student registration (public) — static sub-paths before wildcard
-Route::get('/pendaftaran/preview', [PendaftaranController::class, 'preview'])->name('pendaftaran.preview');
-Route::post('/pendaftaran/konfirmasi', [PendaftaranController::class, 'konfirmasi'])->name('pendaftaran.konfirmasi');
-Route::get('/pendaftaran/sukses', [PendaftaranController::class, 'sukses'])->name('pendaftaran.sukses');
-Route::get('/pendaftaran/kartu', [PendaftaranController::class, 'kartu'])->name('pendaftaran.kartu');
-Route::get('/pendaftaran', [PendaftaranController::class, 'showForm'])->name('pendaftaran.form');
-Route::post('/pendaftaran', [PendaftaranController::class, 'store'])->name('pendaftaran.store');
-Route::get('/cek-pendaftaran/{username}', [PendaftaranController::class, 'cekStatus'])->name('pendaftaran.cek');
+// Student registration (public)
+Route::get('/pendaftaran', [PendaftaranController::class, 'pilihCabang'])->name('pendaftaran.pilih-cabang');
+// perbaikan/{token} MUST be before {cabang:slug} to avoid slug conflict
 Route::get('/pendaftaran/perbaikan/{token}', [PendaftaranController::class, 'showUpdateForm'])->name('pendaftaran.update.form');
 Route::post('/pendaftaran/perbaikan/{token}', [PendaftaranController::class, 'processUpdate'])->name('pendaftaran.update.store');
+// Per-cabang multi-step flow
+Route::get('/pendaftaran/{cabang:slug}', [PendaftaranController::class, 'showForm'])->name('pendaftaran.form');
+Route::post('/pendaftaran/{cabang:slug}', [PendaftaranController::class, 'store'])->name('pendaftaran.store');
+Route::get('/pendaftaran/{cabang:slug}/preview', [PendaftaranController::class, 'preview'])->name('pendaftaran.preview');
+Route::post('/pendaftaran/{cabang:slug}/konfirmasi', [PendaftaranController::class, 'konfirmasi'])->name('pendaftaran.konfirmasi');
+Route::get('/pendaftaran/{cabang:slug}/sukses', [PendaftaranController::class, 'sukses'])->name('pendaftaran.sukses');
+Route::get('/pendaftaran/{cabang:slug}/kartu', [PendaftaranController::class, 'kartu'])->name('pendaftaran.kartu');
+Route::get('/cek-pendaftaran/{username}', [PendaftaranController::class, 'cekStatus'])->name('pendaftaran.cek');
 
 // Auth pages (guest only)
 Route::middleware('guest')->group(function () {

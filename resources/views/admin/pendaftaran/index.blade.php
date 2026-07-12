@@ -43,13 +43,19 @@
                     @endforeach
                 </ul>
 
-                <form method="GET" action="{{ route('admin.pendaftaran.index') }}" class="mt-3 d-flex" style="max-width:400px;gap:8px">
+                <form method="GET" action="{{ route('admin.pendaftaran.index') }}" class="mt-3 d-flex flex-wrap" style="gap:8px">
                     <input type="hidden" name="status" value="{{ $status }}">
+                    <select name="cabang_id" class="form-control form-control-sm" style="max-width:200px">
+                        <option value="">Semua Cabang</option>
+                        @foreach($cabangs as $c)
+                        <option value="{{ $c->id }}" {{ $cabangId == $c->id ? 'selected' : '' }}>{{ $c->nama }}</option>
+                        @endforeach
+                    </select>
                     <input type="text" name="search" value="{{ $search }}"
                            placeholder="Cari nama pendaftar..."
-                           class="form-control form-control-sm">
+                           class="form-control form-control-sm" style="max-width:220px">
                     <button type="submit" class="btn btn-sm btn-primary">Cari</button>
-                    @if($search)
+                    @if($search || $cabangId)
                     <a href="{{ route('admin.pendaftaran.index', ['status' => $status]) }}" class="btn btn-sm btn-secondary">Reset</a>
                     @endif
                 </form>
@@ -62,6 +68,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Nama</th>
+                                <th>Cabang</th>
                                 <th>Sekolah</th>
                                 <th>Kelas</th>
                                 <th>Tanggal Daftar</th>
@@ -78,6 +85,7 @@
                                     <strong>{{ $user->name }}</strong><br>
                                     <small class="text-muted">{{ $user->username }}</small>
                                 </td>
+                                <td>{{ $user->cabang?->nama ?? '-' }}</td>
                                 <td>{{ $profile?->school_name ?? '-' }}</td>
                                 <td>{{ $profile?->grade_class ?? '-' }}</td>
                                 <td>{{ $user->created_at->format('d M Y') }}</td>
@@ -114,7 +122,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-4">
+                                <td colspan="8" class="text-center text-muted py-4">
                                     Tidak ada data pendaftaran
                                     @if($search) dengan kata kunci "<strong>{{ $search }}</strong>" @endif.
                                 </td>
