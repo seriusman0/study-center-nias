@@ -91,6 +91,18 @@
                                 </td>
                             </tr>
                             <tr>
+                                <td class="text-muted">Mata Pelajaran</td>
+                                <td>
+                                    @if(!empty($profile->mata_pelajaran))
+                                        @foreach($profile->mata_pelajaran as $mp)
+                                            <span class="badge badge-info mr-1 mb-1">{{ $mp }}</span>
+                                        @endforeach
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
                                 <td class="text-muted">Catatan Jadwal</td>
                                 <td>
                                     @if($profile->note)
