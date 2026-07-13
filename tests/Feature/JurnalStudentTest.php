@@ -183,6 +183,59 @@ class JurnalStudentTest extends TestCase
         ]);
     }
 
+    public function test_verse_ref_visible_from_different_day_in_same_week(): void
+    {
+        $today     = JurnalWeek::today();
+        $yesterday = $today->copy()->subDay()->toDateString();
+        $todayStr  = $today->toDateString();
+
+        // Save verse on yesterday
+        $this->actingAs($this->student)->postJson(route('jurnal.toggle'), [
+            'type'      => 'verse',
+            'date'      => $yesterday,
+            'verse_ref' => 'Matius 1:5',
+        ]);
+
+        // View jurnal for today — should show verse from yesterday
+        $response = $this->actingAs($this->student)->get(route('jurnal.index', ['date' => $todayStr]));
+        $response->assertStatus(200);
+        $this->assertEquals('Matius 1:5', $response->viewData('verseRef'));
+    }
+
+    public function test_verse_ref_update_from_different_day_modifies_original_entry(): void
+    {
+        $today     = JurnalWeek::today();
+        $yesterday = $today->copy()->subDay()->toDateString();
+        $todayStr  = $today->toDateString();
+
+        // Save on yesterday
+        $this->actingAs($this->student)->postJson(route('jurnal.toggle'), [
+            'type'      => 'verse',
+            'date'      => $yesterday,
+            'verse_ref' => 'Matius 1:5',
+        ]);
+
+        // Edit from today — should update yesterday's entry, not create new
+        $this->actingAs($this->student)->postJson(route('jurnal.toggle'), [
+            'type'      => 'verse',
+            'date'      => $todayStr,
+            'verse_ref' => 'Matius 1:23',
+        ]);
+
+        // Only 1 entry should have verse_week_key set
+        $weekKey = JurnalWeek::weekKeyFor($today);
+        $count   = \App\Models\JurnalEntry::where('student_id', $this->student->id)
+            ->where('verse_week_key', $weekKey)
+            ->count();
+        $this->assertEquals(1, $count);
+
+        // And it should hold the updated ref
+        $this->assertDatabaseHas('jurnal_entries', [
+            'student_id' => $this->student->id,
+            'verse_ref'  => 'Matius 1:23',
+        ]);
+    }
+
     public function test_future_date_returns_422(): void
     {
         $future = JurnalWeek::today()->addDay()->toDateString();

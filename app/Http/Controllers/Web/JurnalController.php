@@ -45,11 +45,38 @@ class JurnalController extends Controller
             ->get()
             ->groupBy('kategori');
 
-        $itemIds = collect($lifeItems)->flatten(1)->pluck('id');
+        $allItems = collect($lifeItems)->flatten(1);
+        $itemIds  = $allItems->pluck('id');
+
+        $dailyIds   = $allItems->where('reset_period', 'daily')->pluck('id');
+        $saturdayIds = $allItems->where('reset_period', 'weekly_saturday')->pluck('id');
+        $sundayIds   = $allItems->where('reset_period', 'weekly_sunday')->pluck('id');
+
+        // For weekly items, store/read check on the actual Saturday/Sunday of that ISO week
+        $isoSaturday = $date->copy()->startOfWeek(\Carbon\CarbonInterface::MONDAY)->addDays(5); // Saturday
+        $isoSunday   = $date->copy()->startOfWeek(\Carbon\CarbonInterface::MONDAY)->addDays(6); // Sunday
+
         $lifeChecks = JurnalLifeCheck::forStudent($user->id)
-            ->whereDate('tanggal', $date->toDateString())
-            ->whereIn('life_item_id', $itemIds)
             ->where('checked', true)
+            ->where(function ($q) use ($date, $dailyIds, $saturdayIds, $sundayIds, $isoSaturday, $isoSunday) {
+                $q->where(function ($q2) use ($date, $dailyIds) {
+                    $q2->whereDate('tanggal', $date->toDateString())
+                       ->whereIn('life_item_id', $dailyIds);
+                });
+                if ($saturdayIds->isNotEmpty()) {
+                    $q->orWhere(function ($q2) use ($isoSaturday, $saturdayIds) {
+                        $q2->whereDate('tanggal', $isoSaturday->toDateString())
+                           ->whereIn('life_item_id', $saturdayIds);
+                    });
+                }
+                if ($sundayIds->isNotEmpty()) {
+                    $q->orWhere(function ($q2) use ($isoSunday, $sundayIds) {
+                        $q2->whereDate('tanggal', $isoSunday->toDateString())
+                           ->whereIn('life_item_id', $sundayIds);
+                    });
+                }
+            })
+            ->whereIn('life_item_id', $itemIds)
             ->pluck('life_item_id')
             ->all();
 
@@ -124,21 +151,49 @@ class JurnalController extends Controller
                 case 'verse':
                     $key = JurnalWeek::weekKeyFor($date);
                     $ref = $data['verse_ref'] ?? null;
-                    $entry->update(['verse_week_key' => $ref ? $key : null, 'verse_ref' => $ref ?: null]);
+
+                    if ($ref) {
+                        // Update existing week entry if any, otherwise use today's entry
+                        $weekEntry = JurnalEntry::where('student_id', $user->id)
+                            ->where('verse_week_key', $key)
+                            ->first();
+                        if ($weekEntry) {
+                            $weekEntry->update(['verse_ref' => $ref]);
+                        } else {
+                            $entry->update(['verse_week_key' => $key, 'verse_ref' => $ref]);
+                        }
+                    } else {
+                        // Clear from whichever entry in this week holds the verse
+                        JurnalEntry::where('student_id', $user->id)
+                            ->where('verse_week_key', $key)
+                            ->update(['verse_week_key' => null, 'verse_ref' => null]);
+                    }
                     break;
                 case 'life':
                     $itemId  = (int) ($data['item_id'] ?? 0);
                     $checked = (bool) $data['checked'];
                     abort_if($itemId === 0, 422, 'item_id wajib untuk tipe life.');
+
+                    $lifeItem   = JurnalLifeItem::find($itemId);
+                    $checkDate  = $date->toDateString();
+                    if ($lifeItem) {
+                        $weekMonday = $date->copy()->startOfWeek(\Carbon\CarbonInterface::MONDAY);
+                        if ($lifeItem->reset_period === 'weekly_saturday') {
+                            $checkDate = $weekMonday->copy()->addDays(5)->toDateString();
+                        } elseif ($lifeItem->reset_period === 'weekly_sunday') {
+                            $checkDate = $weekMonday->copy()->addDays(6)->toDateString();
+                        }
+                    }
+
                     if ($checked) {
                         JurnalLifeCheck::updateOrCreate(
-                            ['student_id' => $user->id, 'life_item_id' => $itemId, 'tanggal' => $date->toDateString()],
+                            ['student_id' => $user->id, 'life_item_id' => $itemId, 'tanggal' => $checkDate],
                             ['checked' => true]
                         );
                     } else {
                         JurnalLifeCheck::where('student_id', $user->id)
                             ->where('life_item_id', $itemId)
-                            ->whereDate('tanggal', $date->toDateString())
+                            ->whereDate('tanggal', $checkDate)
                             ->delete();
                     }
                     break;
