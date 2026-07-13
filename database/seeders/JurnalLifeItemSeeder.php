@@ -11,8 +11,6 @@ class JurnalLifeItemSeeder extends Seeder
     {
         $items = [
             ['kerohanian', 'Mengawali hari dengan berdoa'],
-            ['kerohanian', 'Baca Alkitab'],
-            ['kerohanian', 'Hafal Ayat'],
             ['pendidikan', 'Hadir di kelas SC'],
             ['pendidikan', 'Hadir Ibadah hari sabtu'],
             ['pendidikan', 'Hadir ibadah hari minggu'],

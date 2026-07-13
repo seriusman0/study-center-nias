@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\JurnalBibleSchedule;
+use App\Models\CollegeBibleItem;
+use App\Models\CollegeConfig;
 use App\Models\JurnalEntry;
 use App\Models\JurnalLifeCheck;
 use App\Models\JurnalLifeItem;
-use App\Models\JurnalWeeklyVerse;
 use App\Support\JurnalWeek;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -26,19 +26,18 @@ class JurnalController extends Controller
 
         abort_if($date->greaterThan($today), 422, 'Tanggal jurnal tidak boleh di masa depan.');
 
-        $schedule = JurnalBibleSchedule::forDate($date);
+        $config    = CollegeConfig::current();
+        $dayNo     = $config->dayNoFor($date);
+        $bibleItem = CollegeBibleItem::forDayNo($dayNo);
 
-        $weekMeta = JurnalWeek::current($date);
-        $verse = JurnalWeeklyVerse::forWeek($weekMeta['tahun'], $weekMeta['bulan'], $weekMeta['minggu']);
+        $weekKey    = JurnalWeek::weekKeyFor($date);
+        $verseEntry = JurnalEntry::forStudent($user->id)
+            ->where('verse_week_key', $weekKey)
+            ->whereNotNull('verse_ref')
+            ->first();
+        $verseRef   = $verseEntry?->verse_ref;
 
         $entry = JurnalEntry::forStudent($user->id)->whereDate('tanggal', $date->toDateString())->first();
-
-        // Weekly verse "checked for this week" — any entry within [weekStart, weekEnd] with matching week_key.
-        $weekStart = (clone $date)->subDays(($date->day - 1) % 7)->startOfDay();
-        // Actually simpler: find any row in this week whose verse_week_key == current week key.
-        $verseChecked = JurnalEntry::forStudent($user->id)
-            ->where('verse_week_key', $weekMeta['key'])
-            ->exists();
 
         $lifeItems = JurnalLifeItem::forStudent($user->id)
             ->orderBy('kategori')
@@ -54,7 +53,6 @@ class JurnalController extends Controller
             ->pluck('life_item_id')
             ->all();
 
-        // Streak: consecutive days back from today where student has at least 1 jurnal activity.
         $streak = 0;
         $cursor = $today->copy();
         for ($i = 0; $i < 60; $i++) {
@@ -70,10 +68,10 @@ class JurnalController extends Controller
             'date'           => $date,
             'today'          => $today,
             'isToday'        => $date->isSameDay($today),
-            'schedule'       => $schedule,
-            'verse'          => $verse,
-            'weekMeta'       => $weekMeta,
-            'verseChecked'   => $verseChecked,
+            'dayNo'          => $dayNo,
+            'bibleItem'      => $bibleItem,
+            'weekKey'        => $weekKey,
+            'verseRef'       => $verseRef,
             'entry'          => $entry,
             'lifeItems'      => $lifeItems,
             'checkedItemIds' => $lifeChecks,
@@ -86,10 +84,11 @@ class JurnalController extends Controller
         $user = $request->user();
 
         $data = $request->validate([
-            'type'    => 'required|in:pl,pb,verse,life',
-            'date'    => 'nullable|date',
-            'item_id' => 'nullable|integer',
-            'checked' => 'required|boolean',
+            'type'      => 'required|in:pl,pb,verse,life',
+            'date'      => 'nullable|date',
+            'item_id'   => 'nullable|integer',
+            'checked'   => 'nullable|boolean',
+            'verse_ref' => 'nullable|string|max:100',
         ]);
 
         $date = isset($data['date'])
@@ -102,27 +101,34 @@ class JurnalController extends Controller
         }
 
         $type = $data['type'];
-        $checked = (bool) $data['checked'];
 
-        DB::transaction(function () use ($user, $date, $type, $checked, $data) {
-            $entry = JurnalEntry::firstOrCreate(
-                ['student_id' => $user->id, 'tanggal' => $date->toDateString()],
-                ['cabang_id'  => $user->cabang_id]
-            );
+        DB::transaction(function () use ($user, $date, $type, $data) {
+            $entry = JurnalEntry::where('student_id', $user->id)
+                ->whereDate('tanggal', $date->toDateString())
+                ->first();
+            if (!$entry) {
+                $entry = JurnalEntry::create([
+                    'student_id' => $user->id,
+                    'tanggal'    => $date->toDateString(),
+                    'cabang_id'  => $user->cabang_id,
+                ]);
+            }
 
             switch ($type) {
                 case 'pl':
-                    $entry->update(['pl_checked' => $checked]);
+                    $entry->update(['pl_checked' => (bool) $data['checked']]);
                     break;
                 case 'pb':
-                    $entry->update(['pb_checked' => $checked]);
+                    $entry->update(['pb_checked' => (bool) $data['checked']]);
                     break;
                 case 'verse':
                     $key = JurnalWeek::weekKeyFor($date);
-                    $entry->update(['verse_week_key' => $checked ? $key : null]);
+                    $ref = $data['verse_ref'] ?? null;
+                    $entry->update(['verse_week_key' => $ref ? $key : null, 'verse_ref' => $ref ?: null]);
                     break;
                 case 'life':
-                    $itemId = (int) ($data['item_id'] ?? 0);
+                    $itemId  = (int) ($data['item_id'] ?? 0);
+                    $checked = (bool) $data['checked'];
                     abort_if($itemId === 0, 422, 'item_id wajib untuk tipe life.');
                     if ($checked) {
                         JurnalLifeCheck::updateOrCreate(

@@ -11,7 +11,7 @@ class JurnalEntry extends Model
 
     protected $fillable = [
         'student_id', 'cabang_id', 'tanggal',
-        'pl_checked', 'pb_checked', 'verse_week_key',
+        'pl_checked', 'pb_checked', 'verse_week_key', 'verse_ref',
     ];
 
     protected $casts = [

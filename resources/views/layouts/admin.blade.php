@@ -172,8 +172,6 @@
                             <p>Jurnal<i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item"><a href="{{ route('admin.jurnal.bible-schedules.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal.bible-schedules.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Porsi Alkitab</p></a></li>
-                            <li class="nav-item"><a href="{{ route('admin.jurnal.weekly-verses.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal.weekly-verses.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Hafal Ayat Mingguan</p></a></li>
                             <li class="nav-item"><a href="{{ route('admin.jurnal.life-items.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal.life-items.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Jadwal Kehidupan</p></a></li>
                             <li class="nav-item"><a href="{{ route('admin.jurnal.reports.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal.reports.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Laporan</p></a></li>
                         </ul>

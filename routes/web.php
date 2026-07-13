@@ -177,17 +177,6 @@ Route::middleware(['auth', 'role:student'])->prefix('jurnal')->name('jurnal.')->
 
 // Jurnal admin/mentor management
 Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal')->name('admin.jurnal.')->group(function () {
-    Route::get   ('bible-schedules',                     [JurnalBibleScheduleController::class, 'index'])->name('bible-schedules.index');
-    Route::post  ('bible-schedules',                     [JurnalBibleScheduleController::class, 'store'])->name('bible-schedules.store');
-    Route::put   ('bible-schedules/{bibleSchedule}',     [JurnalBibleScheduleController::class, 'update'])->name('bible-schedules.update');
-    Route::delete('bible-schedules/{bibleSchedule}',     [JurnalBibleScheduleController::class, 'destroy'])->name('bible-schedules.destroy');
-    Route::post  ('bible-schedules/bulk',                [JurnalBibleScheduleController::class, 'bulkStore'])->name('bible-schedules.bulk');
-
-    Route::get   ('weekly-verses',                       [JurnalWeeklyVerseController::class, 'index'])->name('weekly-verses.index');
-    Route::post  ('weekly-verses',                       [JurnalWeeklyVerseController::class, 'store'])->name('weekly-verses.store');
-    Route::put   ('weekly-verses/{weeklyVerse}',         [JurnalWeeklyVerseController::class, 'update'])->name('weekly-verses.update');
-    Route::delete('weekly-verses/{weeklyVerse}',         [JurnalWeeklyVerseController::class, 'destroy'])->name('weekly-verses.destroy');
-
     Route::get   ('life-items',                          [JurnalLifeItemController::class, 'index'])->name('life-items.index');
     Route::post  ('life-items',                          [JurnalLifeItemController::class, 'store'])->name('life-items.store');
     Route::put   ('life-items/{item}',                   [JurnalLifeItemController::class, 'update'])->name('life-items.update');

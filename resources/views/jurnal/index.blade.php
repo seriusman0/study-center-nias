@@ -8,11 +8,11 @@
         date: '{{ $date->toDateString() }}',
         today: '{{ $today->toDateString() }}',
         csrf: '{{ csrf_token() }}',
-        verseKey: '{{ $weekMeta['key'] }}',
+        weekKey: '{{ $weekKey }}',
+        verseRef: {{ $verseRef ? json_encode($verseRef) : 'null' }},
         state: {
             pl: {{ $entry?->pl_checked ? 'true' : 'false' }},
             pb: {{ $entry?->pb_checked ? 'true' : 'false' }},
-            verse: {{ $verseChecked ? 'true' : 'false' }},
             life: {{ json_encode($checkedItemIds) }}
         }
      })">
@@ -53,30 +53,31 @@
 
     {{-- Pembacaan Alkitab --}}
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4">
-        <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">1</span>
             Pembacaan Alkitab
         </h2>
-        @if($schedule)
+        @if($bibleItem)
+            <p class="text-xs text-sc-ink-500 mb-3 ml-9">Hari ke-{{ $dayNo }}</p>
             <div class="grid sm:grid-cols-2 gap-3">
                 <label class="flex items-start gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
                     <input type="checkbox" class="mt-1 w-5 h-5 accent-sc-teal-600" :checked="state.pl" @change="toggle('pl', null, $event.target.checked)">
                     <div>
                         <div class="font-semibold text-sm text-sc-ink-900">Perjanjian Lama</div>
-                        <div class="text-sm text-sc-ink-700">{{ $schedule->pl_porsi ?: '—' }}</div>
+                        <div class="text-sm text-sc-ink-700">{{ $bibleItem->pl_text ?: '—' }}</div>
                     </div>
                 </label>
                 <label class="flex items-start gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
                     <input type="checkbox" class="mt-1 w-5 h-5 accent-sc-teal-600" :checked="state.pb" @change="toggle('pb', null, $event.target.checked)">
                     <div>
                         <div class="font-semibold text-sm text-sc-ink-900">Perjanjian Baru</div>
-                        <div class="text-sm text-sc-ink-700">{{ $schedule->pb_porsi ?: '—' }}</div>
+                        <div class="text-sm text-sc-ink-700">{{ $bibleItem->pb_text ?: '—' }}</div>
                     </div>
                 </label>
             </div>
         @else
-            <p class="text-sm text-sc-ink-500 italic">Porsi Alkitab belum tersedia untuk tanggal ini.</p>
-            <div class="grid sm:grid-cols-2 gap-3 mt-3">
+            <p class="text-sm text-sc-ink-500 italic mb-3 ml-9">Porsi Alkitab belum tersedia untuk tanggal ini.</p>
+            <div class="grid sm:grid-cols-2 gap-3">
                 <label class="flex items-center gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
                     <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" :checked="state.pl" @change="toggle('pl', null, $event.target.checked)">
                     <span class="text-sm font-semibold">Perjanjian Lama</span>
@@ -90,24 +91,63 @@
     </div>
 
     {{-- Hafal Ayat --}}
-    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4">
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
+         x-data="hafalAyat(jurnalPage_cfg)">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">2</span>
             Hafal Ayat Mingguan
         </h2>
-        <p class="text-xs text-sc-ink-500 mb-3 ml-9">Minggu ke-{{ $weekMeta['minggu'] }} bulan {{ $date->locale('id')->isoFormat('MMMM Y') }}</p>
-        @if($verse)
-            <div class="p-4 rounded-lg bg-sc-yellow-100 border border-sc-yellow-300 mb-3">
-                <div class="font-bold text-sc-teal-800 mb-1">{{ $verse->referensi }}</div>
-                <div class="font-display text-base text-sc-ink-900 mt-1 whitespace-pre-line leading-relaxed">{{ $verse->isi }}</div>
-            </div>
-            <label class="flex items-center gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
-                <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" :checked="state.verse" @change="toggle('verse', null, $event.target.checked)">
-                <span class="text-sm font-semibold">Sudah hafal ayat minggu ini</span>
-            </label>
+        @if($bibleItem)
+            <p class="text-xs text-sc-ink-500 mb-3 ml-9">
+                Dari porsi hari ini: <span class="font-medium text-sc-teal-700">{{ implode(' / ', array_filter([$bibleItem->pl_text, $bibleItem->pb_text])) }}</span>
+            </p>
         @else
-            <p class="text-sm text-sc-ink-500 italic">Ayat hafalan belum ditetapkan untuk minggu ini.</p>
+            <p class="text-xs text-sc-ink-500 mb-3 ml-9">Pilih satu ayat dari porsi bacaan hari ini.</p>
         @endif
+        <div class="flex flex-wrap gap-2 items-end">
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-sc-ink-500 font-medium">Kitab</label>
+                <input type="text" x-model="kitab" list="kitab-list"
+                    placeholder="mis. Ezra"
+                    @blur="save()"
+                    class="border border-sc-line rounded-lg px-3 py-2 text-sm w-36 focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-sc-ink-500 font-medium">Pasal</label>
+                <input type="number" x-model="pasal" min="1" max="150" placeholder="1"
+                    @blur="save()"
+                    class="border border-sc-line rounded-lg px-3 py-2 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-sc-ink-500 font-medium">Ayat</label>
+                <input type="number" x-model="ayat" min="1" max="200" placeholder="1"
+                    @blur="save()"
+                    class="border border-sc-line rounded-lg px-3 py-2 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+            </div>
+            <button type="button" x-show="kitab || pasal || ayat" @click="clear()"
+                class="px-3 py-2 rounded-lg bg-sc-ink-100 text-sc-ink-500 text-sm hover:bg-sc-ink-200 transition">
+                Hapus
+            </button>
+        </div>
+        <p x-show="saved" x-transition class="text-xs text-sc-teal-600 mt-2 font-medium" style="display:none">
+            Tersimpan: <span x-text="saved"></span>
+        </p>
+        <datalist id="kitab-list">
+            <option value="Kejadian"><option value="Keluaran"><option value="Imamat"><option value="Bilangan"><option value="Ulangan">
+            <option value="Yosua"><option value="Hakim-hakim"><option value="Rut"><option value="1 Samuel"><option value="2 Samuel">
+            <option value="1 Raja-raja"><option value="2 Raja-raja"><option value="1 Tawarikh"><option value="2 Tawarikh"><option value="Ezra">
+            <option value="Nehemia"><option value="Ester"><option value="Ayub"><option value="Mazmur"><option value="Amsal">
+            <option value="Pengkhotbah"><option value="Kidung Agung"><option value="Yesaya"><option value="Yeremia"><option value="Ratapan">
+            <option value="Yehezkiel"><option value="Daniel"><option value="Hosea"><option value="Yoel"><option value="Amos">
+            <option value="Obaja"><option value="Yunus"><option value="Mikha"><option value="Nahum"><option value="Habakuk">
+            <option value="Zefanya"><option value="Hagai"><option value="Zakharia"><option value="Maleakhi">
+            <option value="Matius"><option value="Markus"><option value="Lukas"><option value="Yohanes"><option value="Kisah">
+            <option value="Roma"><option value="1 Korintus"><option value="2 Korintus"><option value="Galatia"><option value="Efesus">
+            <option value="Filipi"><option value="Kolose"><option value="1 Tesalonika"><option value="2 Tesalonika">
+            <option value="1 Timotius"><option value="2 Timotius"><option value="Titus"><option value="Filemon">
+            <option value="Ibrani"><option value="Yakobus"><option value="1 Petrus"><option value="2 Petrus">
+            <option value="1 Yohanes"><option value="2 Yohanes"><option value="3 Yohanes"><option value="Yudas"><option value="Wahyu">
+        </datalist>
     </div>
 
     {{-- Jadwal Kehidupan --}}
@@ -152,12 +192,14 @@
 
 @push('scripts')
 <script>
+let jurnalPage_cfg = null;
+
 function jurnalPage(cfg) {
+    jurnalPage_cfg = cfg;
     return {
         date: cfg.date,
         today: cfg.today,
         csrf: cfg.csrf,
-        verseKey: cfg.verseKey,
         state: cfg.state,
         msg: '',
         showMsg(m) {
@@ -199,6 +241,46 @@ function jurnalPage(cfg) {
             }
         },
     }
+}
+
+function hafalAyat(cfg) {
+    function parse(ref) {
+        if (!ref) return { kitab: '', pasal: '', ayat: '' };
+        // "Ezra 9:3" → kitab=Ezra, pasal=9, ayat=3
+        const m = ref.match(/^(.+?)\s+(\d+):(\d+)$/);
+        if (m) return { kitab: m[1], pasal: m[2], ayat: m[3] };
+        return { kitab: ref, pasal: '', ayat: '' };
+    }
+    const parsed = parse(cfg ? cfg.verseRef : null);
+    return {
+        kitab: parsed.kitab,
+        pasal: parsed.pasal,
+        ayat:  parsed.ayat,
+        saved: cfg && cfg.verseRef ? cfg.verseRef : '',
+        async save() {
+            if (!this.kitab || !this.pasal || !this.ayat) return;
+            const ref = `${this.kitab} ${this.pasal}:${this.ayat}`;
+            await this._post(ref);
+        },
+        async clear() {
+            this.kitab = ''; this.pasal = ''; this.ayat = '';
+            await this._post(null);
+        },
+        async _post(verseRef) {
+            if (!cfg) return;
+            try {
+                const res = await fetch('{{ route('jurnal.toggle') }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': cfg.csrf, 'Accept': 'application/json' },
+                    body: JSON.stringify({ type: 'verse', date: cfg.date, verse_ref: verseRef }),
+                });
+                if (!res.ok) throw new Error();
+                this.saved = verseRef || '';
+            } catch {
+                // silent fail — user can retry
+            }
+        },
+    };
 }
 </script>
 @endpush

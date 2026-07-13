@@ -112,11 +112,11 @@
                     <div class="flex gap-2">
                         <button type="button"
                             class="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
-                            :class="state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-50'"
+                            :class="state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'"
                             @click="toggleBoolean({{ $item->id }}, true)">Sudah</button>
                         <button type="button"
                             class="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
-                            :class="!state.life.includes({{ $item->id }}) ? 'bg-sc-ink-200 text-sc-ink-700' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-ink-200'"
+                            :class="!state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'"
                             @click="toggleBoolean({{ $item->id }}, false)">Belum</button>
                     </div>
                 </div>
@@ -149,11 +149,11 @@
                     <div class="flex gap-2">
                         <button type="button"
                             class="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
-                            :class="state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-50'"
+                            :class="state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'"
                             @click="toggleBoolean({{ $item->id }}, true)">Sudah</button>
                         <button type="button"
                             class="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
-                            :class="!state.life.includes({{ $item->id }}) ? 'bg-sc-ink-200 text-sc-ink-700' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-ink-200'"
+                            :class="!state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'"
                             @click="toggleBoolean({{ $item->id }}, false)">Belum</button>
                     </div>
                 </div>
@@ -185,11 +185,11 @@
                     <div class="flex gap-2">
                         <button type="button"
                             class="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
-                            :class="state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-50'"
+                            :class="state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'"
                             @click="toggleBoolean({{ $item->id }}, true)">Sudah</button>
                         <button type="button"
                             class="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
-                            :class="!state.life.includes({{ $item->id }}) ? 'bg-sc-ink-200 text-sc-ink-700' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-ink-200'"
+                            :class="!state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'"
                             @click="toggleBoolean({{ $item->id }}, false)">Belum</button>
                     </div>
                 </div>

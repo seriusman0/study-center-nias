@@ -22,7 +22,7 @@
         @if(!$todayEntry && $lifeChecksToday === 0)
         <div class="text-center py-4">
             <p class="text-sc-ink-500 text-sm mb-3">Belum ada catatan jurnal hari ini.</p>
-            <a href="{{ route('jurnal.index') }}" class="inline-block px-5 py-2 bg-sc-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-sc-teal-700 transition">Isi Jurnal Sekarang</a>
+            <a href="{{ auth()->user()->hasRole('college') ? route('college-jurnal.index') : route('jurnal.index') }}" class="inline-block px-5 py-2 bg-sc-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-sc-teal-700 transition">Isi Jurnal Sekarang</a>
         </div>
         @else
         <div class="grid grid-cols-2 gap-4 mb-4">
@@ -48,7 +48,7 @@
         </div>
         @endif
         <div class="mt-3 text-right">
-            <a href="{{ route('jurnal.index') }}" class="text-sm text-sc-teal-600 hover:underline font-medium">Lihat jurnal lengkap →</a>
+            <a href="{{ auth()->user()->hasRole('college') ? route('college-jurnal.index') : route('jurnal.index') }}" class="text-sm text-sc-teal-600 hover:underline font-medium">Lihat jurnal lengkap →</a>
         </div>
         @endif
     </div>
