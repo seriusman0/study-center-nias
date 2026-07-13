@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\ProfileWebController;
 use App\Http\Controllers\Web\CvWebController;
 use App\Http\Controllers\Web\CommentWebController;
 use App\Http\Controllers\Web\Admin\AdminController;
+use App\Http\Controllers\Web\Admin\MataPelajaranController;
 use App\Http\Controllers\Web\Admin\RoleAdminController;
 use App\Http\Controllers\Web\Admin\PermissionAdminController;
 use App\Http\Controllers\Web\Admin\NameTagController;
@@ -130,6 +131,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/cabangs', [AdminController::class, 'storeCabang'])->name('cabangs.store');
     Route::post('/cabangs/{cabang}', [AdminController::class, 'updateCabang'])->name('cabangs.update');
     Route::delete('/cabangs/{cabang}', [AdminController::class, 'deleteCabang'])->name('cabangs.delete');
+
+    Route::get('/mata-pelajaran', [MataPelajaranController::class, 'index'])->name('mata-pelajaran');
+    Route::post('/mata-pelajaran', [MataPelajaranController::class, 'store'])->name('mata-pelajaran.store');
+    Route::post('/mata-pelajaran/{mataPelajaran}', [MataPelajaranController::class, 'update'])->name('mata-pelajaran.update');
+    Route::post('/mata-pelajaran/{mataPelajaran}/toggle', [MataPelajaranController::class, 'toggleActive'])->name('mata-pelajaran.toggle');
+    Route::delete('/mata-pelajaran/{mataPelajaran}', [MataPelajaranController::class, 'destroy'])->name('mata-pelajaran.destroy');
     Route::get('/blogs', [AdminController::class, 'blogs'])->name('blogs');
     Route::delete('/blogs/{blog}', [AdminController::class, 'deleteBlog'])->name('blogs.delete');
 

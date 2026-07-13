@@ -29,12 +29,18 @@
 
                 {{-- Foto --}}
                 <div class="text-center">
-                    <div class="w-36 aspect-[3/4] mx-auto overflow-hidden rounded-xl border-2 border-sc-line shadow-sm">
-                        <img src="{{ asset('storage/' . $fotoTemp) }}"
-                             alt="Foto {{ $data['name'] }}"
-                             class="w-full h-full object-cover">
+                    <div class="w-36 aspect-[3/4] mx-auto overflow-hidden rounded-xl border-2 border-sc-line shadow-sm bg-gray-100 flex items-center justify-center">
+                        @if($fotoTemp)
+                            <img src="{{ asset('storage/' . $fotoTemp) }}"
+                                 alt="Foto {{ $data['name'] }}"
+                                 class="w-full h-full object-cover">
+                        @else
+                            <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+                            </svg>
+                        @endif
                     </div>
-                    <p class="text-xs text-gray-400 mt-2">Foto untuk sertifikat</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ $fotoTemp ? 'Foto untuk sertifikat' : 'Tanpa foto' }}</p>
                 </div>
 
                 {{-- Data --}}
@@ -73,6 +79,16 @@
                         <span class="text-gray-400 text-xs font-medium uppercase tracking-wide">HP Siswa</span>
                         <span class="text-gray-300">:</span>
                         <span class="text-gray-800">{{ $data['student_phone'] }}</span>
+                        @endif
+
+                        @if(!empty($data['mata_pelajaran']))
+                        <span class="text-gray-400 text-xs font-medium uppercase tracking-wide">Mata Pelajaran</span>
+                        <span class="text-gray-300">:</span>
+                        <span class="text-gray-800">
+                            @foreach($data['mata_pelajaran'] as $mp)
+                                <span class="inline-block bg-sc-teal-100 text-sc-teal-700 text-xs font-semibold px-2 py-0.5 rounded-full mr-1 mb-1">{{ $mp }}</span>
+                            @endforeach
+                        </span>
                         @endif
 
                         @if($data['note'])

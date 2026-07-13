@@ -32,7 +32,8 @@ class PendaftaranController extends Controller
 
         $prevData = session('pendaftaran_data');
         $prevFoto = session('pendaftaran_foto_temp');
-        return view('pendaftaran.form', compact('cabang', 'prevData', 'prevFoto'));
+        $availableSubjects = $cabang->mata_pelajaran ?: ['Matematika', 'B.Inggris', 'B.Mandarin', 'Komputer'];
+        return view('pendaftaran.form', compact('cabang', 'prevData', 'prevFoto', 'availableSubjects'));
     }
 
     public function sukses(Cabang $cabang)
@@ -53,34 +54,38 @@ class PendaftaranController extends Controller
             'gender'         => 'required|in:laki-laki,perempuan',
             'student_phone'  => ['nullable', 'string', 'max:13', 'regex:/^[0-9]{7,13}$/'],
             'school_name'    => 'required|string|max:150',
-            'grade_class'    => 'required|integer|min:1|max:12',
+            'grade_class'    => 'required|integer|min:' . ($cabang->kelas_min ?? 1) . '|max:' . ($cabang->kelas_max ?? 12),
             'birth_date'     => 'required|date|before:today',
             'address'        => 'required|string|max:500',
             'guardian_phone' => ['required', 'string', 'max:13', 'regex:/^[0-9]{7,13}$/'],
             'note'           => 'nullable|string|max:1000',
             'photo'          => $request->hasFile('photo') ? 'image|mimes:jpg,jpeg,png,webp|max:2048' : 'nullable',
+            'mata_pelajaran'   => 'required|array|min:1',
+            'mata_pelajaran.*' => 'string|max:100',
         ], [
-            'name.required'           => 'Nama lengkap wajib diisi.',
-            'name.max'                => 'Nama lengkap maksimal 100 karakter.',
-            'gender.required'         => 'Jenis kelamin wajib dipilih.',
-            'gender.in'               => 'Pilih jenis kelamin yang valid.',
-            'student_phone.regex'     => 'Nomor HP siswa hanya boleh berisi angka (7-13 digit, tanpa 0 di depan).',
-            'student_phone.max'       => 'Nomor HP siswa maksimal 13 digit.',
-            'school_name.required'    => 'Nama sekolah wajib diisi.',
-            'grade_class.required'    => 'Kelas wajib diisi.',
-            'grade_class.integer'     => 'Kelas harus berupa angka.',
-            'grade_class.min'         => 'Kelas minimal 1.',
-            'grade_class.max'         => 'Kelas maksimal 12.',
-            'birth_date.required'     => 'Tanggal lahir wajib diisi.',
-            'birth_date.before'       => 'Tanggal lahir harus sebelum hari ini.',
-            'address.required'        => 'Alamat rumah wajib diisi.',
-            'guardian_phone.required' => 'Nomor HP orangtua/wali wajib diisi.',
-            'guardian_phone.regex'    => 'Nomor HP orangtua hanya boleh berisi angka (7-13 digit, tanpa 0 di depan).',
-            'guardian_phone.max'      => 'Nomor HP orangtua maksimal 13 digit.',
-            'photo.required'          => 'Foto wajib diunggah.',
-            'photo.image'             => 'File harus berupa gambar.',
-            'photo.mimes'             => 'Format foto harus JPG, JPEG, PNG, atau WEBP.',
-            'photo.max'               => 'Ukuran foto maksimal 2 MB.',
+            'name.required'              => 'Nama lengkap wajib diisi.',
+            'name.max'                   => 'Nama lengkap maksimal 100 karakter.',
+            'gender.required'            => 'Jenis kelamin wajib dipilih.',
+            'gender.in'                  => 'Pilih jenis kelamin yang valid.',
+            'student_phone.regex'        => 'Nomor HP siswa hanya boleh berisi angka (7-13 digit, tanpa 0 di depan).',
+            'student_phone.max'          => 'Nomor HP siswa maksimal 13 digit.',
+            'school_name.required'       => 'Nama sekolah wajib diisi.',
+            'grade_class.required'       => 'Kelas wajib diisi.',
+            'grade_class.integer'        => 'Kelas harus berupa angka.',
+            'grade_class.min'            => 'Kelas minimal ' . ($cabang->kelas_min ?? 1) . '.',
+            'grade_class.max'            => 'Kelas maksimal ' . ($cabang->kelas_max ?? 12) . '.',
+            'birth_date.required'        => 'Tanggal lahir wajib diisi.',
+            'birth_date.before'          => 'Tanggal lahir harus sebelum hari ini.',
+            'address.required'           => 'Alamat rumah wajib diisi.',
+            'guardian_phone.required'    => 'Nomor HP orangtua/wali wajib diisi.',
+            'guardian_phone.regex'       => 'Nomor HP orangtua hanya boleh berisi angka (7-13 digit, tanpa 0 di depan).',
+            'guardian_phone.max'         => 'Nomor HP orangtua maksimal 13 digit.',
+            'photo.required'             => 'Foto wajib diunggah.',
+            'photo.image'                => 'File harus berupa gambar.',
+            'photo.mimes'                => 'Format foto harus JPG, JPEG, PNG, atau WEBP.',
+            'photo.max'                  => 'Ukuran foto maksimal 2 MB.',
+            'mata_pelajaran.required'    => 'Pilih minimal 1 mata pelajaran.',
+            'mata_pelajaran.min'         => 'Pilih minimal 1 mata pelajaran.',
         ]);
 
         $name          = ucwords(strtolower(trim($request->input('name'))));
@@ -112,16 +117,17 @@ class PendaftaranController extends Controller
 
         session([
             'pendaftaran_data' => [
-                'name'           => $name,
-                'gender'         => $gender,
-                'student_phone'  => $studentPhone,
-                'school_name'    => $schoolName,
-                'grade_class'    => $gradeClass,
-                'birth_date'     => $request->input('birth_date'),
-                'address'        => $address,
-                'guardian_phone' => $guardianPhone,
-                'note'           => $request->filled('note') ? trim($request->input('note')) : null,
-                'cabang_id'      => $cabang->id,
+                'name'            => $name,
+                'gender'          => $gender,
+                'student_phone'   => $studentPhone,
+                'school_name'     => $schoolName,
+                'grade_class'     => $gradeClass,
+                'birth_date'      => $request->input('birth_date'),
+                'address'         => $address,
+                'guardian_phone'  => $guardianPhone,
+                'note'            => $request->filled('note') ? trim($request->input('note')) : null,
+                'cabang_id'       => $cabang->id,
+                'mata_pelajaran'  => $request->input('mata_pelajaran'),
             ],
             'pendaftaran_foto_temp' => $tempPath,
         ]);
@@ -193,19 +199,20 @@ class PendaftaranController extends Controller
                 }
 
                 StudentProfile::create([
-                    'user_id'        => $user->id,
-                    'gender'         => $data['gender'],
-                    'student_phone'  => $data['student_phone'],
-                    'school_name'    => $data['school_name'],
-                    'grade_class'    => $data['grade_class'],
-                    'birth_date'     => $data['birth_date'],
-                    'address'        => $data['address'],
-                    'guardian_phone' => $data['guardian_phone'],
-                    'note'           => $data['note'],
-                    'photo'          => $finalPath,
-                    'is_pending'     => true,
-                    'status'         => 'pending',
-                    'entry_year'     => now()->year,
+                    'user_id'         => $user->id,
+                    'gender'          => $data['gender'],
+                    'student_phone'   => $data['student_phone'],
+                    'school_name'     => $data['school_name'],
+                    'grade_class'     => $data['grade_class'],
+                    'birth_date'      => $data['birth_date'],
+                    'address'         => $data['address'],
+                    'guardian_phone'  => $data['guardian_phone'],
+                    'note'            => $data['note'],
+                    'photo'           => $finalPath,
+                    'is_pending'      => true,
+                    'status'          => 'pending',
+                    'entry_year'      => now()->year,
+                    'mata_pelajaran'  => $data['mata_pelajaran'] ?? null,
                 ]);
             });
         } catch (UniqueConstraintViolationException $e) {
@@ -268,17 +275,19 @@ class PendaftaranController extends Controller
 
     public function processUpdate(Request $request, string $token)
     {
-        $profile = StudentProfile::with('user')
+        $profile = StudentProfile::with('user.cabang')
             ->where('update_token', $token)
             ->where('update_token_expires_at', '>', now())
             ->firstOrFail();
+
+        $cabang = $profile->user->cabang;
 
         $request->validate([
             'name'           => 'required|string|max:100',
             'gender'         => 'required|in:laki-laki,perempuan',
             'student_phone'  => ['nullable', 'string', 'max:13', 'regex:/^[0-9]{7,13}$/'],
             'school_name'    => 'required|string|max:150',
-            'grade_class'    => 'required|integer|min:1|max:12',
+            'grade_class'    => 'required|integer|min:' . ($cabang->kelas_min ?? 1) . '|max:' . ($cabang->kelas_max ?? 12),
             'birth_date'     => 'required|date|before:today',
             'address'        => 'required|string|max:500',
             'guardian_phone' => ['required', 'string', 'max:13', 'regex:/^[0-9]{7,13}$/'],
@@ -294,8 +303,8 @@ class PendaftaranController extends Controller
             'school_name.required'    => 'Nama sekolah wajib diisi.',
             'grade_class.required'    => 'Kelas wajib diisi.',
             'grade_class.integer'     => 'Kelas harus berupa angka.',
-            'grade_class.min'         => 'Kelas minimal 1.',
-            'grade_class.max'         => 'Kelas maksimal 12.',
+            'grade_class.min'         => 'Kelas minimal ' . ($cabang->kelas_min ?? 1) . '.',
+            'grade_class.max'         => 'Kelas maksimal ' . ($cabang->kelas_max ?? 12) . '.',
             'birth_date.required'     => 'Tanggal lahir wajib diisi.',
             'birth_date.before'       => 'Tanggal lahir harus sebelum hari ini.',
             'address.required'        => 'Alamat rumah wajib diisi.',

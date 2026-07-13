@@ -313,7 +313,8 @@ class AdminController extends Controller
     public function cabangs()
     {
         $cabangs = Cabang::withCount('blogs')->get();
-        return view('admin.cabangs', compact('cabangs'));
+        $masterMapel = \App\Models\MataPelajaran::active()->get();
+        return view('admin.cabangs', compact('cabangs', 'masterMapel'));
     }
 
     public function storeCabang(Request $request)
@@ -325,6 +326,10 @@ class AdminController extends Controller
             'foto_wajib'       => 'nullable|boolean',
             'pendaftaran_buka' => 'nullable|boolean',
             'whatsapp_link'    => 'nullable|url|max:500',
+            'kelas_min'        => 'nullable|integer|min:1|max:12',
+            'kelas_max'        => 'nullable|integer|min:1|max:12|gte:kelas_min',
+            'mata_pelajaran'   => 'nullable|array',
+            'mata_pelajaran.*' => 'string|max:100',
         ]);
 
         Cabang::create([
@@ -335,6 +340,9 @@ class AdminController extends Controller
             'foto_wajib'       => $request->boolean('foto_wajib', true),
             'pendaftaran_buka' => $request->boolean('pendaftaran_buka', true),
             'whatsapp_link'    => $request->input('whatsapp_link') ?: null,
+            'kelas_min'        => $request->filled('kelas_min') ? (int) $request->kelas_min : null,
+            'kelas_max'        => $request->filled('kelas_max') ? (int) $request->kelas_max : null,
+            'mata_pelajaran'   => $request->input('mata_pelajaran') ?: [],
         ]);
 
         return back()->with('success', 'Cabang ditambahkan.');
@@ -349,6 +357,10 @@ class AdminController extends Controller
             'foto_wajib'       => 'nullable|boolean',
             'pendaftaran_buka' => 'nullable|boolean',
             'whatsapp_link'    => 'nullable|url|max:500',
+            'kelas_min'        => 'nullable|integer|min:1|max:12',
+            'kelas_max'        => 'nullable|integer|min:1|max:12|gte:kelas_min',
+            'mata_pelajaran'   => 'nullable|array',
+            'mata_pelajaran.*' => 'string|max:100',
         ]);
 
         $cabang->update([
@@ -359,6 +371,9 @@ class AdminController extends Controller
             'foto_wajib'       => $request->boolean('foto_wajib', false),
             'pendaftaran_buka' => $request->boolean('pendaftaran_buka', false),
             'whatsapp_link'    => $request->input('whatsapp_link') ?: null,
+            'kelas_min'        => $request->filled('kelas_min') ? (int) $request->kelas_min : null,
+            'kelas_max'        => $request->filled('kelas_max') ? (int) $request->kelas_max : null,
+            'mata_pelajaran'   => $request->input('mata_pelajaran') ?: [],
         ]);
 
         return back()->with('success', 'Cabang diperbarui.');

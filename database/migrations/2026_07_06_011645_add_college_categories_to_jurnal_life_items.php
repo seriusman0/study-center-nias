@@ -12,12 +12,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Extend enum to support college-specific categories
+        if (DB::getDriverName() === 'sqlite') return;
         DB::statement("ALTER TABLE jurnal_life_items MODIFY COLUMN kategori ENUM('kerohanian','pendidikan','karakter','pembacaan','sidang','rohani') NOT NULL");
     }
 
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') return;
         DB::statement("ALTER TABLE jurnal_life_items MODIFY COLUMN kategori ENUM('kerohanian','pendidikan','karakter') NOT NULL");
     }
 };

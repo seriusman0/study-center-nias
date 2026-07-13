@@ -106,9 +106,24 @@
                         Kelas <span class="text-red-500">*</span>
                     </label>
                     <input type="number" id="grade_class" name="grade_class" value="{{ old('grade_class', $prevData['grade_class'] ?? '') }}"
-                           inputmode="numeric" min="1" max="12" placeholder="Contoh: 7 (SMP), 10 (SMA/SMK), 3 (SD)"
+                           inputmode="numeric"
+                           min="{{ $cabang->kelas_min ?? 1 }}"
+                           max="{{ $cabang->kelas_max ?? 12 }}"
+                           placeholder="Isi angka kelas{{ $cabang->kelas_min && $cabang->kelas_max ? ' (' . $cabang->kelas_min . '–' . $cabang->kelas_max . ')' : '' }}"
                            class="w-full border @error('grade_class') border-red-400 @else border-sc-line @enderror rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-sc-teal-600 focus:ring-2 focus:ring-sc-teal-600/20">
-                    <p class="text-gray-400 text-xs mt-1">SD: 1–6 &bull; SMP: 7–9 &bull; SMA/SMK: 10–12</p>
+                    @if($cabang->kelas_min && $cabang->kelas_max)
+                        <p class="text-gray-400 text-xs mt-1">Cabang ini menerima kelas {{ $cabang->kelas_min }}–{{ $cabang->kelas_max }}
+                            @php
+                                $hints = [];
+                                if ($cabang->kelas_min <= 6 && $cabang->kelas_max >= 1) $hints[] = 'SD: 1–6';
+                                if ($cabang->kelas_min <= 9 && $cabang->kelas_max >= 7) $hints[] = 'SMP: 7–9';
+                                if ($cabang->kelas_min <= 12 && $cabang->kelas_max >= 10) $hints[] = 'SMA/SMK: 10–12';
+                            @endphp
+                            @if(count($hints)) &bull; {{ implode(' &bull; ', $hints) }} @endif
+                        </p>
+                    @else
+                        <p class="text-gray-400 text-xs mt-1">SD: 1–6 &bull; SMP: 7–9 &bull; SMA/SMK: 10–12</p>
+                    @endif
                     @error('grade_class')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -186,6 +201,38 @@
                     <p id="photo-size-error" class="text-red-500 text-xs mt-1 hidden">
                         Ukuran foto terlalu besar (maks. 2 MB). Kompres dulu di <a href="https://squoosh.app" target="_blank" class="underline">squoosh.app</a>, lalu pilih ulang.
                     </p>
+                </div>
+
+                {{-- MATA PELAJARAN --}}
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Mata Pelajaran <span class="text-red-500">*</span>
+                    </label>
+                    <p class="text-xs text-gray-500 mb-3">Pilih mata pelajaran yang ingin dipelajari. Boleh pilih lebih dari satu.</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        @foreach($availableSubjects as $index => $subject)
+                        @php
+                            $oldSelected = old('mata_pelajaran');
+                            $prevSelected = $prevData['mata_pelajaran'] ?? null;
+                            if ($oldSelected !== null) {
+                                $isChecked = in_array($subject, $oldSelected);
+                            } elseif ($prevSelected !== null) {
+                                $isChecked = in_array($subject, $prevSelected);
+                            } else {
+                                $isChecked = $index === 0;
+                            }
+                        @endphp
+                        <label class="flex items-center gap-2 cursor-pointer border @error('mata_pelajaran') border-red-300 @else border-sc-line @enderror rounded-xl px-4 py-3 hover:border-sc-teal-400 transition {{ $isChecked ? 'bg-sc-teal-50 border-sc-teal-400' : 'bg-white' }}">
+                            <input type="checkbox" name="mata_pelajaran[]" value="{{ $subject }}"
+                                   {{ $isChecked ? 'checked' : '' }}
+                                   class="accent-sc-teal-600 w-4 h-4 flex-shrink-0">
+                            <span class="text-sm font-medium text-gray-700">{{ $subject }}</span>
+                        </label>
+                        @endforeach
+                    </div>
+                    @error('mata_pelajaran')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 {{-- CATATAN / NOTE --}}
