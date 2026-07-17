@@ -52,7 +52,7 @@ val ScNavyDark = ScTeal900
 val ScGold     = ScOrange500
 
 /* -------- Typography -------- */
-val GrandeurFamily = FontFamily(Font(R.font.grandeur, FontWeight.Normal))
+val GrandeurFamily = FontFamily.SansSerif
 
 private val sans = FontFamily.SansSerif
 

@@ -276,6 +276,35 @@ class PresensiRepository(private val api: ApiService) {
     suspend fun update(id: Long, req: PresensiRequest): ApiResult<PresensiDto> =
         apiCall { api.updatePresensi(id, req).data }
 
+    suspend fun updateWithFoto(
+        id: Long,
+        req: PresensiRequest,
+        fotoBytes: ByteArray?,
+        fotoMime: String?,
+        fotoName: String?,
+    ): ApiResult<PresensiDto> = apiCall {
+        val fields = mutableMapOf<String, okhttp3.RequestBody>()
+        val textType = "text/plain".toMediaTypeCompat()
+        fun put(k: String, v: String) { fields[k] = okhttp3.RequestBody.create(textType, v) }
+        put("_method", "PUT")
+        put("mentor_id", req.mentorId.toString())
+        req.cabangId?.let { put("cabang_id", it.toString()) }
+        put("kelas_id", req.kelasId.toString())
+        put("tanggal", req.tanggal)
+        put("jam_mulai", req.jamMulai)
+        put("jam_selesai", req.jamSelesai)
+        put("materi", req.materi)
+        req.studentIds.forEachIndexed { idx, sid -> fields["student_ids[$idx]"] = okhttp3.RequestBody.create(textType, sid.toString()) }
+        req.studentStatus?.forEach { (sid, status) -> fields["student_status[$sid]"] = okhttp3.RequestBody.create(textType, status) }
+        val fotoPart = if (fotoBytes != null) {
+            val mt = (fotoMime ?: "image/jpeg")
+            val body = okhttp3.RequestBody.create(mt.toMediaTypeCompat(), fotoBytes)
+            okhttp3.MultipartBody.Part.createFormData("foto", fotoName ?: "foto.jpg", body)
+        } else null
+        api.updatePresensiMultipart(id, fields, fotoPart).data
+    }
+
+
     suspend fun delete(id: Long): ApiResult<MessageResponse> =
         apiCall { api.deletePresensi(id) }
 

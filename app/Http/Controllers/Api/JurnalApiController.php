@@ -33,7 +33,8 @@ class JurnalApiController extends Controller
             'item_type' => 'required|in:pl,pb,verse,life',
             'item_id'   => 'nullable|integer',
             'date'      => 'nullable|date',
-            'checked'   => 'required|boolean',
+            'checked'   => 'nullable|boolean',
+            'verse_ref' => 'nullable|string|max:100',
         ]);
 
         $date = isset($data['date'])
@@ -59,7 +60,12 @@ class JurnalApiController extends Controller
                 case 'pb':
                     $entry->update(['pb_checked' => $checked]); break;
                 case 'verse':
-                    $entry->update(['verse_week_key' => $checked ? JurnalWeek::weekKeyFor($date) : null]); break;
+                    $verseRef = $data['verse_ref'] ?? null;
+                    $entry->update([
+                        'verse_ref'      => $verseRef,
+                        'verse_week_key' => $verseRef ? JurnalWeek::weekKeyFor($date) : null,
+                    ]);
+                    break;
                 case 'life':
                     $itemId = (int) ($data['item_id'] ?? 0);
                     abort_if($itemId === 0, 422, 'item_id wajib untuk tipe life.');
@@ -126,11 +132,7 @@ class JurnalApiController extends Controller
     {
         $schedule = JurnalBibleSchedule::forDate($date);
         $weekMeta = JurnalWeek::current($date);
-        $verse = JurnalWeeklyVerse::forWeek($weekMeta['tahun'], $weekMeta['bulan'], $weekMeta['minggu']);
         $entry = JurnalEntry::forStudent($user->id)->whereDate('tanggal', $date->toDateString())->first();
-        $verseChecked = JurnalEntry::forStudent($user->id)
-            ->where('verse_week_key', $weekMeta['key'])
-            ->exists();
 
         $items = JurnalLifeItem::forStudent($user->id)
             ->orderBy('kategori')->orderBy('label')->get();
@@ -151,16 +153,13 @@ class JurnalApiController extends Controller
                 'pl_checked' => (bool) ($entry?->pl_checked),
                 'pb_checked' => (bool) ($entry?->pb_checked),
             ],
-            'verse' => $verse ? [
-                'referensi' => $verse->referensi,
-                'isi'       => $verse->isi,
-                'checked'   => (bool) $verseChecked,
-            ] : null,
+            'verse_ref' => $entry?->verse_ref,
             'life_items' => $items->map(fn($it) => [
-                'id'       => $it->id,
-                'kategori' => $it->kategori,
-                'label'    => $it->label,
-                'checked'  => in_array($it->id, $checkedIds),
+                'id'            => $it->id,
+                'kategori'      => $it->kategori,
+                'label'         => $it->label,
+                'response_type' => $it->response_type,
+                'checked'       => in_array($it->id, $checkedIds),
             ])->values(),
         ];
     }

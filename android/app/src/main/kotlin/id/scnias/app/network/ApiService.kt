@@ -135,6 +135,14 @@ interface ApiService {
         @Part foto: MultipartBody.Part? = null,
     ): PresensiEnvelope
 
+    @Multipart
+    @POST("presensi/{id}")
+    suspend fun updatePresensiMultipart(
+        @Path("id") id: Long,
+        @PartMap fields: Map<String, @JvmSuppressWildcards RequestBody>,
+        @Part foto: MultipartBody.Part? = null,
+    ): PresensiEnvelope
+
     @DELETE("presensi/{id}")
     suspend fun deletePresensi(@Path("id") id: Long): MessageResponse
 

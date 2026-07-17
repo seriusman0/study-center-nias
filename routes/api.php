@@ -60,6 +60,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get ('/history', [\App\Http\Controllers\Api\JurnalApiController::class, 'history']);
     });
 
+    // Galeri (student)
+    Route::middleware('role:student')->get('/galeri', [\App\Http\Controllers\Api\GaleriController::class, 'index']);
+
+    // Laporan (student)
+    Route::middleware('role:student')->prefix('laporan')->group(function () {
+        Route::get('/my',        [\App\Http\Controllers\Api\LaporanStudentController::class, 'summary']);
+        Route::get('/my/matrix', [\App\Http\Controllers\Api\LaporanStudentController::class, 'matrix']);
+    });
+
     // Kelas master
     Route::middleware('role:admin,mentor')->group(function () {
         Route::get   ('/kelas-master',         [\App\Http\Controllers\Api\KelasMasterController::class, 'index']);
