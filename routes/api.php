@@ -9,7 +9,11 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Api\SyncProviderController;
 use Illuminate\Support\Facades\Route;
+
+// Sync Export (authenticated via X-Sync-Key header)
+Route::get('/sync/export', [SyncProviderController::class, 'export']);
 
 // Auth
 Route::post('/auth/register', [GuestAuthController::class, 'register'])->middleware('throttle:5,1');
@@ -43,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Blog (internal staff can write)
     Route::middleware('role:admin,fulltimer,mentor,student')->group(function () {
+        Route::post('/blogs/upload-image', [BlogController::class, 'uploadImage']);
         Route::post('/blogs', [BlogController::class, 'store']);
         Route::put('/blogs/{blog}', [BlogController::class, 'update']);
         Route::delete('/blogs/{blog}', [BlogController::class, 'destroy']);
@@ -99,6 +104,51 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin only
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'stats']);
+
+        // Mata Pelajaran
+        Route::get   ('/mata-pelajaran',                             [\App\Http\Controllers\Api\Admin\MataPelajaranApiController::class, 'index']);
+        Route::post  ('/mata-pelajaran',                             [\App\Http\Controllers\Api\Admin\MataPelajaranApiController::class, 'store']);
+        Route::put   ('/mata-pelajaran/{mataPelajaran}',             [\App\Http\Controllers\Api\Admin\MataPelajaranApiController::class, 'update']);
+        Route::patch ('/mata-pelajaran/{mataPelajaran}/toggle',      [\App\Http\Controllers\Api\Admin\MataPelajaranApiController::class, 'toggleActive']);
+        Route::delete('/mata-pelajaran/{mataPelajaran}',             [\App\Http\Controllers\Api\Admin\MataPelajaranApiController::class, 'destroy']);
+
+        // Pendaftaran
+        Route::get   ('/pendaftaran',                               [\App\Http\Controllers\Api\Admin\PendaftaranAdminApiController::class, 'index']);
+        Route::get   ('/pendaftaran/{user}',                        [\App\Http\Controllers\Api\Admin\PendaftaranAdminApiController::class, 'show']);
+        Route::patch ('/pendaftaran/{user}/validasi',               [\App\Http\Controllers\Api\Admin\PendaftaranAdminApiController::class, 'validasi']);
+        Route::post  ('/pendaftaran/{user}/generate-update-link',   [\App\Http\Controllers\Api\Admin\PendaftaranAdminApiController::class, 'generateUpdateLink']);
+
+        // Certificates
+        Route::prefix('certificates')->group(function () {
+            Route::get   ('templates',                             [\App\Http\Controllers\Api\Admin\CertificateTemplateApiController::class, 'index']);
+            Route::post  ('templates',                             [\App\Http\Controllers\Api\Admin\CertificateTemplateApiController::class, 'store']);
+            Route::get   ('templates/{template}/preview',          [\App\Http\Controllers\Api\Admin\CertificateTemplateApiController::class, 'previewSaved']);
+            Route::put   ('templates/{template}',                  [\App\Http\Controllers\Api\Admin\CertificateTemplateApiController::class, 'update']);
+            Route::delete('templates/{template}',                  [\App\Http\Controllers\Api\Admin\CertificateTemplateApiController::class, 'destroy']);
+
+            Route::get   ('issued',                                [\App\Http\Controllers\Api\Admin\IssuedCertificateApiController::class, 'index']);
+            Route::post  ('issued',                                [\App\Http\Controllers\Api\Admin\IssuedCertificateApiController::class, 'store']);
+            Route::get   ('issued/{cert}/download',                [\App\Http\Controllers\Api\Admin\IssuedCertificateApiController::class, 'download']);
+            Route::delete('issued/{cert}',                         [\App\Http\Controllers\Api\Admin\IssuedCertificateApiController::class, 'destroy']);
+        });
+
+        // College Jurnal Admin
+        Route::prefix('jurnal-college')->group(function () {
+            Route::get('/',                         [\App\Http\Controllers\Api\Admin\CollegeJurnalAdminApiController::class, 'dashboard']);
+            Route::get('/laporan',                  [\App\Http\Controllers\Api\Admin\CollegeJurnalAdminApiController::class, 'index']);
+            Route::get('/laporan/{user}',           [\App\Http\Controllers\Api\Admin\CollegeJurnalAdminApiController::class, 'show']);
+            Route::get('/laporan/{user}/export',    [\App\Http\Controllers\Api\Admin\CollegeJurnalAdminApiController::class, 'export']);
+
+            Route::get('/bible',                    [\App\Http\Controllers\Api\Admin\CollegeBibleApiController::class, 'index']);
+            Route::put('/bible/anchor',             [\App\Http\Controllers\Api\Admin\CollegeBibleApiController::class, 'updateAnchor']);
+            Route::post('/bible/import',            [\App\Http\Controllers\Api\Admin\CollegeBibleApiController::class, 'importJson']);
+            Route::put('/bible/{item}',             [\App\Http\Controllers\Api\Admin\CollegeBibleApiController::class, 'update']);
+
+            Route::get('/items',                    [\App\Http\Controllers\Api\Admin\CollegeItemApiController::class, 'index']);
+            Route::post('/items',                   [\App\Http\Controllers\Api\Admin\CollegeItemApiController::class, 'store']);
+            Route::put('/items/{item}',             [\App\Http\Controllers\Api\Admin\CollegeItemApiController::class, 'update']);
+            Route::delete('/items/{item}',          [\App\Http\Controllers\Api\Admin\CollegeItemApiController::class, 'destroy']);
+        });
 
         // Users (full CRUD)
         Route::get   ('/users',                       [UserController::class, 'index']);

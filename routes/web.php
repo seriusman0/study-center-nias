@@ -13,6 +13,7 @@ use App\Http\Controllers\Web\Admin\AdminController;
 use App\Http\Controllers\Web\Admin\MataPelajaranController;
 use App\Http\Controllers\Web\Admin\RoleAdminController;
 use App\Http\Controllers\Web\Admin\PermissionAdminController;
+use App\Http\Controllers\Admin\SyncConsumerController;
 use App\Http\Controllers\Web\Admin\NameTagController;
 use App\Http\Controllers\Web\PresensiController;
 use App\Http\Controllers\Web\JurnalController;
@@ -162,6 +163,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/permissions', [PermissionAdminController::class, 'store'])->name('permissions.store');
     Route::put('/permissions/{permission}', [PermissionAdminController::class, 'update'])->name('permissions.update');
     Route::delete('/permissions/{permission}', [PermissionAdminController::class, 'destroy'])->name('permissions.delete');
+
+    Route::post('/sync/pull', [SyncConsumerController::class, 'pull'])->name('sync.pull');
 });
 
 // Beranda (student + college)

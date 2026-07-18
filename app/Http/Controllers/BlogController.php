@@ -137,4 +137,16 @@ class BlogController extends Controller
         $blog->delete();
         return response()->json(['message' => 'Blog dihapus.']);
     }
+    public function uploadImage(Request $request): JsonResponse
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
+        ]);
+
+        $path = $request->file('image')->store('blogs/inline', 'public');
+
+        return response()->json([
+            'url' => asset('storage/' . $path),
+        ]);
+    }
 }

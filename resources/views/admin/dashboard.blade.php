@@ -35,6 +35,32 @@
     </div>
 </div>
 
+{{-- System Synchronization --}}
+<div class="row">
+    <div class="col-12">
+        <div class="card card-warning">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-sync-alt mr-2"></i>System Synchronization</h3>
+            </div>
+            <div class="card-body">
+                @if(session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+                @if(session('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
+                @endif
+                <p class="text-muted mb-3">Pull data from the source web instance ({{ config('sync.target_url') ?: 'SYNC_TARGET_URL not set' }}) into this database.</p>
+                <form method="POST" action="{{ route('admin.sync.pull') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-cloud-download-alt mr-1"></i> Pull Data from Source Web
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Charts --}}
 <div class="row">
     <div class="col-md-6">
