@@ -116,6 +116,8 @@ class PresensiController extends Controller
         if (! $user->isAdmin()) {
             if ($user->cabang_id) $q->where('cabang_id', $user->cabang_id);
             else return response()->json(['data' => []]);
+        } elseif ($request->filled('cabang_id')) {
+            $q->where('cabang_id', $request->cabang_id);
         }
         if ($request->filled('q')) {
             $term = '%' . $request->q . '%';
