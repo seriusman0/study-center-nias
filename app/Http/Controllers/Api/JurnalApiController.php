@@ -46,13 +46,19 @@ class JurnalApiController extends Controller
         }
 
         $type = $data['item_type'];
-        $checked = (bool) $data['checked'];
+        $checked = (bool) ($data['checked'] ?? false);
 
         DB::transaction(function () use ($user, $date, $type, $checked, $data) {
-            $entry = JurnalEntry::firstOrCreate(
-                ['student_id' => $user->id, 'tanggal' => $date->toDateString()],
-                ['cabang_id'  => $user->cabang_id]
-            );
+            $entry = JurnalEntry::whereDate('tanggal', $date->toDateString())
+                ->where('student_id', $user->id)
+                ->first();
+            if (! $entry) {
+                $entry = JurnalEntry::create([
+                    'student_id' => $user->id,
+                    'tanggal'    => $date->toDateString(),
+                    'cabang_id'  => $user->cabang_id,
+                ]);
+            }
 
             switch ($type) {
                 case 'pl':
@@ -100,12 +106,14 @@ class JurnalApiController extends Controller
         $to   = Carbon::parse($data['to'], JurnalWeek::TZ)->startOfDay();
 
         $entries = JurnalEntry::forStudent($user->id)
-            ->whereBetween('tanggal', [$from->toDateString(), $to->toDateString()])
+            ->whereDate('tanggal', '>=', $from->toDateString())
+            ->whereDate('tanggal', '<=', $to->toDateString())
             ->get()
             ->keyBy(fn($e) => $e->tanggal->toDateString());
 
         $checks = JurnalLifeCheck::forStudent($user->id)
-            ->whereBetween('tanggal', [$from->toDateString(), $to->toDateString()])
+            ->whereDate('tanggal', '>=', $from->toDateString())
+            ->whereDate('tanggal', '<=', $to->toDateString())
             ->where('checked', true)
             ->get()
             ->groupBy(fn($c) => $c->tanggal->toDateString());

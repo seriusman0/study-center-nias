@@ -26,8 +26,10 @@ class BlogTest extends TestCase
         $studentRole = Role::where('name', 'student')->first();
         $guestRole = Role::where('name', 'guest')->first();
         $this->cabang = Cabang::first();
-        $this->student = User::factory()->create(['role_id' => $studentRole->id]);
-        $this->guest = User::factory()->create(['role_id' => $guestRole->id]);
+        $this->student = User::factory()->create();
+        $this->student->roles()->attach($studentRole);
+        $this->guest = User::factory()->create();
+        $this->guest->roles()->attach($guestRole);
     }
 
     public function test_public_can_list_blogs(): void
@@ -80,7 +82,8 @@ class BlogTest extends TestCase
 
     public function test_other_user_cannot_update_blog(): void
     {
-        $other = User::factory()->create(['role_id' => $this->student->role_id]);
+        $other = User::factory()->create();
+        $other->roles()->attach(Role::where('name', 'student')->first());
         $token = $other->createToken('t')->plainTextToken;
         $blog = Blog::factory()->create([
             'user_id' => $this->student->id,

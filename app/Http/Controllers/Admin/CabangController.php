@@ -18,30 +18,62 @@ class CabangController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'nama' => ['required', 'string', 'max:255'],
-            'alamat' => ['nullable', 'string'],
-            'kontak' => ['nullable', 'string', 'max:255'],
+            'nama'             => 'required|string|max:255',
+            'alamat'           => 'nullable|string',
+            'kontak'           => 'nullable|string',
+            'foto_wajib'       => 'nullable|boolean',
+            'pendaftaran_buka' => 'nullable|boolean',
+            'whatsapp_link'    => 'nullable|url|max:500',
+            'kelas_min'        => 'nullable|integer|min:1|max:12',
+            'kelas_max'        => 'nullable|integer|min:1|max:12|gte:kelas_min',
+            'mata_pelajaran'   => 'nullable|array',
+            'mata_pelajaran.*' => 'string|max:100',
         ]);
 
-        $validated['slug'] = Str::slug($validated['nama']);
+        $cabang = Cabang::create([
+            'nama'             => $request->nama,
+            'slug'             => \Illuminate\Support\Str::slug($request->nama),
+            'alamat'           => $request->alamat,
+            'kontak'           => $request->kontak,
+            'foto_wajib'       => $request->boolean('foto_wajib', true),
+            'pendaftaran_buka' => $request->boolean('pendaftaran_buka', true),
+            'whatsapp_link'    => $request->input('whatsapp_link') ?: null,
+            'kelas_min'        => $request->filled('kelas_min') ? (int) $request->kelas_min : null,
+            'kelas_max'        => $request->filled('kelas_max') ? (int) $request->kelas_max : null,
+            'mata_pelajaran'   => $request->input('mata_pelajaran') ?: [],
+        ]);
 
-        $cabang = Cabang::create($validated);
         return response()->json($cabang, 201);
     }
 
     public function update(Request $request, Cabang $cabang): JsonResponse
     {
         $validated = $request->validate([
-            'nama' => ['sometimes', 'string', 'max:255'],
-            'alamat' => ['nullable', 'string'],
-            'kontak' => ['nullable', 'string', 'max:255'],
+            'nama'             => 'required|string|max:255',
+            'alamat'           => 'nullable|string',
+            'kontak'           => 'nullable|string',
+            'foto_wajib'       => 'nullable|boolean',
+            'pendaftaran_buka' => 'nullable|boolean',
+            'whatsapp_link'    => 'nullable|url|max:500',
+            'kelas_min'        => 'nullable|integer|min:1|max:12',
+            'kelas_max'        => 'nullable|integer|min:1|max:12|gte:kelas_min',
+            'mata_pelajaran'   => 'nullable|array',
+            'mata_pelajaran.*' => 'string|max:100',
         ]);
 
-        if (isset($validated['nama'])) {
-            $validated['slug'] = Str::slug($validated['nama']);
-        }
+        $cabang->update([
+            'nama'             => $request->nama,
+            'slug'             => \Illuminate\Support\Str::slug($request->nama),
+            'alamat'           => $request->alamat,
+            'kontak'           => $request->kontak,
+            'foto_wajib'       => $request->boolean('foto_wajib', false),
+            'pendaftaran_buka' => $request->boolean('pendaftaran_buka', false),
+            'whatsapp_link'    => $request->input('whatsapp_link') ?: null,
+            'kelas_min'        => $request->filled('kelas_min') ? (int) $request->kelas_min : null,
+            'kelas_max'        => $request->filled('kelas_max') ? (int) $request->kelas_max : null,
+            'mata_pelajaran'   => $request->input('mata_pelajaran') ?: [],
+        ]);
 
-        $cabang->update($validated);
         return response()->json($cabang);
     }
 

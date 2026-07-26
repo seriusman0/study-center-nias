@@ -19,10 +19,8 @@ class ProfileTest extends TestCase
         parent::setUp();
         $this->seed(\Database\Seeders\RoleSeeder::class);
         $this->seed(\Database\Seeders\CabangSeeder::class);
-        $this->user = User::factory()->create([
-            'role_id' => Role::where('name', 'student')->value('id'),
-            'profile_public' => true,
-        ]);
+        $this->user = User::factory()->create(['profile_public' => true]);
+        $this->user->roles()->attach(Role::where('name', 'student')->first());
     }
 
     public function test_public_profile_is_accessible(): void

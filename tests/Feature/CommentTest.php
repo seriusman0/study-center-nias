@@ -24,8 +24,9 @@ class CommentTest extends TestCase
         $this->seed(\Database\Seeders\RoleSeeder::class);
         $this->seed(\Database\Seeders\CabangSeeder::class);
 
-        $this->student = User::factory()->create(['role_id' => Role::where('name', 'student')->value('id')]);
-        $this->guest = User::factory()->create(['role_id' => Role::where('name', 'guest')->value('id')]);
+        $this->student = User::factory()->create(); $this->student->roles()->attach(Role::where('name', 'student')->first());
+        $this->guest = User::factory()->create();
+        $this->guest->roles()->attach(Role::where('name', 'guest')->first());
         $cabang = Cabang::first();
         $this->blog = Blog::factory()->create([
             'user_id' => $this->student->id,

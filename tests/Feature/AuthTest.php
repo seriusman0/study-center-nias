@@ -28,18 +28,18 @@ class AuthTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonStructure(['user', 'token'])
-            ->assertJsonPath('user.role.name', 'guest');
+            ->assertJsonPath('user.roles.0.name', 'guest');
     }
 
     public function test_guest_can_login(): void
     {
         $role = Role::where('name', 'guest')->first();
-        User::factory()->create([
+        $user = User::factory()->create([
             'email' => 'tamu@test.com',
             'password' => bcrypt('password123'),
-            'role_id' => $role->id,
             'username' => 'tamutest',
         ]);
+        $user->roles()->attach($role);
 
         $response = $this->postJson('/api/auth/login', [
             'email' => 'tamu@test.com',
@@ -51,11 +51,9 @@ class AuthTest extends TestCase
 
     public function test_login_fails_with_wrong_password(): void
     {
-        $role = Role::where('name', 'guest')->first();
         User::factory()->create([
             'email' => 'tamu@test.com',
             'password' => bcrypt('password123'),
-            'role_id' => $role->id,
             'username' => 'tamutest',
         ]);
 
@@ -68,7 +66,8 @@ class AuthTest extends TestCase
     public function test_authenticated_user_can_get_me(): void
     {
         $role = Role::where('name', 'student')->first();
-        $user = User::factory()->create(['role_id' => $role->id, 'username' => 'studenttest']);
+        $user = User::factory()->create(['username' => 'studenttest']);
+        $user->roles()->attach($role);
         $token = $user->createToken('test')->plainTextToken;
 
         $this->withToken($token)->getJson('/api/me')

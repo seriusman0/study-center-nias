@@ -66,11 +66,13 @@ class LaporanStudentController extends Controller
             ->orderBy('kategori')->orderBy('label')->get();
 
         $entries = JurnalEntry::forStudent($student->id)
-            ->whereBetween('tanggal', [$from->toDateString(), $to->toDateString()])
+            ->whereDate('tanggal', '>=', $from->toDateString())
+            ->whereDate('tanggal', '<=', $to->toDateString())
             ->get()->keyBy(fn($e) => $e->tanggal->toDateString());
 
         $checks = JurnalLifeCheck::forStudent($student->id)
-            ->whereBetween('tanggal', [$from->toDateString(), $to->toDateString()])
+            ->whereDate('tanggal', '>=', $from->toDateString())
+            ->whereDate('tanggal', '<=', $to->toDateString())
             ->where('checked', true)
             ->get()->groupBy(fn($c) => $c->tanggal->toDateString());
 
@@ -106,7 +108,7 @@ class LaporanStudentController extends Controller
                 if ($r[$i] === 'Y') $checked++;
             }
         }
-        $pct = $totalCells > 0 ? round($checked / $totalCells * 100, 1) : 0;
+        $pct = $totalCells > 0 ? round($checked / $totalCells * 100, 1) : 0.0;
 
         return compact('headers', 'rows', 'pct', 'checked') + ['total' => $totalCells];
     }
