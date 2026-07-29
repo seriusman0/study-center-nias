@@ -1,0 +1,19 @@
+appId: id.scnias.app.debug
+name: "Register - Navigasi dari login ke form daftar"
+---
+- launchApp:
+    clearState: true
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- assertVisible: "Selamat datang"
+
+# Tap link daftar
+- tapOn:
+    text: "Daftar Akun Tamu"
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Harus ada form register
+- assertVisible: "Daftar"

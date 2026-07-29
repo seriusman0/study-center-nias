@@ -1,0 +1,17 @@
+appId: id.scnias.app.debug
+name: "Login - Validasi field kosong"
+---
+- launchApp:
+    clearState: true
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- assertVisible: "Selamat datang"
+
+# Tap Masuk tanpa isi apapun
+- tapOn:
+    text: "Masuk"
+
+# Harus muncul pesan error
+- assertVisible: "Isi username/email dan kata sandi terlebih dahulu."

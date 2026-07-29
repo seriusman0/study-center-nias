@@ -1,0 +1,31 @@
+appId: id.scnias.app.debug
+name: "Logout - Berhasil keluar dan kembali ke login"
+---
+- launchApp:
+    clearState: true
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Login
+- tapOn:
+    text: "email@contoh.com"
+- inputText: "admin@studycenter.com"
+- tapOn:
+    text: "••••••••"
+- inputText: "password"
+- tapOn:
+    text: "Masuk"
+- waitForAnimationToEnd:
+    timeout: 8000
+
+- assertVisible: "ADMINISTRATOR"
+
+# Tap tombol Logout di top bar
+- tapOn:
+    description: "Logout"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Harus kembali ke halaman login
+- assertVisible: "Selamat datang"
