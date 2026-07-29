@@ -1,0 +1,40 @@
+appId: id.scnias.app.debug
+name: "Home - Navigasi bottom bar (Admin)"
+---
+- launchApp:
+    clearState: true
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Login dulu
+- tapOn:
+    text: "email@contoh.com"
+- inputText: "admin@studycenter.com"
+- tapOn:
+    text: "••••••••"
+- inputText: "password"
+- tapOn:
+    text: "Masuk"
+- waitForAnimationToEnd:
+    timeout: 8000
+
+- assertVisible: "ADMINISTRATOR"
+
+# Navigasi ke Blog
+- tapOn:
+    text: "Blog"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Navigasi ke Admin
+- tapOn:
+    text: "Admin"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Kembali ke Beranda
+- tapOn:
+    text: "Beranda"
+- waitForAnimationToEnd:
+    timeout: 3000

@@ -1,0 +1,33 @@
+appId: id.scnias.app.debug
+name: "Login - Admin berhasil masuk"
+---
+- launchApp:
+    clearState: true
+
+# Tunggu splash selesai
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Verifikasi halaman login
+- assertVisible: "Selamat datang"
+- assertVisible: "Masuk ke Study Center Nias"
+
+# Isi form login
+- tapOn:
+    text: "email@contoh.com"
+- inputText: "admin@studycenter.com"
+
+- tapOn:
+    text: "••••••••"
+- inputText: "password"
+
+# Tap tombol Masuk
+- tapOn:
+    text: "Masuk"
+
+# Tunggu navigasi ke Home
+- waitForAnimationToEnd:
+    timeout: 8000
+
+# Verifikasi berhasil masuk (ada label role di top bar)
+- assertVisible: "ADMINISTRATOR"

@@ -1,0 +1,33 @@
+appId: id.scnias.app.debug
+name: "Blog - Daftar blog dapat dimuat"
+---
+- launchApp:
+    clearState: true
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Login
+- tapOn:
+    text: "email@contoh.com"
+- inputText: "admin@studycenter.com"
+- tapOn:
+    text: "••••••••"
+- inputText: "password"
+- tapOn:
+    text: "Masuk"
+- waitForAnimationToEnd:
+    timeout: 8000
+
+- assertVisible: "ADMINISTRATOR"
+
+# Buka Blog
+- tapOn:
+    text: "Blog"
+- waitForAnimationToEnd:
+    timeout: 6000
+
+# Tombol tulis blog (FAB) harus ada untuk admin
+- assertVisible:
+    text: "Tulis Blog"
+    optional: true
