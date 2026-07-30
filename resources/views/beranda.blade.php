@@ -26,17 +26,16 @@
     @endphp
     <div class="rounded-2xl shadow-sc-2 border border-sc-line overflow-hidden">
 
-        {{-- Header gradient — pb-14 beri ruang cukup sebelum kartu putih overlap --}}
-        <div class="bg-gradient-to-br from-sc-teal-700 to-sc-teal-500 px-6 pt-7 pb-14 relative">
-            <p class="text-white/70 text-xs font-medium uppercase tracking-widest mb-1">Jurnal Hari Ini</p>
+        {{-- Header gradient --}}
+        <div class="bg-gradient-to-br from-sc-teal-700 to-sc-teal-500 px-6 pt-7 pb-5">
+            <p class="text-white/80 text-xs font-medium uppercase tracking-widest mb-1">Jurnal Hari Ini</p>
             <h2 class="text-white text-xl font-bold leading-tight">Jadwal Baca Alkitab</h2>
             @if($bibleItem)
                 <p class="text-white/90 text-xs font-semibold mt-2">Hari ke-{{ $dayNo }}</p>
             @endif
         </div>
 
-        {{-- Bible reading card — -mt-8 overlap masuk ke header --}}
-        <div class="bg-white px-5 -mt-8 rounded-t-2xl">
+        <div class="bg-white px-5">
             @if($bibleItem)
             <div class="grid grid-cols-2 gap-3 pt-5">
                 {{-- PL --}}
