@@ -16,41 +16,105 @@
         <p class="text-xs text-sc-ink-400 mt-3">{{ $user->name }}</p>
     </div>
 
-    {{-- 2. Journal Progress Today --}}
-    <div class="bg-white rounded-2xl shadow-sc-2 border border-sc-line p-6">
-        <h2 class="text-lg font-bold text-sc-ink-900 mb-4">Jurnal Hari Ini</h2>
-        @if(!$todayEntry && $lifeChecksToday === 0)
-        <div class="text-center py-4">
-            <p class="text-sc-ink-500 text-sm mb-3">Belum ada catatan jurnal hari ini.</p>
-            <a href="{{ auth()->user()->hasRole('college') ? route('college-jurnal.index') : route('jurnal.index') }}" class="inline-block px-5 py-2 bg-sc-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-sc-teal-700 transition">Isi Jurnal Sekarang</a>
+    {{-- 2. Jurnal Hari Ini --}}
+    @php
+        $jurnalUrl  = auth()->user()->hasRole('college') ? route('college-jurnal.index') : route('jurnal.index');
+        $plDone     = (bool) $todayEntry?->pl_checked;
+        $pbDone     = (bool) $todayEntry?->pb_checked;
+        $lifePct    = $totalLifeItems > 0 ? round($lifeChecksToday / $totalLifeItems * 100) : 0;
+        $hasAnyProgress = $todayEntry || $lifeChecksToday > 0;
+    @endphp
+    <div class="rounded-2xl shadow-sc-2 border border-sc-line overflow-hidden">
+
+        {{-- Header gradient — pb-14 beri ruang cukup sebelum kartu putih overlap --}}
+        <div class="bg-gradient-to-br from-sc-teal-700 to-sc-teal-500 px-6 pt-7 pb-14 relative">
+            <p class="text-white/70 text-xs font-medium uppercase tracking-widest mb-1">Jurnal Hari Ini</p>
+            <h2 class="text-white text-xl font-bold leading-tight">Jadwal Baca Alkitab</h2>
+            @if($bibleItem)
+                <p class="text-white/90 text-xs font-semibold mt-2">Hari ke-{{ $dayNo }}</p>
+            @endif
         </div>
-        @else
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <div class="bg-sc-teal-50 rounded-xl p-4 text-center">
-                <div class="text-2xl font-bold text-sc-teal-700">{{ $todayEntry?->pl_checked ? '✓' : '—' }}</div>
-                <div class="text-xs text-sc-ink-500 mt-1">Pembelajaran</div>
+
+        {{-- Bible reading card — -mt-8 overlap masuk ke header --}}
+        <div class="bg-white px-5 -mt-8 rounded-t-2xl">
+            @if($bibleItem)
+            <div class="grid grid-cols-2 gap-3 pt-5">
+                {{-- PL --}}
+                <div class="rounded-xl border border-gray-200 shadow-sm p-3 flex items-start gap-2.5 transition
+                    {{ $plDone ? 'bg-sc-teal-50 border-sc-teal-300' : 'bg-white' }}">
+                    <div class="mt-0.5 w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center
+                        {{ $plDone ? 'bg-sc-teal-600 text-white' : 'bg-gray-200 text-gray-500' }}">
+                        @if($plDone)
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        @else
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg>
+                        @endif
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Perjanjian Lama</p>
+                        <p class="text-sm font-semibold text-sc-ink-900 mt-0.5 leading-tight">{{ $bibleItem->pl_text ?: '—' }}</p>
+                    </div>
+                </div>
+                {{-- PB --}}
+                <div class="rounded-xl border border-gray-200 shadow-sm p-3 flex items-start gap-2.5 transition
+                    {{ $pbDone ? 'bg-sc-teal-50 border-sc-teal-300' : 'bg-white' }}">
+                    <div class="mt-0.5 w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center
+                        {{ $pbDone ? 'bg-sc-teal-600 text-white' : 'bg-gray-200 text-gray-500' }}">
+                        @if($pbDone)
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        @else
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg>
+                        @endif
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Perjanjian Baru</p>
+                        <p class="text-sm font-semibold text-sc-ink-900 mt-0.5 leading-tight">{{ $bibleItem->pb_text ?: '—' }}</p>
+                    </div>
+                </div>
             </div>
-            <div class="bg-sc-teal-50 rounded-xl p-4 text-center">
-                <div class="text-2xl font-bold text-sc-teal-700">{{ $todayEntry?->pb_checked ? '✓' : '—' }}</div>
-                <div class="text-xs text-sc-ink-500 mt-1">Pembiasaan</div>
+            @else
+            <div class="mt-5 rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-center text-sm text-gray-400">
+                Porsi baca Alkitab belum tersedia untuk hari ini.
+            </div>
+            @endif
+
+            {{-- Jadwal Kehidupan progress --}}
+            @if($totalLifeItems > 0)
+            <div class="mt-5 bg-gray-50 rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2.5">
+                    <span class="text-sm font-semibold text-sc-ink-700">Jadwal Kehidupan</span>
+                    <span class="text-sm font-bold {{ $lifePct === 100 ? 'text-sc-teal-600' : 'text-sc-ink-500' }}">
+                        {{ $lifeChecksToday }}<span class="text-gray-400 font-normal">/{{ $totalLifeItems }}</span>
+                    </span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div class="h-2 rounded-full transition-all duration-500
+                        {{ $lifePct === 100 ? 'bg-sc-teal-500' : 'bg-sc-teal-400' }}"
+                         style="width: {{ $lifePct }}%"></div>
+                </div>
+                @if($lifePct === 100)
+                <p class="text-xs text-sc-teal-600 font-semibold mt-1.5">Semua selesai hari ini!</p>
+                @endif
+            </div>
+            @endif
+
+            {{-- CTA --}}
+            <div class="py-4">
+                @if(!$hasAnyProgress)
+                <a href="{{ $jurnalUrl }}"
+                   class="flex items-center justify-center gap-2 w-full py-3 bg-sc-teal-600 hover:bg-sc-teal-700 text-white font-semibold text-sm rounded-xl transition">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    Isi Jurnal Sekarang
+                </a>
+                @else
+                <a href="{{ $jurnalUrl }}"
+                   class="flex items-center justify-center gap-2 w-full py-3 border border-sc-teal-300 text-sc-teal-700 hover:bg-sc-teal-50 font-semibold text-sm rounded-xl transition">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    Lihat Jurnal Lengkap
+                </a>
+                @endif
             </div>
         </div>
-        @if($totalLifeItems > 0)
-        <div class="bg-gray-50 rounded-xl p-4">
-            <div class="flex justify-between text-sm mb-2">
-                <span class="text-sc-ink-700 font-medium">Kehidupan Sehari-hari</span>
-                <span class="text-sc-teal-700 font-bold">{{ $lifeChecksToday }}/{{ $totalLifeItems }}</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2">
-                <div class="bg-sc-teal-600 h-2 rounded-full transition-all"
-                     style="width: {{ $totalLifeItems > 0 ? round($lifeChecksToday/$totalLifeItems*100) : 0 }}%"></div>
-            </div>
-        </div>
-        @endif
-        <div class="mt-3 text-right">
-            <a href="{{ auth()->user()->hasRole('college') ? route('college-jurnal.index') : route('jurnal.index') }}" class="text-sm text-sc-teal-600 hover:underline font-medium">Lihat jurnal lengkap →</a>
-        </div>
-        @endif
     </div>
 
     {{-- 3. Blog Cabang --}}

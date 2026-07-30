@@ -8,10 +8,19 @@ class CollegeBibleItem extends Model
 {
     protected $table = 'college_bible_items';
 
-    protected $fillable = ['day_no', 'pl_text', 'pb_text'];
+    protected $fillable = ['schedule_id', 'day_no', 'pl_text', 'pb_text'];
 
-    public static function forDayNo(int $dayNo): ?self
+    public function schedule()
     {
-        return self::where('day_no', $dayNo)->first();
+        return $this->belongsTo(CollegeBibleSchedule::class, 'schedule_id');
+    }
+
+    public static function forDayNo(int $dayNo, ?int $scheduleId = null): ?self
+    {
+        $query = self::where('day_no', $dayNo);
+        if ($scheduleId) {
+            $query->where('schedule_id', $scheduleId);
+        }
+        return $query->first();
     }
 }

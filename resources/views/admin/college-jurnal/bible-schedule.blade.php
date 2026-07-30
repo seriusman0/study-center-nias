@@ -1,7 +1,29 @@
 @extends('layouts.admin')
-@section('page-title', 'Jadwal Alkitab — Jurnal College')
+@section('page-title', 'Jadwal Alkitab — ' . ($currentSchedule?->name ?? 'Jurnal College'))
 
 @section('content')
+
+{{-- Breadcrumb + schedule switcher --}}
+<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap" style="gap:8px">
+    <div>
+        <a href="{{ route('admin.jurnal-college.bible-schedules.index') }}" class="text-muted">
+            <i class="fas fa-arrow-left mr-1"></i> Jadwal Pembacaan Alkitab
+        </a>
+        <span class="text-muted mx-2">/</span>
+        <strong>{{ $currentSchedule?->name ?? '—' }}</strong>
+    </div>
+    @if($schedules->count() > 1)
+    <div class="d-flex align-items-center">
+        <small class="text-muted mr-2">Lihat jadwal lain:</small>
+        @foreach($schedules as $s)
+            @if($s->id !== $currentSchedule?->id)
+            <a href="{{ route('admin.jurnal-college.bible', ['schedule_id' => $s->id]) }}"
+               class="btn btn-xs btn-outline-secondary mr-1">{{ $s->name }}</a>
+            @endif
+        @endforeach
+    </div>
+    @endif
+</div>
 
 @if(session('success'))
 <div class="alert alert-success alert-dismissible">{{ session('success') }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>
@@ -106,6 +128,7 @@
     <div class="card-body">
         <form method="POST" action="{{ route('admin.jurnal-college.bible.import') }}" enctype="multipart/form-data" class="form-inline">
             @csrf
+            <input type="hidden" name="schedule_id" value="{{ $currentSchedule?->id }}">
             <input type="file" name="json_file" accept=".json,.txt" class="form-control form-control-sm mr-2" required>
             <button class="btn btn-success btn-sm"><i class="fas fa-upload mr-1"></i>Import</button>
         </form>

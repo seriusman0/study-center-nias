@@ -47,6 +47,33 @@ class JurnalLifeItemController extends Controller
         return back()->with('success', 'Item diperbarui.');
     }
 
+    public function assignAllToAllStudents(Request $request)
+    {
+        $templateIds = JurnalLifeItem::template()->where('is_active', true)->pluck('id');
+        $studentIds  = $this->studentList($request->user())->pluck('id');
+
+        $now  = now();
+        $rows = [];
+        foreach ($studentIds as $studentId) {
+            foreach ($templateIds as $itemId) {
+                $rows[] = [
+                    'student_id'   => $studentId,
+                    'life_item_id' => $itemId,
+                    'created_at'   => $now,
+                    'updated_at'   => $now,
+                ];
+            }
+        }
+
+        if (!empty($rows)) {
+            // insertOrIgnore skips duplicates (composite PK student_id + life_item_id)
+            DB::table('jurnal_student_life_items')->insertOrIgnore($rows);
+        }
+
+        $assigned = count($rows);
+        return back()->with('success', "Semua template ditugaskan ke {$studentIds->count()} siswa ({$assigned} pasangan diproses, duplikat diabaikan).");
+    }
+
     public function destroy(JurnalLifeItem $item)
     {
         $item->delete();

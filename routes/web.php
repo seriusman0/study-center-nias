@@ -176,12 +176,15 @@ Route::middleware(['auth', 'role:student,college'])->group(function () {
 Route::middleware(['auth', 'role:student'])->prefix('jurnal')->name('jurnal.')->group(function () {
     Route::get('/', [JurnalController::class, 'index'])->name('index');
     Route::post('/toggle', [JurnalController::class, 'toggle'])->name('toggle');
+    Route::post('/foto', [JurnalController::class, 'uploadFoto'])->name('foto.upload');
+    Route::delete('/foto', [JurnalController::class, 'deleteFoto'])->name('foto.delete');
 });
 
 // Jurnal admin/mentor management
 Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal')->name('admin.jurnal.')->group(function () {
     Route::get   ('life-items',                          [JurnalLifeItemController::class, 'index'])->name('life-items.index');
     Route::post  ('life-items',                          [JurnalLifeItemController::class, 'store'])->name('life-items.store');
+    Route::post  ('life-items/assign-all',               [JurnalLifeItemController::class, 'assignAllToAllStudents'])->name('life-items.assign-all');
     Route::put   ('life-items/{item}',                   [JurnalLifeItemController::class, 'update'])->name('life-items.update');
     Route::delete('life-items/{item}',                   [JurnalLifeItemController::class, 'destroy'])->name('life-items.destroy');
     Route::get   ('students/{student}/life-items',       [JurnalLifeItemController::class, 'studentAssignments'])->name('life-items.student');
@@ -269,6 +272,7 @@ Route::middleware(['auth', 'role:college'])->prefix('jurnal-college')->name('col
 // Admin: Jurnal College (progress, laporan, alkitab, items)
 use App\Http\Controllers\Web\Admin\CollegeJurnalAdminController;
 use App\Http\Controllers\Web\Admin\CollegeBibleController;
+use App\Http\Controllers\Web\Admin\CollegeBibleScheduleController;
 use App\Http\Controllers\Web\Admin\CollegeItemController;
 Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-college')->name('admin.jurnal-college.')->group(function () {
     Route::get('/',                         [CollegeJurnalAdminController::class, 'dashboard'])->name('index');
@@ -276,6 +280,16 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-college')
     Route::get('/laporan/{user}',           [CollegeJurnalAdminController::class, 'show'])->name('show');
     Route::get('/laporan/{user}/export',    [CollegeJurnalAdminController::class, 'export'])->name('export');
 
+    // Jadwal Pembacaan Alkitab — CRUD
+    Route::get('/bible-schedules',                    [CollegeBibleScheduleController::class, 'index'])->name('bible-schedules.index');
+    Route::get('/bible-schedules/create',             [CollegeBibleScheduleController::class, 'create'])->name('bible-schedules.create');
+    Route::post('/bible-schedules',                   [CollegeBibleScheduleController::class, 'store'])->name('bible-schedules.store');
+    Route::get('/bible-schedules/{bibleSchedule}/edit', [CollegeBibleScheduleController::class, 'edit'])->name('bible-schedules.edit');
+    Route::put('/bible-schedules/{bibleSchedule}',    [CollegeBibleScheduleController::class, 'update'])->name('bible-schedules.update');
+    Route::delete('/bible-schedules/{bibleSchedule}', [CollegeBibleScheduleController::class, 'destroy'])->name('bible-schedules.destroy');
+    Route::post('/bible-schedules/{bibleSchedule}/set-active', [CollegeBibleScheduleController::class, 'setActive'])->name('bible-schedules.set-active');
+
+    // Detail hari per jadwal
     Route::get('/bible',                    [CollegeBibleController::class, 'index'])->name('bible');
     Route::put('/bible/anchor',             [CollegeBibleController::class, 'updateAnchor'])->name('bible.anchor');
     Route::post('/bible/import',            [CollegeBibleController::class, 'importJson'])->name('bible.import');

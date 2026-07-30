@@ -48,6 +48,16 @@
                         @endforeach
                         <small class="text-muted">Pilih minimal 1. <a href="{{ route('admin.mata-pelajaran') }}">Kelola master mata pelajaran →</a></small>
                     </div>
+                    <div class="form-group">
+                        <label>Jadwal Alkitab</label>
+                        <select name="bible_schedule_id" class="form-control form-control-sm">
+                            <option value="">— Gunakan jadwal global —</option>
+                            @foreach($schedules as $sch)
+                                <option value="{{ $sch->id }}">{{ $sch->name }}</option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">Jika tidak dipilih, pakai jadwal aktif global.</small>
+                    </div>
                     <div class="form-group form-check">
                         <input type="checkbox" class="form-check-input" id="foto_wajib_add" name="foto_wajib" value="1" checked>
                         <label class="form-check-label" for="foto_wajib_add">Foto wajib saat pendaftaran</label>
@@ -78,6 +88,7 @@
                             <th>Foto</th>
                             <th>Pendaftaran</th>
                             <th>WA</th>
+                            <th>Jadwal Alkitab</th>
                             <th>Blog</th>
                             <th>Aksi</th>
                         </tr>
@@ -117,6 +128,13 @@
                                     <span class="badge badge-secondary">-</span>
                                 @endif
                             </td>
+                            <td>
+                                @if($cabang->bible_schedule_id)
+                                    <span class="badge badge-info" style="font-size:11px">{{ $schedules->firstWhere('id', $cabang->bible_schedule_id)?->name ?? '-' }}</span>
+                                @else
+                                    <span class="text-muted" style="font-size:12px">Global</span>
+                                @endif
+                            </td>
                             <td>{{ $cabang->blogs_count }}</td>
                             <td>
                                 @php
@@ -133,6 +151,7 @@
                                         data-kelas-min="{{ $cabang->kelas_min ?? '' }}"
                                         data-kelas-max="{{ $cabang->kelas_max ?? '' }}"
                                         data-mata-pelajaran="{{ e(json_encode($mp)) }}"
+                                        data-bible-schedule-id="{{ $cabang->bible_schedule_id ?? '' }}"
                                         onclick="openEdit(this)">
                                     Edit
                                 </button>
@@ -203,6 +222,16 @@
                     </div>
                     <small class="text-muted">Pilih minimal 1. <a href="{{ route('admin.mata-pelajaran') }}">Kelola master →</a></small>
                 </div>
+                <div class="form-group">
+                    <label>Jadwal Alkitab</label>
+                    <select name="bible_schedule_id" id="edit-bible-schedule-id" class="form-control">
+                        <option value="">— Gunakan jadwal global —</option>
+                        @foreach($schedules as $sch)
+                            <option value="{{ $sch->id }}">{{ $sch->name }}</option>
+                        @endforeach
+                    </select>
+                    <small class="text-muted">Jika tidak dipilih, pakai jadwal aktif global.</small>
+                </div>
                 <div class="form-group form-check">
                     <input type="checkbox" class="form-check-input" id="edit-foto-wajib" name="foto_wajib" value="1">
                     <label class="form-check-label" for="edit-foto-wajib">Foto wajib saat pendaftaran</label>
@@ -234,6 +263,7 @@ function openEdit(btn) {
     document.getElementById('edit-pendaftaran-buka').checked = d.pendaftaranBuka === '1';
     document.getElementById('edit-kelas-min').value = d.kelasMin || '';
     document.getElementById('edit-kelas-max').value = d.kelasMax || '';
+    document.getElementById('edit-bible-schedule-id').value = d.bibleScheduleId || '';
     var selected = [];
     try { selected = JSON.parse(d.mataPelajaran || '[]'); } catch(e) {}
     document.querySelectorAll('.edit-mp-check').forEach(function(cb) {

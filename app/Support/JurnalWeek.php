@@ -29,7 +29,8 @@ class JurnalWeek
             ? $date->copy()->setTimezone(self::TZ)
             : Carbon::parse($date, self::TZ);
 
-        return self::current($d)['key'];
+        // Week starts Sunday, ends Saturday — use that Sunday's date as the key.
+        return $d->copy()->startOfWeek(CarbonInterface::SUNDAY)->format('Y-m-d');
     }
 
     public static function today(): Carbon

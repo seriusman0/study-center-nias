@@ -11,6 +11,7 @@ class CollegeConfig extends Model
     protected $table = 'college_bible_config';
 
     protected $fillable = [
+        'active_schedule_id',
         'anchor_day_no', 'anchor_date',
         'form_open_time', 'form_close_time',
         'updated_by',
@@ -55,6 +56,11 @@ class CollegeConfig extends Model
         $open  = Carbon::createFromTimeString($this->form_open_time, JurnalWeek::TZ);
         $close = Carbon::createFromTimeString($this->form_close_time, JurnalWeek::TZ);
         return $now->between($open, $close);
+    }
+
+    public function activeSchedule()
+    {
+        return $this->belongsTo(CollegeBibleSchedule::class, 'active_schedule_id');
     }
 
     public function updater()

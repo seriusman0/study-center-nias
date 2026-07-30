@@ -7,6 +7,13 @@
         <div class="card">
             <div class="card-header d-flex align-items-center">
                 <h6 class="mb-0 mr-auto">Template Item (berlaku global)</h6>
+                <form method="POST" action="{{ route('admin.jurnal.life-items.assign-all') }}" class="d-inline mr-2"
+                      onsubmit="return confirm('Tugaskan semua template aktif ke semua siswa? Duplikat akan diabaikan.')">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-success">
+                        <i class="fas fa-users mr-1"></i> Tugaskan ke Semua Siswa
+                    </button>
+                </form>
                 <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#mAdd"><i class="fas fa-plus"></i> Tambah Item</button>
             </div>
             <div class="card-body p-0">

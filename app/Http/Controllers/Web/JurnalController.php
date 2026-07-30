@@ -12,6 +12,7 @@ use App\Support\JurnalWeek;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class JurnalController extends Controller
 {
@@ -26,9 +27,10 @@ class JurnalController extends Controller
 
         abort_if($date->greaterThan($today), 422, 'Tanggal jurnal tidak boleh di masa depan.');
 
-        $config    = CollegeConfig::current();
-        $dayNo     = $config->dayNoFor($date);
-        $bibleItem = CollegeBibleItem::forDayNo($dayNo);
+        $config     = CollegeConfig::current();
+        $dayNo      = $config->dayNoFor($date);
+        $scheduleId = $user->cabang?->bible_schedule_id ?? $config->active_schedule_id;
+        $bibleItem  = CollegeBibleItem::forDayNo($dayNo, $scheduleId);
 
         $weekKey    = JurnalWeek::weekKeyFor($date);
         $verseEntry = JurnalEntry::forStudent($user->id)
@@ -199,6 +201,75 @@ class JurnalController extends Controller
                     break;
             }
         });
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function uploadFoto(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'foto'  => 'required|file|mimes:jpeg,jpg,png,webp|max:4096',
+            'date'  => 'nullable|date',
+        ]);
+
+        $date  = isset($request->date)
+            ? Carbon::parse($request->date, JurnalWeek::TZ)->startOfDay()
+            : JurnalWeek::today();
+
+        if ($date->greaterThan(JurnalWeek::today())) {
+            return response()->json(['ok' => false, 'message' => 'Tanggal masa depan tidak diizinkan.'], 422);
+        }
+
+        $entry = JurnalEntry::where('student_id', $user->id)
+            ->whereDate('tanggal', $date->toDateString())
+            ->first();
+
+        if (!$entry) {
+            $entry = JurnalEntry::create([
+                'student_id' => $user->id,
+                'tanggal'    => $date->toDateString(),
+                'cabang_id'  => $user->cabang_id,
+            ]);
+        }
+
+        // Delete old photo if exists
+        if ($entry->foto_belajar) {
+            Storage::disk('public')->delete($entry->foto_belajar);
+        }
+
+        $path = $request->file('foto')->store(
+            'jurnal-foto/' . $date->format('Y/m'),
+            'public'
+        );
+
+        $entry->update(['foto_belajar' => $path]);
+
+        return response()->json([
+            'ok'  => true,
+            'url' => asset('storage/' . $path),
+        ]);
+    }
+
+    public function deleteFoto(Request $request)
+    {
+        $user = $request->user();
+
+        $data = $request->validate(['date' => 'nullable|date']);
+
+        $date = isset($data['date'])
+            ? Carbon::parse($data['date'], JurnalWeek::TZ)->startOfDay()
+            : JurnalWeek::today();
+
+        $entry = JurnalEntry::where('student_id', $user->id)
+            ->whereDate('tanggal', $date->toDateString())
+            ->first();
+
+        if ($entry && $entry->foto_belajar) {
+            Storage::disk('public')->delete($entry->foto_belajar);
+            $entry->update(['foto_belajar' => null]);
+        }
 
         return response()->json(['ok' => true]);
     }

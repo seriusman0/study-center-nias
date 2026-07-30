@@ -314,35 +314,38 @@ class AdminController extends Controller
     {
         $cabangs = Cabang::withCount('blogs')->get();
         $masterMapel = \App\Models\MataPelajaran::active()->get();
-        return view('admin.cabangs', compact('cabangs', 'masterMapel'));
+        $schedules = \App\Models\CollegeBibleSchedule::orderBy('id')->get(['id', 'name']);
+        return view('admin.cabangs', compact('cabangs', 'masterMapel', 'schedules'));
     }
 
     public function storeCabang(Request $request)
     {
         $request->validate([
-            'nama'             => 'required|string|max:255',
-            'alamat'           => 'nullable|string',
-            'kontak'           => 'nullable|string',
-            'foto_wajib'       => 'nullable|boolean',
-            'pendaftaran_buka' => 'nullable|boolean',
-            'whatsapp_link'    => 'nullable|url|max:500',
-            'kelas_min'        => 'nullable|integer|min:1|max:12',
-            'kelas_max'        => 'nullable|integer|min:1|max:12|gte:kelas_min',
-            'mata_pelajaran'   => 'nullable|array',
-            'mata_pelajaran.*' => 'string|max:100',
+            'nama'               => 'required|string|max:255',
+            'alamat'             => 'nullable|string',
+            'kontak'             => 'nullable|string',
+            'foto_wajib'         => 'nullable|boolean',
+            'pendaftaran_buka'   => 'nullable|boolean',
+            'whatsapp_link'      => 'nullable|url|max:500',
+            'kelas_min'          => 'nullable|integer|min:1|max:12',
+            'kelas_max'          => 'nullable|integer|min:1|max:12|gte:kelas_min',
+            'mata_pelajaran'     => 'nullable|array',
+            'mata_pelajaran.*'   => 'string|max:100',
+            'bible_schedule_id'  => 'nullable|exists:college_bible_schedules,id',
         ]);
 
         Cabang::create([
-            'nama'             => $request->nama,
-            'slug'             => \Illuminate\Support\Str::slug($request->nama),
-            'alamat'           => $request->alamat,
-            'kontak'           => $request->kontak,
-            'foto_wajib'       => $request->boolean('foto_wajib', true),
-            'pendaftaran_buka' => $request->boolean('pendaftaran_buka', true),
-            'whatsapp_link'    => $request->input('whatsapp_link') ?: null,
-            'kelas_min'        => $request->filled('kelas_min') ? (int) $request->kelas_min : null,
-            'kelas_max'        => $request->filled('kelas_max') ? (int) $request->kelas_max : null,
-            'mata_pelajaran'   => $request->input('mata_pelajaran') ?: [],
+            'nama'               => $request->nama,
+            'slug'               => \Illuminate\Support\Str::slug($request->nama),
+            'alamat'             => $request->alamat,
+            'kontak'             => $request->kontak,
+            'foto_wajib'         => $request->boolean('foto_wajib', true),
+            'pendaftaran_buka'   => $request->boolean('pendaftaran_buka', true),
+            'whatsapp_link'      => $request->input('whatsapp_link') ?: null,
+            'kelas_min'          => $request->filled('kelas_min') ? (int) $request->kelas_min : null,
+            'kelas_max'          => $request->filled('kelas_max') ? (int) $request->kelas_max : null,
+            'mata_pelajaran'     => $request->input('mata_pelajaran') ?: [],
+            'bible_schedule_id'  => $request->filled('bible_schedule_id') ? (int) $request->bible_schedule_id : null,
         ]);
 
         return back()->with('success', 'Cabang ditambahkan.');
@@ -351,29 +354,31 @@ class AdminController extends Controller
     public function updateCabang(Request $request, Cabang $cabang)
     {
         $request->validate([
-            'nama'             => 'required|string|max:255',
-            'alamat'           => 'nullable|string',
-            'kontak'           => 'nullable|string',
-            'foto_wajib'       => 'nullable|boolean',
-            'pendaftaran_buka' => 'nullable|boolean',
-            'whatsapp_link'    => 'nullable|url|max:500',
-            'kelas_min'        => 'nullable|integer|min:1|max:12',
-            'kelas_max'        => 'nullable|integer|min:1|max:12|gte:kelas_min',
-            'mata_pelajaran'   => 'nullable|array',
-            'mata_pelajaran.*' => 'string|max:100',
+            'nama'               => 'required|string|max:255',
+            'alamat'             => 'nullable|string',
+            'kontak'             => 'nullable|string',
+            'foto_wajib'         => 'nullable|boolean',
+            'pendaftaran_buka'   => 'nullable|boolean',
+            'whatsapp_link'      => 'nullable|url|max:500',
+            'kelas_min'          => 'nullable|integer|min:1|max:12',
+            'kelas_max'          => 'nullable|integer|min:1|max:12|gte:kelas_min',
+            'mata_pelajaran'     => 'nullable|array',
+            'mata_pelajaran.*'   => 'string|max:100',
+            'bible_schedule_id'  => 'nullable|exists:college_bible_schedules,id',
         ]);
 
         $cabang->update([
-            'nama'             => $request->nama,
-            'slug'             => \Illuminate\Support\Str::slug($request->nama),
-            'alamat'           => $request->alamat,
-            'kontak'           => $request->kontak,
-            'foto_wajib'       => $request->boolean('foto_wajib', false),
-            'pendaftaran_buka' => $request->boolean('pendaftaran_buka', false),
-            'whatsapp_link'    => $request->input('whatsapp_link') ?: null,
-            'kelas_min'        => $request->filled('kelas_min') ? (int) $request->kelas_min : null,
-            'kelas_max'        => $request->filled('kelas_max') ? (int) $request->kelas_max : null,
-            'mata_pelajaran'   => $request->input('mata_pelajaran') ?: [],
+            'nama'               => $request->nama,
+            'slug'               => \Illuminate\Support\Str::slug($request->nama),
+            'alamat'             => $request->alamat,
+            'kontak'             => $request->kontak,
+            'foto_wajib'         => $request->boolean('foto_wajib', false),
+            'pendaftaran_buka'   => $request->boolean('pendaftaran_buka', false),
+            'whatsapp_link'      => $request->input('whatsapp_link') ?: null,
+            'kelas_min'          => $request->filled('kelas_min') ? (int) $request->kelas_min : null,
+            'kelas_max'          => $request->filled('kelas_max') ? (int) $request->kelas_max : null,
+            'mata_pelajaran'     => $request->input('mata_pelajaran') ?: [],
+            'bible_schedule_id'  => $request->filled('bible_schedule_id') ? (int) $request->bible_schedule_id : null,
         ]);
 
         return back()->with('success', 'Cabang diperbarui.');

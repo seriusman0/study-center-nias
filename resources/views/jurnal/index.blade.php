@@ -2,6 +2,26 @@
 
 @section('title', 'Jurnal Harian')
 
+@php
+$kitabList = [
+    // Perjanjian Lama
+    'Kejadian','Keluaran','Imamat','Bilangan','Ulangan',
+    'Yosua','Hakim-hakim','Rut','1 Samuel','2 Samuel',
+    '1 Raja-raja','2 Raja-raja','1 Tawarikh','2 Tawarikh',
+    'Ezra','Nehemia','Ester','Ayub','Mazmur','Amsal',
+    'Pengkhotbah','Kidung Agung','Yesaya','Yeremia','Ratapan',
+    'Yehezkiel','Daniel','Hosea','Yoel','Amos','Obaja',
+    'Yunus','Mikha','Nahum','Habakuk','Zefanya','Hagai',
+    'Zakharia','Maleakhi',
+    // Perjanjian Baru
+    'Matius','Markus','Lukas','Yohanes','Kisah Para Rasul',
+    'Roma','1 Korintus','2 Korintus','Galatia','Efesus',
+    'Filipi','Kolose','1 Tesalonika','2 Tesalonika',
+    '1 Timotius','2 Timotius','Titus','Filemon','Ibrani',
+    'Yakobus','1 Petrus','2 Petrus',
+    '1 Yohanes','2 Yohanes','3 Yohanes','Yudas','Wahyu',
+];
+@endphp
 @section('content')
 <div class="max-w-3xl mx-auto px-4 py-6"
      x-data="jurnalPage({
@@ -52,6 +72,7 @@
     </div>
 
     {{-- Pembacaan Alkitab --}}
+    @unless(auth()->user()->hasRole('student'))
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">1</span>
@@ -89,8 +110,10 @@
             </div>
         @endif
     </div>
+    @endunless
 
     {{-- Hafal Ayat --}}
+    @unless(auth()->user()->hasRole('student'))
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
          x-data="hafalAyat(jurnalPage_cfg)">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
@@ -107,10 +130,13 @@
         <div class="flex flex-wrap gap-2 items-end">
             <div class="flex flex-col gap-1">
                 <label class="text-xs text-sc-ink-500 font-medium">Kitab</label>
-                <input type="text" x-model="kitab" list="kitab-list"
-                    placeholder="mis. Ezra"
-                    @blur="save()"
-                    class="border border-sc-line rounded-lg px-3 py-2 text-sm w-36 focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+                <select x-model="kitab" @change="save()"
+                    class="border border-sc-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+                    <option value="">— Pilih kitab —</option>
+                    @foreach($kitabList as $k)
+                        <option value="{{ $k }}">{{ $k }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="flex flex-col gap-1">
                 <label class="text-xs text-sc-ink-500 font-medium">Pasal</label>
@@ -132,28 +158,13 @@
         <p x-show="saved" x-transition class="text-xs text-sc-teal-600 mt-2 font-medium" style="display:none">
             Tersimpan: <span x-text="saved"></span>
         </p>
-        <datalist id="kitab-list">
-            <option value="Kejadian"><option value="Keluaran"><option value="Imamat"><option value="Bilangan"><option value="Ulangan">
-            <option value="Yosua"><option value="Hakim-hakim"><option value="Rut"><option value="1 Samuel"><option value="2 Samuel">
-            <option value="1 Raja-raja"><option value="2 Raja-raja"><option value="1 Tawarikh"><option value="2 Tawarikh"><option value="Ezra">
-            <option value="Nehemia"><option value="Ester"><option value="Ayub"><option value="Mazmur"><option value="Amsal">
-            <option value="Pengkhotbah"><option value="Kidung Agung"><option value="Yesaya"><option value="Yeremia"><option value="Ratapan">
-            <option value="Yehezkiel"><option value="Daniel"><option value="Hosea"><option value="Yoel"><option value="Amos">
-            <option value="Obaja"><option value="Yunus"><option value="Mikha"><option value="Nahum"><option value="Habakuk">
-            <option value="Zefanya"><option value="Hagai"><option value="Zakharia"><option value="Maleakhi">
-            <option value="Matius"><option value="Markus"><option value="Lukas"><option value="Yohanes"><option value="Kisah">
-            <option value="Roma"><option value="1 Korintus"><option value="2 Korintus"><option value="Galatia"><option value="Efesus">
-            <option value="Filipi"><option value="Kolose"><option value="1 Tesalonika"><option value="2 Tesalonika">
-            <option value="1 Timotius"><option value="2 Timotius"><option value="Titus"><option value="Filemon">
-            <option value="Ibrani"><option value="Yakobus"><option value="1 Petrus"><option value="2 Petrus">
-            <option value="1 Yohanes"><option value="2 Yohanes"><option value="3 Yohanes"><option value="Yudas"><option value="Wahyu">
-        </datalist>
     </div>
+    @endunless
 
     {{-- Jadwal Kehidupan --}}
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
-            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">3</span>
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">{{ auth()->user()->hasRole('student') ? '1' : '3' }}</span>
             Jadwal Kehidupan
         </h2>
 
@@ -173,17 +184,123 @@
                 @else
                     <div class="space-y-2">
                         @foreach($lifeItems[$kKey] as $item)
-                            <label class="flex items-center gap-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
-                                <input type="checkbox" class="w-5 h-5 accent-sc-teal-600"
-                                    :checked="state.life.includes({{ $item->id }})"
-                                    @change="toggle('life', {{ $item->id }}, $event.target.checked)">
-                                <span class="text-sm">{{ $item->label }}</span>
-                            </label>
+                            @if(auth()->user()->hasRole('student') && $item->label === 'Baca Alkitab')
+                                <div class="p-3 rounded-lg border border-sc-line">
+                                    <div class="text-sm font-semibold text-sc-ink-700 mb-2">
+                                        Baca Alkitab
+                                        @if($bibleItem)<span class="text-xs font-normal text-sc-ink-500 ml-1">— Hari ke-{{ $dayNo }}</span>@endif
+                                    </div>
+                                    <div class="grid sm:grid-cols-2 gap-2">
+                                        <label class="flex items-start gap-2 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                                            <input type="checkbox" class="mt-1 w-5 h-5 accent-sc-teal-600" :checked="state.pl" @change="toggle('pl', null, $event.target.checked)">
+                                            <div>
+                                                <div class="font-semibold text-sm text-sc-ink-900">Perjanjian Lama</div>
+                                                @if($bibleItem)<div class="text-sm text-sc-ink-700">{{ $bibleItem->pl_text ?: '—' }}</div>@endif
+                                            </div>
+                                        </label>
+                                        <label class="flex items-start gap-2 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                                            <input type="checkbox" class="mt-1 w-5 h-5 accent-sc-teal-600" :checked="state.pb" @change="toggle('pb', null, $event.target.checked)">
+                                            <div>
+                                                <div class="font-semibold text-sm text-sc-ink-900">Perjanjian Baru</div>
+                                                @if($bibleItem)<div class="text-sm text-sc-ink-700">{{ $bibleItem->pb_text ?: '—' }}</div>@endif
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            @elseif(auth()->user()->hasRole('student') && $item->label === 'Hafal Ayat')
+                                <div class="p-3 rounded-lg border border-sc-line" x-data="hafalAyat(jurnalPage_cfg)">
+                                    <div class="text-sm font-semibold text-sc-ink-700 mb-2">Hafal Ayat</div>
+                                    @if($bibleItem)
+                                        <p class="text-xs text-sc-ink-500 mb-2">
+                                            Dari porsi hari ini: <span class="font-medium text-sc-teal-700">{{ implode(' / ', array_filter([$bibleItem->pl_text, $bibleItem->pb_text])) }}</span>
+                                        </p>
+                                    @else
+                                        <p class="text-xs text-sc-ink-500 mb-2">Pilih satu ayat dari porsi bacaan hari ini.</p>
+                                    @endif
+                                    <div class="flex flex-wrap gap-2 items-end">
+                                        <div class="flex flex-col gap-1">
+                                            <label class="text-xs text-sc-ink-500 font-medium">Kitab</label>
+                                            <select x-model="kitab" @change="save()"
+                                                class="border border-sc-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+                                                <option value="">— Pilih kitab —</option>
+                                                @foreach($kitabList as $k)
+                                                    <option value="{{ $k }}">{{ $k }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="flex flex-col gap-1">
+                                            <label class="text-xs text-sc-ink-500 font-medium">Pasal</label>
+                                            <input type="number" x-model="pasal" min="1" max="150" placeholder="1" @blur="save()"
+                                                class="border border-sc-line rounded-lg px-3 py-2 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+                                        </div>
+                                        <div class="flex flex-col gap-1">
+                                            <label class="text-xs text-sc-ink-500 font-medium">Ayat</label>
+                                            <input type="number" x-model="ayat" min="1" max="200" placeholder="1" @blur="save()"
+                                                class="border border-sc-line rounded-lg px-3 py-2 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+                                        </div>
+                                        <button type="button" x-show="kitab || pasal || ayat" @click="clear()"
+                                            class="px-3 py-2 rounded-lg bg-sc-ink-100 text-sc-ink-500 text-sm hover:bg-sc-ink-200 transition">
+                                            Hapus
+                                        </button>
+                                    </div>
+                                    <p x-show="saved" x-transition class="text-xs text-sc-teal-600 mt-2 font-medium" style="display:none">
+                                        Tersimpan: <span x-text="saved"></span>
+                                    </p>
+                                </div>
+                            @else
+                                <label class="flex items-center gap-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                                    <input type="checkbox" class="w-5 h-5 accent-sc-teal-600"
+                                        :checked="state.life.includes({{ $item->id }})"
+                                        @change="toggle('life', {{ $item->id }}, $event.target.checked)">
+                                    <span class="text-sm">{{ $item->label }}</span>
+                                </label>
+                            @endif
                         @endforeach
                     </div>
                 @endif
             </div>
         @endforeach
+    </div>
+
+    {{-- Foto Saat Belajar --}}
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
+         x-data="fotoBelajar({ date: '{{ $date->toDateString() }}', csrf: '{{ csrf_token() }}', existing: {{ $entry?->foto_belajar ? json_encode(asset('storage/' . $entry->foto_belajar)) : 'null' }} })">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">
+                {{ auth()->user()->hasRole('student') ? '2' : '4' }}
+            </span>
+            Foto Saat Belajar
+            <span class="text-xs font-normal text-sc-ink-400 ml-1">(opsional)</span>
+        </h2>
+
+        {{-- Preview area --}}
+        <div x-show="preview || current" class="mb-3" style="display:none">
+            <img :src="preview || current" alt="Foto belajar"
+                 class="rounded-xl max-h-72 w-full object-cover border border-sc-line">
+        </div>
+
+        <div class="flex flex-wrap gap-2 items-center">
+            <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sc-teal-700 text-white text-sm font-semibold hover:bg-sc-teal-800 transition">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span x-text="current || preview ? 'Ganti Foto' : 'Upload Foto'"></span>
+                <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" @change="onFile($event)">
+            </label>
+            <button type="button" x-show="preview" @click="upload()"
+                    :disabled="uploading"
+                    class="px-4 py-2 rounded-lg bg-sc-orange-500 text-white text-sm font-semibold hover:bg-sc-orange-600 transition disabled:opacity-50">
+                <span x-text="uploading ? 'Menyimpan...' : 'Simpan Foto'"></span>
+            </button>
+            <button type="button" x-show="current && !preview" @click="remove()"
+                    class="px-4 py-2 rounded-lg bg-sc-ink-100 text-sc-ink-600 text-sm hover:bg-sc-ink-200 transition">
+                Hapus Foto
+            </button>
+            <button type="button" x-show="preview" @click="cancelPreview()"
+                    class="px-4 py-2 rounded-lg bg-sc-ink-100 text-sc-ink-500 text-sm hover:bg-sc-ink-200 transition">
+                Batal
+            </button>
+        </div>
+        <p x-show="error" x-text="error" class="text-xs text-red-500 mt-2" style="display:none"></p>
+        <p class="text-xs text-sc-ink-400 mt-2">Format: JPG, PNG, WebP. Maks. 4 MB.</p>
     </div>
 
     <div x-show="msg" x-transition class="fixed bottom-4 right-4 bg-sc-ink-900 text-white text-sm px-4 py-2 rounded-lg shadow-sc-3"
@@ -211,7 +328,7 @@ function jurnalPage(cfg) {
             const prev = this._snap(type, itemId);
             this._apply(type, itemId, checked);
             try {
-                const res = await fetch('{{ route('jurnal.toggle') }}', {
+                const res = await fetch('/jurnal/toggle', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -269,7 +386,7 @@ function hafalAyat(cfg) {
         async _post(verseRef) {
             if (!cfg) return;
             try {
-                const res = await fetch('{{ route('jurnal.toggle') }}', {
+                const res = await fetch('/jurnal/toggle', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': cfg.csrf, 'Accept': 'application/json' },
                     body: JSON.stringify({ type: 'verse', date: cfg.date, verse_ref: verseRef }),
@@ -278,6 +395,74 @@ function hafalAyat(cfg) {
                 this.saved = verseRef || '';
             } catch {
                 // silent fail — user can retry
+            }
+        },
+    };
+}
+
+function fotoBelajar({ date, csrf, existing }) {
+    return {
+        current: existing,
+        preview: null,
+        file: null,
+        uploading: false,
+        error: '',
+        onFile(e) {
+            const f = e.target.files[0];
+            if (!f) return;
+            const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+            if (!allowed.includes(f.type)) {
+                this.error = 'Format tidak didukung. Gunakan JPG, PNG, atau WebP.';
+                return;
+            }
+            if (f.size > 4 * 1024 * 1024) {
+                this.error = 'Ukuran file melebihi 4 MB.';
+                return;
+            }
+            this.error = '';
+            this.file = f;
+            const reader = new FileReader();
+            reader.onload = (ev) => { this.preview = ev.target.result; };
+            reader.readAsDataURL(f);
+        },
+        cancelPreview() {
+            this.preview = null;
+            this.file = null;
+            this.error = '';
+        },
+        async upload() {
+            if (!this.file || this.uploading) return;
+            this.uploading = true;
+            this.error = '';
+            try {
+                const form = new FormData();
+                form.append('foto', this.file);
+                form.append('date', date);
+                form.append('_token', csrf);
+                const res = await fetch('/jurnal/foto', { method: 'POST', body: form });
+                const json = await res.json();
+                if (!res.ok || !json.ok) throw new Error(json.message || 'Gagal upload');
+                this.current = json.url;
+                this.preview = null;
+                this.file = null;
+            } catch (e) {
+                this.error = e.message || 'Gagal upload, coba lagi.';
+            } finally {
+                this.uploading = false;
+            }
+        },
+        async remove() {
+            if (!confirm('Hapus foto ini?')) return;
+            try {
+                const res = await fetch('/jurnal/foto', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                    body: JSON.stringify({ date }),
+                });
+                if (!res.ok) throw new Error();
+                this.current = null;
+            } catch {
+                alert('Gagal menghapus foto.');
             }
         },
     };

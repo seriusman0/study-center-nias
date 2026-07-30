@@ -3,10 +3,13 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Blog;
+use App\Models\CollegeBibleItem;
+use App\Models\CollegeConfig;
 use App\Models\JurnalEntry;
 use App\Models\JurnalLifeCheck;
 use App\Models\JurnalLifeItem;
 use App\Models\Presensi;
+use App\Support\JurnalWeek;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class BerandaController extends Controller
@@ -29,7 +32,33 @@ class BerandaController extends Controller
         $lifeChecksToday = JurnalLifeCheck::where('student_id', $user->id)
             ->where('tanggal', $today)->where('checked', true)->count();
 
-        $totalLifeItems = JurnalLifeItem::count();
+        $studentItems   = JurnalLifeItem::forStudent($user->id)->get(['id', 'label']);
+        $totalLifeItems = $studentItems->count();
+
+        // "Baca Alkitab" and "Hafal Ayat" are special — they write to jurnal_entries,
+        // not jurnal_life_checks, so count them separately.
+        if ($studentItems->contains('label', 'Baca Alkitab')) {
+            if ($todayEntry?->pl_checked || $todayEntry?->pb_checked) {
+                $lifeChecksToday++;
+            }
+        }
+        if ($studentItems->contains('label', 'Hafal Ayat')) {
+            $weekKey  = JurnalWeek::weekKeyFor(JurnalWeek::today());
+            $hasVerse = JurnalEntry::where('student_id', $user->id)
+                ->where('verse_week_key', $weekKey)
+                ->whereNotNull('verse_ref')
+                ->exists();
+            if ($hasVerse) {
+                $lifeChecksToday++;
+            }
+        }
+
+        // Bible reading for today
+        $config     = CollegeConfig::current();
+        $todayDate  = JurnalWeek::today();
+        $dayNo      = $config->dayNoFor($todayDate);
+        $scheduleId = $user->cabang?->bible_schedule_id ?? $config->active_schedule_id;
+        $bibleItem  = CollegeBibleItem::forDayNo($dayNo, $scheduleId);
 
         // Blogs from same cabang (latest 6)
         $blogs = Blog::with(['user', 'cabang', 'tags'])
@@ -47,6 +76,6 @@ class BerandaController extends Controller
             ->take(20)
             ->pluck('foto');
 
-        return view('beranda', compact('user', 'qrHtml', 'todayEntry', 'lifeChecksToday', 'totalLifeItems', 'blogs', 'photos', 'today'));
+        return view('beranda', compact('user', 'qrHtml', 'todayEntry', 'lifeChecksToday', 'totalLifeItems', 'blogs', 'photos', 'today', 'bibleItem', 'dayNo'));
     }
 }
