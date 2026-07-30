@@ -13,7 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Storage;
 class JurnalApiController extends Controller
 {
     public function today(Request $request): JsonResponse
@@ -162,6 +162,7 @@ class JurnalApiController extends Controller
                 'pb_checked' => (bool) ($entry?->pb_checked),
             ],
             'verse_ref' => $entry?->verse_ref,
+            'foto_belajar_url' => $entry?->foto_belajar ? asset('storage/' . $entry->foto_belajar) : null,
             'life_items' => $items->map(fn($it) => [
                 'id'            => $it->id,
                 'kategori'      => $it->kategori,
@@ -170,5 +171,77 @@ class JurnalApiController extends Controller
                 'checked'       => in_array($it->id, $checkedIds),
             ])->values(),
         ];
+    }
+
+    public function uploadFoto(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'foto'  => 'required|file|mimes:jpeg,jpg,png,webp|max:4096',
+            'date'  => 'nullable|date',
+        ]);
+
+        $date  = isset($request->date)
+            ? Carbon::parse($request->date, JurnalWeek::TZ)->startOfDay()
+            : JurnalWeek::today();
+
+        if ($date->greaterThan(JurnalWeek::today())) {
+            return response()->json(['ok' => false, 'message' => 'Tanggal masa depan tidak diizinkan.'], 422);
+        }
+
+        $entry = JurnalEntry::where('student_id', $user->id)
+            ->whereDate('tanggal', $date->toDateString())
+            ->first();
+
+        if (!$entry) {
+            $entry = JurnalEntry::create([
+                'student_id' => $user->id,
+                'tanggal'    => $date->toDateString(),
+                'cabang_id'  => $user->cabang_id,
+            ]);
+        }
+
+        if ($entry->foto_belajar) {
+            Storage::disk('public')->delete($entry->foto_belajar);
+        }
+
+        $path = $request->file('foto')->store(
+            'jurnal-foto/' . $date->format('Y/m'),
+            'public'
+        );
+
+        $entry->update(['foto_belajar' => $path]);
+
+        return response()->json([
+            'ok'  => true,
+            'url' => asset('storage/' . $path),
+            'state' => $this->snapshot($user, $date)
+        ]);
+    }
+
+    public function deleteFoto(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $data = $request->validate(['date' => 'nullable|date']);
+
+        $date = isset($data['date'])
+            ? Carbon::parse($data['date'], JurnalWeek::TZ)->startOfDay()
+            : JurnalWeek::today();
+
+        $entry = JurnalEntry::where('student_id', $user->id)
+            ->whereDate('tanggal', $date->toDateString())
+            ->first();
+
+        if ($entry && $entry->foto_belajar) {
+            Storage::disk('public')->delete($entry->foto_belajar);
+            $entry->update(['foto_belajar' => null]);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'state' => $this->snapshot($user, $date)
+        ]);
     }
 }

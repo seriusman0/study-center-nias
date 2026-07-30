@@ -99,6 +99,7 @@ class StudentApiTest extends TestCase
             'week',
             'bible' => ['pl_porsi', 'pb_porsi', 'pl_checked', 'pb_checked'],
             'verse_ref',
+            'foto_belajar_url',
             'life_items' => [
                 '*' => ['id', 'kategori', 'label', 'response_type', 'checked'],
             ],
@@ -742,7 +743,7 @@ class StudentApiTest extends TestCase
     }
 
     // -----------------------------------------------------------------------
-    // 10. GET /api/jurnal/foto
+    // 10. GET /api/galeri
     // -----------------------------------------------------------------------
 
     public function test_galeri_returns_photos_from_student_cabang(): void
@@ -759,7 +760,7 @@ class StudentApiTest extends TestCase
             'jam_selesai' => '10:00:00',
         ]);
 
-        $response = $this->withToken($this->token)->getJson('/api/jurnal/foto');
+        $response = $this->withToken($this->token)->getJson('/api/galeri');
 
         $response->assertOk();
         $response->assertJsonStructure([
@@ -802,7 +803,7 @@ class StudentApiTest extends TestCase
             'jam_selesai' => '10:00:00',
         ]);
 
-        $response = $this->withToken($this->token)->getJson('/api/jurnal/foto');
+        $response = $this->withToken($this->token)->getJson('/api/galeri');
 
         $response->assertOk();
         $data = $response->json('data');
@@ -830,7 +831,7 @@ class StudentApiTest extends TestCase
             'jam_selesai' => '10:00:00',
         ]);
 
-        $response = $this->withToken($this->token)->getJson('/api/jurnal/foto');
+        $response = $this->withToken($this->token)->getJson('/api/galeri');
 
         $response->assertOk();
         $data = $response->json('data');
@@ -866,7 +867,7 @@ class StudentApiTest extends TestCase
             'jam_selesai' => '10:00:00',
         ]);
 
-        $response = $this->withToken($this->token)->getJson('/api/jurnal/foto');
+        $response = $this->withToken($this->token)->getJson('/api/galeri');
 
         $response->assertOk();
         $data = $response->json('data');
@@ -937,7 +938,7 @@ class StudentApiTest extends TestCase
 
         $guestToken = $guest->createToken('t')->plainTextToken;
 
-        $response = $this->withToken($guestToken)->getJson('/api/jurnal/foto');
+        $response = $this->withToken($guestToken)->getJson('/api/galeri');
 
         $response->assertStatus(403);
     }

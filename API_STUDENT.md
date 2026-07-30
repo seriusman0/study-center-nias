@@ -527,6 +527,7 @@ GET /api/jurnal/today?date=2026-07-30
     "pb_checked": false
   },
   "verse_ref": "Yohanes 3:16",
+  "foto_belajar_url": "https://studycenter.nanoprojectdevindonesia.com/storage/jurnal-foto/2026/07/abc.jpg",
   "life_items": [
     {
       "id": 1,
@@ -626,6 +627,7 @@ POST /api/jurnal/check
       "pb_checked": false
     },
     "verse_ref": null,
+    "foto_belajar_url": null,
     "life_items": [
       {
         "id": 1,
@@ -684,6 +686,58 @@ GET /api/jurnal/history?from=2026-07-01&to=2026-07-30
 
 > Setiap hari dalam range selalu ada entry, meski semua false/kosong.
 > `life_checked_ids` = array ID life_items yang sudah dicentang hari itu.
+
+---
+
+### 5.4 Upload Foto Belajar
+
+```http
+POST /api/jurnal/foto
+Content-Type: multipart/form-data
+```
+
+**Auth Required:** Ya (role: student)
+
+**Request Body (form-data):**
+```
+foto = [file image, max 4MB, format: jpeg/jpg/png/webp]
+date = "2026-07-30" (string YYYY-MM-DD, opsional, default hari ini)
+```
+
+**Response 200:**
+```json
+{
+  "ok": true,
+  "url": "https://.../storage/jurnal-foto/2026/07/abc.jpg",
+  "state": { /* state object persis seperti GET /api/jurnal/today */ }
+}
+```
+
+---
+
+### 5.5 Hapus Foto Belajar
+
+```http
+DELETE /api/jurnal/foto
+```
+
+**Auth Required:** Ya (role: student)
+
+**Request Body:**
+```json
+{
+  "date": "2026-07-30" 
+}
+```
+> `date` opsional, default hari ini.
+
+**Response 200:**
+```json
+{
+  "ok": true,
+  "state": { /* state object persis seperti GET /api/jurnal/today */ }
+}
+```
 
 ---
 
@@ -772,7 +826,7 @@ GET /api/laporan/my/matrix?from=2026-07-24&to=2026-07-30
 ### 7.1 Get Galeri
 
 ```http
-GET /api/jurnal/foto
+GET /api/galeri
 ```
 
 **Auth Required:** Ya (role: student)
@@ -1160,10 +1214,12 @@ GET /api/cabangs/{slug}
 | Update CV | PUT /api/cv | Ya | — |
 | Jurnal hari ini | GET /api/jurnal/today | Ya | student |
 | Check item jurnal | POST /api/jurnal/check | Ya | student |
+| Upload foto jurnal | POST /api/jurnal/foto | Ya | student |
+| Hapus foto jurnal | DELETE /api/jurnal/foto | Ya | student |
 | Riwayat jurnal | GET /api/jurnal/history | Ya | student |
 | Laporan 30 hari | GET /api/laporan/my | Ya | student |
 | Matrix laporan | GET /api/laporan/my/matrix | Ya | student |
-| Galeri foto | GET /api/jurnal/foto | Ya | student |
+| Galeri foto | GET /api/galeri | Ya | student |
 | List artikel | GET /api/blogs | Tidak | — |
 | Detail artikel | GET /api/blogs/{slug} | Tidak | — |
 | Tulis artikel | POST /api/blogs | Ya | student+ |

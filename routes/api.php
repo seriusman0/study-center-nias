@@ -63,10 +63,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get ('/today',   [\App\Http\Controllers\Api\JurnalApiController::class, 'today']);
         Route::post('/check',   [\App\Http\Controllers\Api\JurnalApiController::class, 'check']);
         Route::get ('/history', [\App\Http\Controllers\Api\JurnalApiController::class, 'history']);
+        Route::post('/foto',    [\App\Http\Controllers\Api\JurnalApiController::class, 'uploadFoto']);
+        Route::delete('/foto',  [\App\Http\Controllers\Api\JurnalApiController::class, 'deleteFoto']);
     });
 
     // Galeri (student)
-    Route::middleware('role:student')->get('/jurnal/foto', [\App\Http\Controllers\Api\GaleriController::class, 'index']);
+    Route::middleware('role:student')->get('/galeri', [\App\Http\Controllers\Api\GaleriController::class, 'index']);
 
     // Laporan (student)
     Route::middleware('role:student')->prefix('laporan')->group(function () {
