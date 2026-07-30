@@ -135,7 +135,8 @@
 
     {{-- Section 2: Sidang-Sidang Gereja --}}
     @if(isset($lifeItems['sidang']) && $lifeItems['sidang']->isNotEmpty())
-    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4">
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
+         :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">2</span>
             Sidang-Sidang Gereja
@@ -172,7 +173,8 @@
 
     {{-- Section 3: Rohani & Pelayanan --}}
     @if(isset($lifeItems['rohani']) && $lifeItems['rohani']->isNotEmpty())
-    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4">
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
+         :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">3</span>
             Rohani & Pelayanan
@@ -256,6 +258,44 @@
     </div>
     @endif
 
+    {{-- Section 4: Foto Saat Belajar --}}
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
+         x-data="collegeFotoBelajar({ date: '{{ $date->toDateString() }}', csrf: '{{ csrf_token() }}', existing: {{ json_encode($fotoUrl) }} })">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">4</span>
+            Foto Saat Belajar
+            <span class="text-xs font-normal text-sc-ink-400 ml-1">(opsional)</span>
+        </h2>
+
+        <div x-show="preview || current" class="mb-3" style="display:none">
+            <img :src="preview || current" alt="Foto belajar"
+                 class="rounded-xl max-h-72 w-full object-cover border border-sc-line">
+        </div>
+
+        <div class="flex flex-wrap gap-2 items-center">
+            <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sc-teal-700 text-white text-sm font-semibold hover:bg-sc-teal-800 transition">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span x-text="current || preview ? 'Ganti Foto' : 'Upload Foto'"></span>
+                <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" @change="onFile($event)">
+            </label>
+            <button type="button" x-show="preview" @click="upload()"
+                    :disabled="uploading"
+                    class="px-4 py-2 rounded-lg bg-sc-orange-500 text-white text-sm font-semibold hover:bg-sc-orange-600 transition disabled:opacity-50">
+                <span x-text="uploading ? 'Menyimpan...' : 'Simpan Foto'"></span>
+            </button>
+            <button type="button" x-show="current && !preview" @click="remove()"
+                    class="px-4 py-2 rounded-lg bg-sc-ink-100 text-sc-ink-600 text-sm hover:bg-sc-ink-200 transition">
+                Hapus Foto
+            </button>
+            <button type="button" x-show="preview" @click="cancelPreview()"
+                    class="px-4 py-2 rounded-lg bg-sc-ink-100 text-sc-ink-500 text-sm hover:bg-sc-ink-200 transition">
+                Batal
+            </button>
+        </div>
+        <p x-show="error" x-text="error" class="text-xs text-red-500 mt-2" style="display:none"></p>
+        <p class="text-xs text-sc-ink-400 mt-2">Format: JPG, PNG, WebP. Maks. 4 MB.</p>
+    </div>
+
     <div x-show="msg" x-transition class="fixed bottom-4 right-4 bg-sc-ink-900 text-white text-sm px-4 py-2 rounded-lg shadow-sc-3"
          x-text="msg" style="display:none"></div>
 </div>
@@ -279,7 +319,7 @@ function collegeJurnalPage(cfg) {
             const prev = this._snap(type, itemId);
             this._apply(type, itemId, checked);
             try {
-                const res = await fetch('{{ route('college-jurnal.toggle') }}', {
+                const res = await fetch('/jurnal-college/toggle', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrf, 'Accept': 'application/json' },
                     body: JSON.stringify({ type, item_id: itemId, date: this.date, checked }),
@@ -293,14 +333,11 @@ function collegeJurnalPage(cfg) {
             }
         },
         toggleBoolean(itemId, val) {
-            const current = this.state.life.includes(itemId);
-            const target  = val === true;
-            if (current === target) return;
-            this.toggle('life', itemId, target);
+            this.toggle('life', itemId, val === true);
         },
         async saveStudy(itemId, jamMulai, jamSelesai, tipe) {
             try {
-                const res = await fetch('{{ route('college-jurnal.toggle') }}', {
+                const res = await fetch('/jurnal-college/toggle', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrf, 'Accept': 'application/json' },
                     body: JSON.stringify({ type: 'study', item_id: itemId, date: this.date, jam_mulai: jamMulai || null, jam_selesai: jamSelesai || null, tipe }),
@@ -327,6 +364,74 @@ function collegeJurnalPage(cfg) {
             }
         },
     }
+}
+
+function collegeFotoBelajar({ date, csrf, existing }) {
+    return {
+        current: existing,
+        preview: null,
+        file: null,
+        uploading: false,
+        error: '',
+        onFile(e) {
+            const f = e.target.files[0];
+            if (!f) return;
+            const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+            if (!allowed.includes(f.type)) {
+                this.error = 'Format tidak didukung. Gunakan JPG, PNG, atau WebP.';
+                return;
+            }
+            if (f.size > 4 * 1024 * 1024) {
+                this.error = 'Ukuran file melebihi 4 MB.';
+                return;
+            }
+            this.error = '';
+            this.file = f;
+            const reader = new FileReader();
+            reader.onload = (ev) => { this.preview = ev.target.result; };
+            reader.readAsDataURL(f);
+        },
+        cancelPreview() {
+            this.preview = null;
+            this.file = null;
+            this.error = '';
+        },
+        async upload() {
+            if (!this.file || this.uploading) return;
+            this.uploading = true;
+            this.error = '';
+            try {
+                const form = new FormData();
+                form.append('foto', this.file);
+                form.append('date', date);
+                form.append('_token', csrf);
+                const res = await fetch('/jurnal-college/foto', { method: 'POST', body: form });
+                const json = await res.json();
+                if (!res.ok || !json.ok) throw new Error(json.message || 'Gagal upload');
+                this.current = json.url;
+                this.preview = null;
+                this.file = null;
+            } catch (e) {
+                this.error = e.message || 'Gagal upload, coba lagi.';
+            } finally {
+                this.uploading = false;
+            }
+        },
+        async remove() {
+            if (!confirm('Hapus foto ini?')) return;
+            try {
+                const res = await fetch('/jurnal-college/foto', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                    body: JSON.stringify({ date }),
+                });
+                if (!res.ok) throw new Error();
+                this.current = null;
+            } catch {
+                alert('Gagal menghapus foto.');
+            }
+        },
+    };
 }
 </script>
 @endpush

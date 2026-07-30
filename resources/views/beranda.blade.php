@@ -35,11 +35,11 @@
             @endif
         </div>
 
-        <div class="bg-white px-5">
+        <div class="bg-white px-6 pb-6">
             @if($bibleItem)
-            <div class="grid grid-cols-2 gap-3 pt-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-8">
                 {{-- PL --}}
-                <div class="rounded-xl border border-gray-200 shadow-sm p-3 flex items-start gap-2.5 transition
+                <div class="rounded-xl border border-gray-200 shadow-sm p-4 flex items-start gap-3 transition
                     {{ $plDone ? 'bg-sc-teal-50 border-sc-teal-300' : 'bg-white' }}">
                     <div class="mt-0.5 w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center
                         {{ $plDone ? 'bg-sc-teal-600 text-white' : 'bg-gray-200 text-gray-500' }}">
@@ -51,11 +51,11 @@
                     </div>
                     <div class="min-w-0">
                         <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Perjanjian Lama</p>
-                        <p class="text-sm font-semibold text-sc-ink-900 mt-0.5 leading-tight">{{ $bibleItem->pl_text ?: '—' }}</p>
+                        <p class="text-sm font-semibold text-sc-ink-900 mt-1 leading-tight">{{ $bibleItem->pl_text ?: '—' }}</p>
                     </div>
                 </div>
                 {{-- PB --}}
-                <div class="rounded-xl border border-gray-200 shadow-sm p-3 flex items-start gap-2.5 transition
+                <div class="rounded-xl border border-gray-200 shadow-sm p-4 flex items-start gap-3 transition
                     {{ $pbDone ? 'bg-sc-teal-50 border-sc-teal-300' : 'bg-white' }}">
                     <div class="mt-0.5 w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center
                         {{ $pbDone ? 'bg-sc-teal-600 text-white' : 'bg-gray-200 text-gray-500' }}">
@@ -67,19 +67,19 @@
                     </div>
                     <div class="min-w-0">
                         <p class="text-xs font-bold text-gray-400 uppercase tracking-wide">Perjanjian Baru</p>
-                        <p class="text-sm font-semibold text-sc-ink-900 mt-0.5 leading-tight">{{ $bibleItem->pb_text ?: '—' }}</p>
+                        <p class="text-sm font-semibold text-sc-ink-900 mt-1 leading-tight">{{ $bibleItem->pb_text ?: '—' }}</p>
                     </div>
                 </div>
             </div>
             @else
-            <div class="mt-5 rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-center text-sm text-gray-400">
+            <div class="mt-6 rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-center text-sm text-gray-400">
                 Porsi baca Alkitab belum tersedia untuk hari ini.
             </div>
             @endif
 
             {{-- Jadwal Kehidupan progress --}}
             @if($totalLifeItems > 0)
-            <div class="mt-5 bg-gray-50 rounded-xl p-4">
+            <div class="mt-6 bg-gray-50 rounded-xl p-4">
                 <div class="flex items-center justify-between mb-2.5">
                     <span class="text-sm font-semibold text-sc-ink-700">Jadwal Kehidupan</span>
                     <span class="text-sm font-bold {{ $lifePct === 100 ? 'text-sc-teal-600' : 'text-sc-ink-500' }}">
@@ -92,13 +92,13 @@
                          style="width: {{ $lifePct }}%"></div>
                 </div>
                 @if($lifePct === 100)
-                <p class="text-xs text-sc-teal-600 font-semibold mt-1.5">Semua selesai hari ini!</p>
+                <p class="text-xs text-sc-teal-600 font-semibold mt-2">Semua selesai hari ini!</p>
                 @endif
             </div>
             @endif
 
             {{-- CTA --}}
-            <div class="py-4">
+            <div class="pt-6">
                 @if(!$hasAnyProgress)
                 <a href="{{ $jurnalUrl }}"
                    class="flex items-center justify-center gap-2 w-full py-3 bg-sc-teal-600 hover:bg-sc-teal-700 text-white font-semibold text-sm rounded-xl transition">
