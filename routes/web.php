@@ -265,10 +265,11 @@ Route::middleware(['auth', 'role:college,admin'])->prefix('college')->name('coll
 });
 
 Route::middleware(['auth', 'role:college'])->prefix('jurnal-college')->name('college-jurnal.')->group(function () {
-    Route::get('/',        [CollegeJurnalController::class, 'index'])->name('index');
-    Route::post('/toggle', [CollegeJurnalController::class, 'toggle'])->name('toggle');
-    Route::post('/foto',   [CollegeJurnalController::class, 'uploadFoto'])->name('foto.upload');
-    Route::delete('/foto', [CollegeJurnalController::class, 'deleteFoto'])->name('foto.delete');
+    Route::get('/',              [CollegeJurnalController::class, 'index'])->name('index');
+    Route::get('/user/{userId}', [CollegeJurnalController::class, 'showOther'])->name('other');
+    Route::post('/toggle',       [CollegeJurnalController::class, 'toggle'])->name('toggle');
+    Route::post('/foto',         [CollegeJurnalController::class, 'uploadFoto'])->name('foto.upload');
+    Route::delete('/foto',       [CollegeJurnalController::class, 'deleteFoto'])->name('foto.delete');
 });
 
 // Admin: Jurnal College (progress, laporan, alkitab, items)

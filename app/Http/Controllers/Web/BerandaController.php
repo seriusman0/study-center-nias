@@ -9,6 +9,8 @@ use App\Models\JurnalEntry;
 use App\Models\JurnalLifeCheck;
 use App\Models\JurnalLifeItem;
 use App\Models\Presensi;
+use App\Models\Role;
+use App\Models\User;
 use App\Support\JurnalWeek;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -76,6 +78,16 @@ class BerandaController extends Controller
             ->take(20)
             ->pluck('foto');
 
-        return view('beranda', compact('user', 'qrHtml', 'todayEntry', 'lifeChecksToday', 'totalLifeItems', 'blogs', 'photos', 'today', 'bibleItem', 'dayNo'));
+        $collegeUsers = collect();
+        if ($user->hasRole('college')) {
+            $collegeRoleId = Role::where('name', 'college')->value('id');
+            $collegeUsers = User::where('is_active', true)
+                ->where('id', '!=', $user->id)
+                ->whereHas('roles', fn($r) => $r->where('roles.id', $collegeRoleId))
+                ->orderBy('name')
+                ->get(['id', 'name', 'avatar', 'username']);
+        }
+
+        return view('beranda', compact('user', 'qrHtml', 'todayEntry', 'lifeChecksToday', 'totalLifeItems', 'blogs', 'photos', 'today', 'bibleItem', 'dayNo', 'collegeUsers'));
     }
 }

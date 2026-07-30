@@ -9,6 +9,7 @@
         today: '{{ $today->toDateString() }}',
         csrf: '{{ csrf_token() }}',
         formOpen: {{ $formOpen ? 'true' : 'false' }},
+        readOnly: {{ isset($readOnly) && $readOnly ? 'true' : 'false' }},
         state: {
             pl: {{ $entry?->pl_checked ? 'true' : 'false' }},
             pb: {{ $entry?->pb_checked ? 'true' : 'false' }},
@@ -16,6 +17,21 @@
             study: @json($studyState)
         }
      })">
+
+    {{-- Read-only banner --}}
+    @if(isset($readOnly) && $readOnly)
+    <div class="bg-sc-ink-100 border border-sc-line rounded-xl p-3 mb-4 flex items-center gap-3">
+        <svg class="w-5 h-5 text-sc-ink-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        </svg>
+        <div>
+            <div class="font-semibold text-sm text-sc-ink-800">Mode Baca</div>
+            <div class="text-xs text-sc-ink-500">Jurnal milik {{ $readOnlyUser->name }}</div>
+        </div>
+        <a href="{{ route('beranda') }}" class="ml-auto text-xs text-sc-teal-700 font-semibold hover:underline flex-shrink-0">Kembali</a>
+    </div>
+    @endif
 
     {{-- Hero --}}
     <div class="bg-gradient-to-br from-sc-teal-700 to-sc-teal-600 text-white shadow-sc-3 rounded-2xl p-5 mb-4 relative overflow-hidden">
@@ -28,7 +44,7 @@
         </div>
         <div class="flex items-center justify-between gap-2 mb-2 relative">
             <div>
-                <h1 class="font-display text-2xl">Halo, {{ auth()->user()->name }}</h1>
+                <h1 class="font-display text-2xl">{{ isset($readOnly) && $readOnly ? $readOnlyUser->name : 'Halo, '.auth()->user()->name }}</h1>
                 <p class="text-sm text-white/85">{{ $date->locale('id')->isoFormat('dddd, D MMMM Y') }}</p>
                 @if(($streak ?? 0) > 0)
                 <div class="inline-flex items-center gap-1.5 mt-3 bg-sc-orange-100 text-sc-orange-700 border border-sc-orange-300 px-3 py-1 rounded-full text-xs font-bold">
@@ -36,6 +52,7 @@
                 </div>
                 @endif
             </div>
+            @if(!(isset($readOnly) && $readOnly))
             <div class="flex items-center gap-1">
                 <a href="{{ route('college-jurnal.index', ['date' => $date->copy()->subDay()->toDateString()]) }}"
                    class="px-3 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-sm">&larr;</a>
@@ -49,11 +66,12 @@
                     <a href="{{ route('college-jurnal.index') }}" class="ml-2 px-3 py-2 rounded-lg bg-sc-orange-500 text-white font-semibold text-sm hover:bg-sc-orange-600">Hari ini</a>
                 @endif
             </div>
+            @endif
         </div>
     </div>
 
     {{-- Form window locked banner --}}
-    @if($isToday && !$formOpen)
+    @if($isToday && !$formOpen && !(isset($readOnly) && $readOnly))
     <div class="bg-sc-orange-50 border border-sc-orange-300 text-sc-orange-800 rounded-xl p-4 mb-4 flex items-center gap-3">
         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
@@ -66,7 +84,7 @@
     @endif
 
     {{-- Section 1: Pembacaan Alkitab --}}
-    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4" :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'">
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ isset($readOnly) && $readOnly ? 'pointer-events-none' : '' }}" :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">1</span>
             Pembacaan Alkitab
@@ -135,7 +153,7 @@
 
     {{-- Section 2: Sidang-Sidang Gereja --}}
     @if(isset($lifeItems['sidang']) && $lifeItems['sidang']->isNotEmpty())
-    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ isset($readOnly) && $readOnly ? 'pointer-events-none' : '' }}"
          :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">2</span>
@@ -173,7 +191,7 @@
 
     {{-- Section 3: Rohani & Pelayanan --}}
     @if(isset($lifeItems['rohani']) && $lifeItems['rohani']->isNotEmpty())
-    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ isset($readOnly) && $readOnly ? 'pointer-events-none' : '' }}"
          :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">3</span>
@@ -260,7 +278,7 @@
 
     {{-- Section 4: Foto Saat Belajar --}}
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
-         x-data="collegeFotoBelajar({ date: '{{ $date->toDateString() }}', csrf: '{{ csrf_token() }}', existing: {{ json_encode($fotoUrl) }} })">
+         x-data="collegeFotoBelajar({ date: '{{ $date->toDateString() }}', csrf: '{{ csrf_token() }}', existing: {{ json_encode($fotoUrl) }}, readOnly: {{ isset($readOnly) && $readOnly ? 'true' : 'false' }} })">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">4</span>
             Foto Saat Belajar
@@ -272,7 +290,7 @@
                  class="rounded-xl max-h-72 w-full object-cover border border-sc-line">
         </div>
 
-        <div class="flex flex-wrap gap-2 items-center">
+        <div class="flex flex-wrap gap-2 items-center" x-show="!readOnly">
             <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sc-teal-700 text-white text-sm font-semibold hover:bg-sc-teal-800 transition">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 <span x-text="current || preview ? 'Ganti Foto' : 'Upload Foto'"></span>
@@ -292,8 +310,10 @@
                 Batal
             </button>
         </div>
+        <p x-show="!readOnly && !current && !preview" class="text-xs text-sc-ink-400 mt-2" style="display:none">Belum ada foto.</p>
+        <p x-show="readOnly && !current" class="text-xs text-sc-ink-400 mt-2" style="display:none">Tidak ada foto.</p>
         <p x-show="error" x-text="error" class="text-xs text-red-500 mt-2" style="display:none"></p>
-        <p class="text-xs text-sc-ink-400 mt-2">Format: JPG, PNG, WebP. Maks. 4 MB.</p>
+        <p x-show="!readOnly" class="text-xs text-sc-ink-400 mt-2" style="display:none">Format: JPG, PNG, WebP. Maks. 4 MB.</p>
     </div>
 
     <div x-show="msg" x-transition class="fixed bottom-4 right-4 bg-sc-ink-900 text-white text-sm px-4 py-2 rounded-lg shadow-sc-3"
@@ -308,6 +328,7 @@ function collegeJurnalPage(cfg) {
         today: cfg.today,
         csrf: cfg.csrf,
         formOpen: cfg.formOpen,
+        readOnly: cfg.readOnly || false,
         state: cfg.state,
         msg: '',
         showMsg(m) {
@@ -366,8 +387,9 @@ function collegeJurnalPage(cfg) {
     }
 }
 
-function collegeFotoBelajar({ date, csrf, existing }) {
+function collegeFotoBelajar({ date, csrf, existing, readOnly }) {
     return {
+        readOnly: readOnly || false,
         current: existing,
         preview: null,
         file: null,

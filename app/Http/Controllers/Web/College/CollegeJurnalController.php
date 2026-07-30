@@ -104,6 +104,81 @@ class CollegeJurnalController extends Controller
         ]);
     }
 
+    public function showOther($userId, Request $request)
+    {
+        $viewer     = $request->user();
+        $targetUser = \App\Models\User::where('is_active', true)->findOrFail($userId);
+
+        abort_unless($targetUser->hasRole('college'), 403);
+        abort_if($targetUser->id === $viewer->id, 302, route('college-jurnal.index'));
+
+        $config = CollegeConfig::current();
+        $today  = JurnalWeek::today();
+        $date   = $request->filled('date')
+            ? Carbon::parse($request->date, JurnalWeek::TZ)->startOfDay()
+            : $today;
+
+        abort_if($date->greaterThan($today), 422, 'Tanggal tidak boleh masa depan.');
+
+        $isToday  = $date->isSameDay($today);
+        $dayNo    = $config->dayNoFor($date);
+        $bibleItem = CollegeBibleItem::forDayNo($dayNo);
+
+        $entry = JurnalEntry::forStudent($targetUser->id)->whereDate('tanggal', $date->toDateString())->first();
+
+        $lifeItems = JurnalLifeItem::forStudent($targetUser->id)
+            ->whereIn('kategori', self::COLLEGE_KATEGORI)
+            ->orderBy('kategori')
+            ->orderBy('id')
+            ->get()
+            ->groupBy('kategori');
+
+        $itemIds        = collect($lifeItems)->flatten(1)->pluck('id');
+        $checkedItemIds = JurnalLifeCheck::forStudent($targetUser->id)
+            ->whereDate('tanggal', $date->toDateString())
+            ->whereIn('life_item_id', $itemIds)
+            ->where('checked', true)
+            ->pluck('life_item_id')
+            ->all();
+
+        $studyLogs = CollegeStudyLog::where('user_id', $targetUser->id)
+            ->whereDate('tanggal', $date->toDateString())
+            ->whereIn('life_item_id', $itemIds)
+            ->get()
+            ->keyBy('life_item_id');
+
+        $studyState = $studyLogs->mapWithKeys(function ($l) {
+            return [$l->life_item_id => [
+                'jam_mulai'   => substr($l->jam_mulai, 0, 5),
+                'jam_selesai' => substr($l->jam_selesai, 0, 5),
+                'tipe'        => $l->tipe,
+            ]];
+        })->toArray();
+
+        $fotoUrl = $entry?->foto_belajar
+            ? asset('storage/' . $entry->foto_belajar)
+            : null;
+
+        return view('college.jurnal', [
+            'date'           => $date,
+            'today'          => $today,
+            'isToday'        => $isToday,
+            'formOpen'       => false,
+            'config'         => $config,
+            'dayNo'          => $dayNo,
+            'bibleItem'      => $bibleItem,
+            'entry'          => $entry,
+            'lifeItems'      => $lifeItems,
+            'checkedItemIds' => $checkedItemIds,
+            'studyLogs'      => $studyLogs,
+            'studyState'     => $studyState,
+            'streak'         => 0,
+            'fotoUrl'        => $fotoUrl,
+            'readOnly'       => true,
+            'readOnlyUser'   => $targetUser,
+        ]);
+    }
+
     public function toggle(Request $request)
     {
         $user   = $request->user();

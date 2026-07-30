@@ -29,10 +29,11 @@
     @endif
 
     {{-- Navbar --}}
+    @php $isCollegeUser = auth()->check() && auth()->user()->hasRole('college'); @endphp
     <nav class="bg-sc-teal-700 text-white shadow-sc-2 sticky top-0 z-40">
         <div class="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
             <a href="{{ route('home') }}" class="flex items-center gap-2 font-bold text-lg">
-                <span class="text-sc-yellow-300">Study Center</span>
+                <span class="text-sc-yellow-300">{{ $isCollegeUser ? 'Mahasiswa' : 'Study Center' }}</span>
                 <span class="text-white/80 text-sm font-normal hidden sm:block">Nias</span>
             </a>
             <div class="flex items-center gap-1 text-sm">
@@ -83,9 +84,9 @@
     {{-- Footer --}}
     <footer class="bg-sc-teal-700 text-white/70 text-sm py-8 mt-auto">
         <div class="max-w-6xl mx-auto px-4 text-center">
-            <p class="text-sc-yellow-300 font-semibold mb-1">Study Center Nias</p>
+            <p class="text-sc-yellow-300 font-semibold mb-1">{{ $isCollegeUser ? 'Mahasiswa' : 'Study Center' }} Nias</p>
             <p>Gunungsitoli · Kab. Nias · Kab. Nias Selatan · Kab. Nias Utara</p>
-            <p class="mt-3 text-white/40">© {{ date('Y') }} Study Center Nias</p>
+            <p class="mt-3 text-white/40">© {{ date('Y') }} {{ $isCollegeUser ? 'Mahasiswa' : 'Study Center' }} Nias</p>
         </div>
     </footer>
 

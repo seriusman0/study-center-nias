@@ -116,7 +116,25 @@
         </div>
     </div>
 
-    {{-- 3. Blog Cabang --}}
+    {{-- 3. Rekan Mahasiswa (college only) --}}
+    @if(auth()->user()->hasRole('college') && $collegeUsers->isNotEmpty())
+    <div class="bg-white rounded-2xl shadow-sc-2 border border-sc-line p-6">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-4">Jurnal Rekan Mahasiswa</h2>
+        <div class="space-y-2">
+            @foreach($collegeUsers as $cu)
+            <a href="{{ route('college-jurnal.other', $cu->id) }}"
+               class="flex items-center gap-3 p-3 rounded-xl hover:bg-sc-teal-50 transition group">
+                <img src="{{ $cu->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($cu->name).'&background=007a5c&color=fff' }}"
+                     class="w-9 h-9 rounded-full object-cover border-2 border-sc-line flex-shrink-0" alt="{{ $cu->name }}">
+                <span class="font-semibold text-sc-ink-900 group-hover:text-sc-teal-700 text-sm">{{ $cu->name }}</span>
+                <span class="ml-auto text-sc-ink-400 text-xs flex-shrink-0">Lihat Jurnal &rarr;</span>
+            </a>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    {{-- 4. Blog Cabang --}}
     @if($blogs->count())
     <div class="bg-white rounded-2xl shadow-sc-2 border border-sc-line p-6">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-4">Artikel Terbaru</h2>

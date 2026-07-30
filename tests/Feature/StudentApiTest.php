@@ -742,7 +742,7 @@ class StudentApiTest extends TestCase
     }
 
     // -----------------------------------------------------------------------
-    // 10. GET /api/galeri
+    // 10. GET /api/jurnal/foto
     // -----------------------------------------------------------------------
 
     public function test_galeri_returns_photos_from_student_cabang(): void
@@ -759,7 +759,7 @@ class StudentApiTest extends TestCase
             'jam_selesai' => '10:00:00',
         ]);
 
-        $response = $this->withToken($this->token)->getJson('/api/galeri');
+        $response = $this->withToken($this->token)->getJson('/api/jurnal/foto');
 
         $response->assertOk();
         $response->assertJsonStructure([
@@ -802,7 +802,7 @@ class StudentApiTest extends TestCase
             'jam_selesai' => '10:00:00',
         ]);
 
-        $response = $this->withToken($this->token)->getJson('/api/galeri');
+        $response = $this->withToken($this->token)->getJson('/api/jurnal/foto');
 
         $response->assertOk();
         $data = $response->json('data');
@@ -830,7 +830,7 @@ class StudentApiTest extends TestCase
             'jam_selesai' => '10:00:00',
         ]);
 
-        $response = $this->withToken($this->token)->getJson('/api/galeri');
+        $response = $this->withToken($this->token)->getJson('/api/jurnal/foto');
 
         $response->assertOk();
         $data = $response->json('data');
@@ -866,7 +866,7 @@ class StudentApiTest extends TestCase
             'jam_selesai' => '10:00:00',
         ]);
 
-        $response = $this->withToken($this->token)->getJson('/api/galeri');
+        $response = $this->withToken($this->token)->getJson('/api/jurnal/foto');
 
         $response->assertOk();
         $data = $response->json('data');
@@ -937,7 +937,7 @@ class StudentApiTest extends TestCase
 
         $guestToken = $guest->createToken('t')->plainTextToken;
 
-        $response = $this->withToken($guestToken)->getJson('/api/galeri');
+        $response = $this->withToken($guestToken)->getJson('/api/jurnal/foto');
 
         $response->assertStatus(403);
     }

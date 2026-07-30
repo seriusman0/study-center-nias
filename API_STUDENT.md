@@ -772,7 +772,7 @@ GET /api/laporan/my/matrix?from=2026-07-24&to=2026-07-30
 ### 7.1 Get Galeri
 
 ```http
-GET /api/galeri
+GET /api/jurnal/foto
 ```
 
 **Auth Required:** Ya (role: student)
@@ -1163,7 +1163,7 @@ GET /api/cabangs/{slug}
 | Riwayat jurnal | GET /api/jurnal/history | Ya | student |
 | Laporan 30 hari | GET /api/laporan/my | Ya | student |
 | Matrix laporan | GET /api/laporan/my/matrix | Ya | student |
-| Galeri foto | GET /api/galeri | Ya | student |
+| Galeri foto | GET /api/jurnal/foto | Ya | student |
 | List artikel | GET /api/blogs | Tidak | — |
 | Detail artikel | GET /api/blogs/{slug} | Tidak | — |
 | Tulis artikel | POST /api/blogs | Ya | student+ |
