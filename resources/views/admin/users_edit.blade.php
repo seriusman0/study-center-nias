@@ -204,7 +204,7 @@
     </div>
 </div>
 
-@if(in_array('student', $userRoleNames))
+@if(in_array('student', $userRoleNames) || in_array('scholarship_teenager', $userRoleNames))
 <div class="card mt-3">
     <div class="card-header"><h6 class="mb-0"><i class="fas fa-qrcode mr-1"></i> QR Code Absensi</h6></div>
     <div class="card-body text-center">
@@ -225,6 +225,10 @@ function syncProfileSections() {
     var checked = Array.prototype.map.call(
         document.querySelectorAll('.role-toggle:checked'), function(el){ return el.value; }
     );
+    // scholarship_teenager shares the student profile section
+    if (checked.indexOf('scholarship_teenager') !== -1 && checked.indexOf('student') === -1) {
+        checked.push('student');
+    }
     document.querySelectorAll('.profile-section').forEach(function(sec){
         sec.style.display = checked.indexOf(sec.dataset.role) !== -1 ? '' : 'none';
     });

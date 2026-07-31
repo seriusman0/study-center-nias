@@ -239,7 +239,7 @@ class AdminController extends Controller
     private function validateProfileData(Request $request, array $roleNames): array
     {
         $rules = [];
-        if (in_array('student', $roleNames)) {
+        if (in_array('student', $roleNames) || in_array('scholarship_teenager', $roleNames)) {
             $rules += [
                 'student.student_number' => 'nullable|string|max:50',
                 'student.birth_date'     => 'nullable|date',
@@ -275,9 +275,9 @@ class AdminController extends Controller
 
     private function syncProfiles(User $user, array $roleNames, array $data): void
     {
-        if (in_array('student', $roleNames) && isset($data['student'])) {
+        if ((in_array('student', $roleNames) || in_array('scholarship_teenager', $roleNames)) && isset($data['student'])) {
             StudentProfile::updateOrCreate(['user_id' => $user->id], $data['student']);
-        } elseif (! in_array('student', $roleNames)) {
+        } elseif (! in_array('student', $roleNames) && ! in_array('scholarship_teenager', $roleNames)) {
             $user->studentProfile()?->delete();
         }
 

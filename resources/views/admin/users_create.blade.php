@@ -182,6 +182,10 @@ function syncProfileSections() {
     var checked = Array.prototype.map.call(
         document.querySelectorAll('.role-toggle:checked'), function(el){ return el.value; }
     );
+    // scholarship_teenager shares the student profile section
+    if (checked.indexOf('scholarship_teenager') !== -1 && checked.indexOf('student') === -1) {
+        checked.push('student');
+    }
     document.querySelectorAll('.profile-section').forEach(function(sec){
         sec.style.display = checked.indexOf(sec.dataset.role) !== -1 ? '' : 'none';
     });
