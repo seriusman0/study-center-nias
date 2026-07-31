@@ -58,7 +58,7 @@
              class="uf-avatar" alt="">
         <div class="uf-body">
             <div class="uf-name">{{ $user->name }}</div>
-            <div class="uf-meta">@{{ $user->username }}{{ $user->email ? ' · '.$user->email : '' }}</div>
+            <div class="uf-meta">{{ $user->username }}{{ $user->email ? ' · '.$user->email : '' }}</div>
             <div class="uf-meta">{{ $user->cabang?->nama ?? 'Tanpa cabang' }}</div>
             <div class="uf-badges">
                 @forelse($user->roles as $r)

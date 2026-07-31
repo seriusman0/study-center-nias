@@ -30,7 +30,7 @@
                  class="img-circle mr-2" style="width:48px;height:48px;object-fit:cover" alt="">
             <div>
                 <strong style="font-size:.9rem">{{ $user->name }}</strong>
-                <div class="text-muted" style="font-size:.75rem">@{{ $user->username }}</div>
+                <div class="text-muted" style="font-size:.75rem">{{ $user->username }}</div>
             </div>
         </div>
 
