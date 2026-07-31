@@ -2,10 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\JurnalLifeItem;
 use App\Models\Role;
 use App\Models\StudentProfile;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -40,6 +42,8 @@ class RemajaBeasiswaSeeder extends Seeder
             ['name' => 'Daniel Hendrata Zebua',              'gender' => 'L', 'phone' => '082370927254', 'grade' => 10],
         ];
 
+        $lifeItems = $this->seedLifeItems();
+
         foreach ($students as $data) {
             $slug     = Str::slug($data['name'], '.');
             $email    = $slug . '@remaja.beasiswa.local';
@@ -54,7 +58,6 @@ class RemajaBeasiswaSeeder extends Seeder
                     'name'              => $data['name'],
                     'email'             => $email,
                     'username'          => $username,
-                    'password'          => Hash::make('12345'),
                     'is_active'         => true,
                     'email_verified_at' => now(),
                 ]);
@@ -81,6 +84,80 @@ class RemajaBeasiswaSeeder extends Seeder
                     'grade_class'   => 'Kelas ' . $data['grade'],
                 ]
             );
+
+            // Remove excluded items that may have been assigned previously
+            $excludedIds = DB::table('jurnal_life_items')
+                ->whereNull('student_id')
+                ->whereIn('label', [
+                    'Baca Buku Rohani (1 Bab / 1 Judul per Minggu)',
+                    'Sidang Saudari',
+                    'Sidang Pemuda',
+                ])
+                ->pluck('id');
+
+            if ($excludedIds->isNotEmpty()) {
+                DB::table('jurnal_student_life_items')
+                    ->where('student_id', $user->id)
+                    ->whereIn('life_item_id', $excludedIds)
+                    ->delete();
+            }
+
+            // Assign the 13 approved items
+            foreach ($lifeItems as $item) {
+                $exists = DB::table('jurnal_student_life_items')
+                    ->where('student_id', $user->id)
+                    ->where('life_item_id', $item->id)
+                    ->exists();
+
+                if (!$exists) {
+                    DB::table('jurnal_student_life_items')->insert([
+                        'student_id'   => $user->id,
+                        'life_item_id' => $item->id,
+                        'created_at'   => now(),
+                        'updated_at'   => now(),
+                    ]);
+                }
+            }
         }
+    }
+
+    private function seedLifeItems(): \Illuminate\Support\Collection
+    {
+        $now = now();
+
+        // Same as college items MINUS:
+        // - "Baca Buku Rohani (1 Bab / 1 Judul per Minggu)"
+        // - "Sidang Saudari"
+        // - "Sidang Pemuda"
+        $items = [
+            ['pembacaan', 'Perjanjian Lama',                          'check'],
+            ['pembacaan', 'Perjanjian Baru',                          'check'],
+            ['pembacaan', 'Upload Pembacaan Alkitab di Group',        'boolean'],
+            ['sidang',    'SPR',                                      'check'],
+            ['sidang',    'Sidang Remaja',                            'check'],
+            ['sidang',    'Sidang Kelompok',                          'check'],
+            ['sidang',    'Sidang Doa',                               'check'],
+            ['sidang',    'Sidang Spesial (Seminar / Sidang Khusus)', 'check'],
+            ['sidang',    'Sharing di Sidang SPR',                    'boolean'],
+            ['rohani',    'Buku Catatan',                             'boolean'],
+            ['rohani',    'Doa saat SPR',                             'boolean'],
+            ['rohani',    'Belajar',                                  'time_range'],
+            ['rohani',    'Pelayanan',                                'check'],
+        ];
+
+        $ids = [];
+        foreach ($items as [$kategori, $label, $responseType]) {
+            DB::table('jurnal_life_items')->updateOrInsert(
+                ['kategori' => $kategori, 'label' => $label, 'student_id' => null],
+                ['response_type' => $responseType, 'is_default' => false, 'is_active' => true, 'created_by' => null, 'updated_at' => $now, 'created_at' => $now]
+            );
+            $ids[] = DB::table('jurnal_life_items')
+                ->where('kategori', $kategori)
+                ->where('label', $label)
+                ->whereNull('student_id')
+                ->value('id');
+        }
+
+        return JurnalLifeItem::whereIn('id', $ids)->get();
     }
 }

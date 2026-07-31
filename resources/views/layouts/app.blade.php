@@ -38,12 +38,15 @@
             </a>
             <div class="flex items-center gap-1 text-sm">
                 @auth
-                    @if(auth()->user()->hasRole(['student','college']))
+                    @if(auth()->user()->hasRole(['student','college','scholarship_teenager']))
                     <a href="{{ route('beranda') }}" class="px-3 py-2 rounded hover:bg-white/10 {{ request()->routeIs('beranda') ? 'text-sc-yellow-300' : '' }}">Beranda</a>
                     @endif
                     @if(auth()->user()->hasRole('college'))
                         <a href="{{ route('college-jurnal.index') }}"
                            class="px-3 py-2 rounded hover:bg-white/10 {{ request()->routeIs('college-jurnal.*') ? 'text-sc-yellow-300' : '' }}">Jurnal</a>
+                    @elseif(auth()->user()->hasRole('scholarship_teenager'))
+                        <a href="{{ route('scholarship-teenager-jurnal.index') }}"
+                           class="px-3 py-2 rounded hover:bg-white/10 {{ request()->routeIs('scholarship-teenager-jurnal.*') ? 'text-sc-yellow-300' : '' }}">Jurnal</a>
                     @elseif(auth()->user()->hasRole('student'))
                         <a href="{{ route('jurnal.index') }}"
                            class="px-3 py-2 rounded hover:bg-white/10 {{ request()->routeIs('jurnal.*') ? 'text-sc-yellow-300' : '' }}">Jurnal</a>

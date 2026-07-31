@@ -86,6 +86,13 @@ class BerandaController extends Controller
                 ->whereHas('roles', fn($r) => $r->where('roles.id', $collegeRoleId))
                 ->orderBy('name')
                 ->get(['id', 'name', 'avatar', 'username']);
+        } elseif ($user->hasRole('scholarship_teenager')) {
+            $stRoleId = Role::where('name', 'scholarship_teenager')->value('id');
+            $collegeUsers = User::where('is_active', true)
+                ->where('id', '!=', $user->id)
+                ->whereHas('roles', fn($r) => $r->where('roles.id', $stRoleId))
+                ->orderBy('name')
+                ->get(['id', 'name', 'avatar', 'username']);
         }
 
         return view('beranda', compact('user', 'qrHtml', 'todayEntry', 'lifeChecksToday', 'totalLifeItems', 'blogs', 'photos', 'today', 'bibleItem', 'dayNo', 'collegeUsers'));

@@ -303,4 +303,28 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-college')
     Route::put('/items/{item}',             [CollegeItemController::class, 'update'])->name('items.update');
     Route::delete('/items/{item}',          [CollegeItemController::class, 'destroy'])->name('items.destroy');
 });
+
+use App\Http\Controllers\Web\ScholarshipTeenager\ScholarshipTeenagerJurnalController;
+use App\Http\Controllers\Web\Admin\ScholarshipTeenagerJurnalAdminController;
+use App\Http\Controllers\Web\Admin\ScholarshipTeenagerItemAdminController;
+
+Route::middleware(['auth', 'role:scholarship_teenager'])->prefix('jurnal-scholarship-teenager')->name('scholarship-teenager-jurnal.')->group(function () {
+    Route::get('/',              [ScholarshipTeenagerJurnalController::class, 'index'])->name('index');
+    Route::get('/user/{userId}', [ScholarshipTeenagerJurnalController::class, 'showOther'])->name('other');
+    Route::post('/toggle',       [ScholarshipTeenagerJurnalController::class, 'toggle'])->name('toggle');
+    Route::post('/foto',         [ScholarshipTeenagerJurnalController::class, 'uploadFoto'])->name('foto.upload');
+    Route::delete('/foto',       [ScholarshipTeenagerJurnalController::class, 'deleteFoto'])->name('foto.delete');
+});
+
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-scholarship-teenager')->name('admin.jurnal-scholarship-teenager.')->group(function () {
+    Route::get('/',                      [ScholarshipTeenagerJurnalAdminController::class, 'dashboard'])->name('index');
+    Route::get('/laporan',               [ScholarshipTeenagerJurnalAdminController::class, 'index'])->name('laporan');
+    Route::get('/laporan/{user}',        [ScholarshipTeenagerJurnalAdminController::class, 'show'])->name('show');
+    Route::get('/laporan/{user}/export', [ScholarshipTeenagerJurnalAdminController::class, 'export'])->name('export');
+    Route::get('/items',                 [ScholarshipTeenagerItemAdminController::class, 'index'])->name('items.index');
+    Route::post('/items',                [ScholarshipTeenagerItemAdminController::class, 'store'])->name('items.store');
+    Route::put('/items/{item}',          [ScholarshipTeenagerItemAdminController::class, 'update'])->name('items.update');
+    Route::delete('/items/{item}',       [ScholarshipTeenagerItemAdminController::class, 'destroy'])->name('items.destroy');
+});
+
 Route::view('/privacy-policy', 'privacy');

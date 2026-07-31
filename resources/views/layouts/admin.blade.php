@@ -188,6 +188,17 @@
                             <li class="nav-item"><a href="{{ route('admin.jurnal-college.items.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal-college.items.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Item Jurnal</p></a></li>
                         </ul>
                     </li>
+                    <li class="nav-item has-treeview {{ request()->routeIs('admin.jurnal-scholarship-teenager.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('admin.jurnal-scholarship-teenager.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-child"></i>
+                            <p>Jurnal Remaja Beasiswa<i class="right fas fa-angle-left"></i></p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item"><a href="{{ route('admin.jurnal-scholarship-teenager.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal-scholarship-teenager.index') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Progress</p></a></li>
+                            <li class="nav-item"><a href="{{ route('admin.jurnal-scholarship-teenager.laporan') }}" class="nav-link {{ request()->routeIs('admin.jurnal-scholarship-teenager.laporan') || request()->routeIs('admin.jurnal-scholarship-teenager.show') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Laporan</p></a></li>
+                            <li class="nav-item"><a href="{{ route('admin.jurnal-scholarship-teenager.items.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal-scholarship-teenager.items.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Item Jurnal</p></a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item has-treeview {{ request()->routeIs('admin.mentor-presensi.*') || request()->routeIs('admin.kelas-master.*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->routeIs('admin.mentor-presensi.*') || request()->routeIs('admin.kelas-master.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-clock"></i>
