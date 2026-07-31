@@ -129,13 +129,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ route('admin.permissions') }}" class="nav-link {{ request()->routeIs('admin.permissions*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-key"></i><p>Permission</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a href="{{ route('admin.nametags') }}" class="nav-link {{ request()->routeIs('admin.nametags*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-id-card"></i><p>Generator Name Tag</p>
+                            <i class="nav-icon fas fa-id-card"></i><p>Name Tag</p>
                         </a>
                     </li>
                     <li class="nav-item has-treeview {{ request()->routeIs('admin.certificates.*') ? 'menu-open' : '' }}">
@@ -191,7 +186,7 @@
                     <li class="nav-item has-treeview {{ request()->routeIs('admin.jurnal-scholarship-teenager.*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->routeIs('admin.jurnal-scholarship-teenager.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-child"></i>
-                            <p>Jurnal Remaja Beasiswa<i class="right fas fa-angle-left"></i></p>
+                            <p>Jurnal Remaja<i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item"><a href="{{ route('admin.jurnal-scholarship-teenager.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal-scholarship-teenager.index') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Progress</p></a></li>
