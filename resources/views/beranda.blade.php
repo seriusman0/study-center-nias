@@ -8,6 +8,49 @@
 @section('content')
 <div class="max-w-3xl mx-auto px-4 py-8 space-y-8">
 
+    {{-- 0. Announcements --}}
+    @if(!empty($announcements) && $announcements->isNotEmpty())
+    <div class="space-y-3">
+        @foreach($announcements as $ann)
+        @php
+            $colors = [
+                'info'    => ['bg' => '#eff6ff', 'border' => '#3b82f6', 'icon' => '#3b82f6', 'text' => '#1e40af'],
+                'success' => ['bg' => '#f0fdf4', 'border' => '#22c55e', 'icon' => '#16a34a', 'text' => '#15803d'],
+                'warning' => ['bg' => '#fffbeb', 'border' => '#f59e0b', 'icon' => '#d97706', 'text' => '#92400e'],
+                'danger'  => ['bg' => '#fef2f2', 'border' => '#ef4444', 'icon' => '#dc2626', 'text' => '#991b1b'],
+            ];
+            $c = $colors[$ann->type] ?? $colors['info'];
+        @endphp
+        <div id="ann-card-{{ $ann->id }}"
+             style="background:{{ $c['bg'] }};border-left:4px solid {{ $c['border'] }};border-radius:1rem;padding:1rem 1.25rem;position:relative;display:flex;gap:.75rem;align-items:flex-start;">
+            {{-- Icon --}}
+            <div style="flex-shrink:0;margin-top:.1rem">
+                @if($ann->type === 'info')
+                <svg width="20" height="20" fill="none" stroke="{{ $c['icon'] }}" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                @elseif($ann->type === 'success')
+                <svg width="20" height="20" fill="none" stroke="{{ $c['icon'] }}" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                @elseif($ann->type === 'warning')
+                <svg width="20" height="20" fill="none" stroke="{{ $c['icon'] }}" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                @else
+                <svg width="20" height="20" fill="none" stroke="{{ $c['icon'] }}" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                @endif
+            </div>
+            {{-- Content --}}
+            <div style="flex:1;min-width:0">
+                <p style="font-weight:700;font-size:.875rem;color:{{ $c['text'] }};margin-bottom:.25rem">{{ $ann->title }}</p>
+                <p style="font-size:.8125rem;color:{{ $c['text'] }};opacity:.85;line-height:1.5">{{ $ann->content }}</p>
+            </div>
+            {{-- Dismiss --}}
+            <button onclick="dismissAnnCard({{ $ann->id }})"
+                    style="flex-shrink:0;background:none;border:none;cursor:pointer;color:{{ $c['icon'] }};opacity:.6;padding:.25rem;line-height:1"
+                    title="Tutup">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        @endforeach
+    </div>
+    @endif
+
     {{-- 1. QR Code --}}
     <div class="bg-white rounded-2xl shadow-sc-2 border border-sc-line p-6 text-center">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-1">QR Code Absensi</h2>
@@ -189,4 +232,14 @@ new Swiper('.galeri-swiper', {
 });
 </script>
 @endif
+<script>
+function dismissAnnCard(id) {
+    var el = document.getElementById('ann-card-' + id);
+    if (el) { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; setTimeout(function(){ el.remove(); }, 300); }
+    fetch('/announcements/' + id + '/dismiss', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Content-Type': 'application/json' }
+    });
+}
+</script>
 @endpush

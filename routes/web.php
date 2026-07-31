@@ -181,10 +181,13 @@ Route::middleware(['auth', 'role:admin,fulltimer'])->prefix('admin/announcements
 // Dismiss announcement (any authenticated user)
 Route::middleware('auth')->post('/announcements/{id}/dismiss', [AnnouncementDismissController::class, 'dismiss'])->name('announcements.dismiss');
 
-// Beranda (student + college)
-Route::middleware(['auth', 'role:student,college'])->group(function () {
+// Beranda (student + college + scholarship_teenager)
+Route::middleware(['auth', 'role:student,college,scholarship_teenager'])->group(function () {
     Route::get('/beranda', [BerandaController::class, 'index'])->name('beranda');
 });
+
+// Laporan Jurnal (student + college + scholarship_teenager)
+Route::middleware(['auth', 'role:student,college,scholarship_teenager'])->get('/laporan', [\App\Http\Controllers\Web\LaporanController::class, 'index'])->name('laporan');
 
 // Jurnal (student-facing)
 Route::middleware(['auth', 'role:student'])->prefix('jurnal')->name('jurnal.')->group(function () {
