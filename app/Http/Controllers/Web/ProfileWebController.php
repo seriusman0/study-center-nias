@@ -44,7 +44,7 @@ class ProfileWebController extends Controller
         $validated = $request->validate([
             'name'                => 'sometimes|string|max:255',
             'bio'                 => 'nullable|string|max:500',
-            'avatar'              => 'nullable|image|max:2048',
+            'avatar'              => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'profile_public'      => 'sometimes|boolean',
             'cv_enabled'          => 'sometimes|boolean',
             'social_links'        => 'nullable|array',

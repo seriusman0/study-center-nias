@@ -225,13 +225,13 @@ class AdminController extends Controller
             'name'      => 'required|string|max:255',
             'email'     => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user?->id)],
             'password'  => 'nullable|string|min:5',
-            'avatar'    => 'nullable|image|max:2048',
+            'avatar'    => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'cabang_id' => 'nullable|exists:cabangs,id',
             'role_names'   => 'nullable|array',
             'role_names.*' => 'exists:roles,name',
         ];
         if ($user) {
-            $rules['username'] = ['required', 'string', 'max:50', 'regex:/^[a-z0-9]+$/', Rule::unique('users', 'username')->ignore($user->id)];
+            $rules['username'] = ['required', 'string', 'max:50', 'regex:/^[a-z0-9\-]+$/', Rule::unique('users', 'username')->ignore($user->id)];
         }
         return $request->validate($rules);
     }

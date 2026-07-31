@@ -58,7 +58,7 @@ class BlogController extends Controller
             'cabang_id' => ['required', 'exists:cabangs,id'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:50'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $slug = Str::slug($validated['title']);
@@ -78,7 +78,7 @@ class BlogController extends Controller
             'cabang_id' => $validated['cabang_id'],
             'title' => $validated['title'],
             'slug' => $slug,
-            'content' => $validated['content'],
+            'content' => $this->purifyHtml($validated['content']),
             'image' => $imagePath,
             'published_at' => now(),
         ]);
@@ -107,8 +107,12 @@ class BlogController extends Controller
             'cabang_id' => ['sometimes', 'exists:cabangs,id'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:50'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
+
+        if (isset($validated['content'])) {
+            $validated['content'] = $this->purifyHtml($validated['content']);
+        }
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('blogs', 'public');
@@ -140,7 +144,7 @@ class BlogController extends Controller
     public function uploadImage(Request $request): JsonResponse
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
+            'image' => 'required|image|mimes:jpeg,jpg,png,webp|max:5120',
         ]);
 
         $path = $request->file('image')->store('blogs/inline', 'public');
@@ -148,5 +152,21 @@ class BlogController extends Controller
         return response()->json([
             'url' => asset('storage/' . $path),
         ]);
+    }
+
+    private function purifyHtml(string $html): string
+    {
+        $config = \HTMLPurifier_Config::createDefault();
+        $config->set('HTML.Allowed',
+            'p,br,strong,em,u,s,ul,ol,li,h2,h3,h4,blockquote,pre,code,a[href|target|rel],img[src|alt|width|height],span[style],div,table,thead,tbody,tr,th,td'
+        );
+        $config->set('HTML.AllowedAttributes', 'a.href,a.target,a.rel,img.src,img.alt,img.width,img.height,span.style');
+        $config->set('CSS.AllowedProperties', 'color,background-color,font-weight,font-style,text-decoration,text-align');
+        $config->set('Attr.AllowedFrameTargets', ['_blank']);
+        $config->set('Attr.AllowedRel', ['noopener', 'noreferrer', 'nofollow']);
+        $config->set('URI.SafeIframeRegexp', null);
+        $config->set('AutoFormat.RemoveEmpty', true);
+        $purifier = new \HTMLPurifier($config);
+        return $purifier->purify($html);
     }
 }
