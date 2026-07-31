@@ -17,8 +17,8 @@ class AppServiceProvider extends ServiceProvider
             return config('app.frontend_url')."/password-reset/$token?email={$notifiable->getEmailForPasswordReset()}";
         });
 
-        // Inject active announcements into all layouts
-        View::composer(['layouts.app', 'layouts.admin'], function ($view) {
+        // Inject active announcements into all layouts and student-facing views
+        View::composer(['layouts.app', 'layouts.admin', 'beranda'], function ($view) {
             $dismissed = session('dismissed_announcements', []);
             $announcements = Announcement::active()
                 ->whereNotIn('id', $dismissed)

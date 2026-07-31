@@ -62,13 +62,18 @@ class AnnouncementController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'title'     => 'required|string|max:255',
             'content'   => 'required|string|max:1000',
             'type'      => 'required|in:info,success,warning,danger',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
             'starts_at' => 'nullable|date',
             'ends_at'   => 'nullable|date|after_or_equal:starts_at',
         ]);
+
+        // Checkbox tidak terkirim saat unchecked — default false
+        $data['is_active'] = $request->boolean('is_active');
+
+        return $data;
     }
 }
