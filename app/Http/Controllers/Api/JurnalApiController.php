@@ -138,9 +138,21 @@ class JurnalApiController extends Controller
 
     private function snapshot($user, Carbon $date): array
     {
-        $schedule = JurnalBibleSchedule::forDate($date);
+        $config     = \App\Models\CollegeConfig::current();
+        $dayNo      = $config->dayNoFor($date);
+        $scheduleId = $user->cabang?->bible_schedule_id ?? $config->active_schedule_id;
+        $bibleItem  = \App\Models\CollegeBibleItem::forDayNo($dayNo, $scheduleId);
+
         $weekMeta = JurnalWeek::current($date);
+        $weekKey  = JurnalWeek::weekKeyFor($date);
+
         $entry = JurnalEntry::forStudent($user->id)->whereDate('tanggal', $date->toDateString())->first();
+
+        $verseEntry = JurnalEntry::forStudent($user->id)
+            ->where('verse_week_key', $weekKey)
+            ->whereNotNull('verse_ref')
+            ->first();
+        $verseRef = $verseEntry?->verse_ref;
 
         $items = JurnalLifeItem::forStudent($user->id)
             ->orderBy('kategori')->orderBy('label')->get();
@@ -156,12 +168,13 @@ class JurnalApiController extends Controller
             'date' => $date->toDateString(),
             'week' => $weekMeta,
             'bible' => [
-                'pl_porsi'   => $schedule?->pl_porsi,
-                'pb_porsi'   => $schedule?->pb_porsi,
+                'day_no'     => $dayNo,
+                'pl_porsi'   => $bibleItem?->pl_text,
+                'pb_porsi'   => $bibleItem?->pb_text,
                 'pl_checked' => (bool) ($entry?->pl_checked),
                 'pb_checked' => (bool) ($entry?->pb_checked),
             ],
-            'verse_ref' => $entry?->verse_ref,
+            'verse_ref' => $verseRef,
             'foto_belajar_url' => $entry?->foto_belajar ? asset('storage/' . $entry->foto_belajar) : null,
             'life_items' => $items->map(fn($it) => [
                 'id'            => $it->id,
