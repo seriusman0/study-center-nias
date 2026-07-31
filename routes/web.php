@@ -28,6 +28,8 @@ use App\Http\Controllers\Web\Admin\IssuedCertificateController;
 use App\Http\Controllers\Web\Admin\PendaftaranAdminController;
 use App\Http\Controllers\Web\PendaftaranController;
 use App\Http\Controllers\Web\BerandaController;
+use App\Http\Controllers\Web\Admin\AnnouncementController;
+use App\Http\Controllers\Web\AnnouncementDismissController;
 
 // Public pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -164,6 +166,20 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::delete('/permissions/{permission}', [PermissionAdminController::class, 'destroy'])->name('permissions.delete');
 
 });
+
+// Announcements (admin + fulltimer)
+Route::middleware(['auth', 'role:admin,fulltimer'])->prefix('admin/announcements')->name('admin.announcements.')->group(function () {
+    Route::get('/', [AnnouncementController::class, 'index'])->name('index');
+    Route::get('/create', [AnnouncementController::class, 'create'])->name('create');
+    Route::post('/', [AnnouncementController::class, 'store'])->name('store');
+    Route::get('/{announcement}/edit', [AnnouncementController::class, 'edit'])->name('edit');
+    Route::put('/{announcement}', [AnnouncementController::class, 'update'])->name('update');
+    Route::delete('/{announcement}', [AnnouncementController::class, 'destroy'])->name('destroy');
+    Route::post('/{announcement}/toggle', [AnnouncementController::class, 'toggle'])->name('toggle');
+});
+
+// Dismiss announcement (any authenticated user)
+Route::middleware('auth')->post('/announcements/{id}/dismiss', [AnnouncementDismissController::class, 'dismiss'])->name('announcements.dismiss');
 
 // Beranda (student + college)
 Route::middleware(['auth', 'role:student,college'])->group(function () {

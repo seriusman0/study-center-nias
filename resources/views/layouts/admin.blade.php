@@ -183,6 +183,11 @@
                     @if(auth()->user()->isAdmin())
                     <li class="nav-header">ADMIN</li>
                     <li class="nav-item">
+                        <a href="{{ route('admin.announcements.index') }}" class="nav-link {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-bullhorn"></i><p>Pengumuman</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{{ route('admin.cabangs') }}" class="nav-link {{ request()->routeIs('admin.cabangs*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-map-marker-alt"></i><p>Cabang</p>
                         </a>
@@ -221,6 +226,7 @@
 
     {{-- Content Wrapper --}}
     <div class="content-wrapper" style="background:#f4f6f9">
+        @include('partials.announcement-banner')
         @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
             {{ session('success') }}

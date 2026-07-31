@@ -79,6 +79,9 @@
         </div>
     </nav>
 
+    {{-- Announcements --}}
+    @include('partials.announcement-banner')
+
     {{-- Main Content --}}
     <main class="flex-1 min-h-[calc(100vh-64px-120px)]">
         @yield('content')

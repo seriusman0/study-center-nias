@@ -101,6 +101,10 @@
 @if(auth()->user()->isAdmin())
 <div class="sc-section-label">Pengaturan</div>
 <div class="sc-grid">
+    <a href="{{ route('admin.announcements.index') }}" class="sc-card">
+        <i class="fas fa-bullhorn" style="color:#6c757d"></i>
+        <span>Pengumuman</span>
+    </a>
     <a href="{{ route('admin.cabangs') }}" class="sc-card">
         <i class="fas fa-map-marker-alt" style="color:#6c757d"></i>
         <span>Cabang</span>
