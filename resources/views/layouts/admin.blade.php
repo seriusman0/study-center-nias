@@ -104,7 +104,10 @@
             </div>
             <nav class="mt-2">
                 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+
+                    {{-- ── UMUM ── --}}
                     @if(auth()->user()->hasRole(['admin','mentor']))
+                    <li class="nav-header">UMUM</li>
                     <li class="nav-item">
                         <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-tachometer-alt"></i><p>Dashboard</p>
@@ -117,57 +120,26 @@
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('admin.pendaftaran.index') }}" class="nav-link {{ request()->routeIs('admin.pendaftaran.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-user-plus"></i><p>Pendaftaran Siswa</p>
+                            <i class="nav-icon fas fa-user-plus"></i><p>Pendaftaran</p>
                         </a>
                     </li>
-                    @endif
-
-                    @if(auth()->user()->isAdmin())
-                    <li class="nav-item">
-                        <a href="{{ route('admin.roles') }}" class="nav-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-user-tag"></i><p>Role</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('admin.nametags') }}" class="nav-link {{ request()->routeIs('admin.nametags*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-id-card"></i><p>Name Tag</p>
-                        </a>
-                    </li>
-                    <li class="nav-item has-treeview {{ request()->routeIs('admin.certificates.*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->routeIs('admin.certificates.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-certificate"></i>
-                            <p>Sertifikat<i class="right fas fa-angle-left"></i></p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ route('admin.certificates.templates.index') }}"
-                                   class="nav-link {{ request()->routeIs('admin.certificates.templates.*') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i><p>Template</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.certificates.issued.index') }}"
-                                   class="nav-link {{ request()->routeIs('admin.certificates.issued.*') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i><p>Terbitkan / Arsip</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    @endif
-
-                    @if(auth()->user()->hasRole(['admin','mentor']))
                     <li class="nav-item">
                         <a href="{{ route('presensi.index') }}" class="nav-link {{ request()->routeIs('presensi.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-clipboard-check"></i><p>Presensi</p>
                         </a>
                     </li>
+                    @endif
+
+                    {{-- ── JURNAL ── --}}
+                    @if(auth()->user()->hasRole(['admin','mentor']))
+                    <li class="nav-header">JURNAL</li>
                     <li class="nav-item has-treeview {{ request()->routeIs('admin.jurnal.*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->routeIs('admin.jurnal.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-book-open"></i>
-                            <p>Jurnal<i class="right fas fa-angle-left"></i></p>
+                            <p>Jurnal Siswa<i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item"><a href="{{ route('admin.jurnal.life-items.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal.life-items.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Jadwal Kehidupan</p></a></li>
+                            <li class="nav-item"><a href="{{ route('admin.jurnal.life-items.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal.life-items.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Life Items</p></a></li>
                             <li class="nav-item"><a href="{{ route('admin.jurnal.reports.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal.reports.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Laporan</p></a></li>
                         </ul>
                     </li>
@@ -207,7 +179,9 @@
                     </li>
                     @endif
 
+                    {{-- ── ADMIN ── --}}
                     @if(auth()->user()->isAdmin())
+                    <li class="nav-header">ADMIN</li>
                     <li class="nav-item">
                         <a href="{{ route('admin.cabangs') }}" class="nav-link {{ request()->routeIs('admin.cabangs*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-map-marker-alt"></i><p>Cabang</p>
@@ -218,7 +192,28 @@
                             <i class="nav-icon fas fa-newspaper"></i><p>Blog</p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.nametags') }}" class="nav-link {{ request()->routeIs('admin.nametags*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-id-card"></i><p>Name Tag</p>
+                        </a>
+                    </li>
+                    <li class="nav-item has-treeview {{ request()->routeIs('admin.certificates.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('admin.certificates.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-certificate"></i>
+                            <p>Sertifikat<i class="right fas fa-angle-left"></i></p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item"><a href="{{ route('admin.certificates.templates.index') }}" class="nav-link {{ request()->routeIs('admin.certificates.templates.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Template</p></a></li>
+                            <li class="nav-item"><a href="{{ route('admin.certificates.issued.index') }}" class="nav-link {{ request()->routeIs('admin.certificates.issued.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Terbitkan / Arsip</p></a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.roles') }}" class="nav-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-tag"></i><p>Role</p>
+                        </a>
+                    </li>
                     @endif
+
                 </ul>
             </nav>
         </div>
