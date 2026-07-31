@@ -303,3 +303,4 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-college')
     Route::put('/items/{item}',             [CollegeItemController::class, 'update'])->name('items.update');
     Route::delete('/items/{item}',          [CollegeItemController::class, 'destroy'])->name('items.destroy');
 });
+Route::view('/privacy-policy', 'privacy');
