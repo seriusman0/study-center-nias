@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\CollegeBibleItem;
+use App\Models\CollegeConfig;
 use App\Models\JurnalBibleSchedule;
 use App\Models\JurnalEntry;
 use App\Models\JurnalLifeCheck;
@@ -142,6 +144,10 @@ class JurnalApiController extends Controller
         $weekMeta = JurnalWeek::current($date);
         $entry = JurnalEntry::forStudent($user->id)->whereDate('tanggal', $date->toDateString())->first();
 
+        $config = CollegeConfig::first();
+        $dayNo = $config ? $config->dayNoFor($date) : null;
+        $collegeBibleItem = ($dayNo && $config) ? CollegeBibleItem::forDayNo($dayNo, $config->active_schedule_id) : null;
+
         $items = JurnalLifeItem::forStudent($user->id)
             ->orderBy('kategori')->orderBy('label')->get();
         $itemIds = $items->pluck('id');
@@ -153,7 +159,12 @@ class JurnalApiController extends Controller
             ->all();
 
         return [
-            'date' => $date->toDateString(),
+            'date'   => $date->toDateString(),
+            'day_no' => $dayNo,
+            'college_bible' => $collegeBibleItem ? [
+                'pl_text' => $collegeBibleItem->pl_text,
+                'pb_text' => $collegeBibleItem->pb_text,
+            ] : null,
             'week' => $weekMeta,
             'bible' => [
                 'pl_porsi'   => $schedule?->pl_porsi,

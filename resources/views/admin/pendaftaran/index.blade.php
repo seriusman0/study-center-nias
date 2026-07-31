@@ -115,7 +115,7 @@
                                     <button type="button"
                                             class="btn btn-sm btn-outline-secondary ml-1"
                                             title="Salin link cek status"
-                                            onclick="copyLink(this, '{{ route('pendaftaran.cek', $user->username) }}')">
+                                            onclick="copyLink(this, '{{ $user->username ? route('pendaftaran.cek', $user->username) : '' }}')">
                                         <i class="fas fa-link"></i>
                                     </button>
                                 </td>
