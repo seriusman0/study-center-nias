@@ -67,10 +67,21 @@ class JurnalApiController extends Controller
                     $entry->update(['pb_checked' => $checked]); break;
                 case 'verse':
                     $verseRef = $data['verse_ref'] ?? null;
-                    $entry->update([
-                        'verse_ref'      => $verseRef,
-                        'verse_week_key' => $verseRef ? JurnalWeek::weekKeyFor($date) : null,
-                    ]);
+                    $key = JurnalWeek::weekKeyFor($date);
+                    if ($verseRef) {
+                        $weekEntry = JurnalEntry::where('student_id', $user->id)
+                            ->where('verse_week_key', $key)
+                            ->first();
+                        if ($weekEntry) {
+                            $weekEntry->update(['verse_ref' => $verseRef]);
+                        } else {
+                            $entry->update(['verse_week_key' => $key, 'verse_ref' => $verseRef]);
+                        }
+                    } else {
+                        JurnalEntry::where('student_id', $user->id)
+                            ->where('verse_week_key', $key)
+                            ->update(['verse_week_key' => null, 'verse_ref' => null]);
+                    }
                     break;
                 case 'life':
                     $itemId = (int) ($data['item_id'] ?? 0);
