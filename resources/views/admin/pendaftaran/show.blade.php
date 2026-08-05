@@ -181,6 +181,25 @@
                         <span class="badge badge-{{ $badge }}" style="font-size:14px;padding:6px 16px">{{ $label }}</span>
                         @if($st === 'diterima')
                         <p class="text-muted small mt-2 mb-0">Akun sudah aktif, siswa dapat login.</p>
+                        @php
+                            $userRole = $user->roles()->first()?->name;
+                            $quickSetupRoute = match($userRole) {
+                                'college'              => 'admin.jurnal-college.quick-setup',
+                                'scholarship_teenager' => 'admin.jurnal-scholarship-teenager.quick-setup',
+                                default                => null,
+                            };
+                        @endphp
+                        @if($quickSetupRoute)
+                        <a href="{{ route($quickSetupRoute, $user) }}"
+                           class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="fas fa-cog mr-1"></i> Setup Jurnal
+                        </a>
+                        @elseif($userRole === 'student')
+                        <a href="{{ route('admin.jurnal.life-items.student', $user) }}"
+                           class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="fas fa-cog mr-1"></i> Setup Jurnal
+                        </a>
+                        @endif
                         @elseif($st === 'ditolak')
                         <p class="text-muted small mt-2 mb-0">Akun tidak diaktifkan.</p>
                         @elseif($st === 'perbaikan')
@@ -324,6 +343,24 @@
                                 </div>
                             </div>
 
+                            {{-- Role picker — muncul hanya saat "Diterima" dipilih --}}
+                            <div class="form-group" id="rolePickerGroup" style="{{ old('status', $profile->status) === 'diterima' ? '' : 'display:none' }}">
+                                <label class="font-weight-bold">Role Akun <span class="text-danger">*</span></label>
+                                <select name="target_role" class="form-control">
+                                    <option value="">— Pilih role —</option>
+                                    <option value="student" {{ old('target_role', 'student') === 'student' ? 'selected' : '' }}>
+                                        Siswa (student)
+                                    </option>
+                                    <option value="scholarship_teenager" {{ old('target_role') === 'scholarship_teenager' ? 'selected' : '' }}>
+                                        Remaja Beasiswa (scholarship_teenager)
+                                    </option>
+                                    <option value="college" {{ old('target_role') === 'college' ? 'selected' : '' }}>
+                                        Mahasiswa (college)
+                                    </option>
+                                </select>
+                                <small class="text-muted">Role ini menentukan jenis jurnal dan item jurnal default yang di-assign.</small>
+                            </div>
+
                             <div class="form-group">
                                 <label class="font-weight-bold">Cabang</label>
                                 <select name="cabang_id" class="form-control">
@@ -364,6 +401,16 @@
 
 @push('scripts')
 <script>
+// Show/hide role picker based on status selection
+document.querySelectorAll('input[name="status"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+        var group = document.getElementById('rolePickerGroup');
+        if (group) {
+            group.style.display = this.value === 'diterima' ? '' : 'none';
+        }
+    });
+});
+
 function copyStatusLink() {
     var input = document.getElementById('cekStatusUrl');
     var btn = document.getElementById('btnCopy');

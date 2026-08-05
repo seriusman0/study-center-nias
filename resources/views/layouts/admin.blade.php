@@ -133,6 +133,12 @@
                     {{-- ── JURNAL ── --}}
                     @if(auth()->user()->hasRole(['admin','mentor']))
                     <li class="nav-header">JURNAL</li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.jurnal-hub.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal-hub.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-layer-group"></i>
+                            <p>Jurnal Hub <span class="badge badge-success badge-pill ml-1">Baru</span></p>
+                        </a>
+                    </li>
                     <li class="nav-item has-treeview {{ request()->routeIs('admin.jurnal.*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->routeIs('admin.jurnal.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-book-open"></i>

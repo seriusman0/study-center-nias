@@ -12,6 +12,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\StudentProfile;
 use App\Models\User;
+use App\Services\JurnalSetupService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -201,6 +202,14 @@ class AdminController extends Controller
         $names = $request->input('roles', []);
         $ids = Role::whereIn('name', $names)->pluck('id')->all();
         $user->roles()->sync($ids);
+
+        // Auto-setup jurnal items jika role jurnal-aware
+        $journalRoles = ['student', 'scholarship_teenager', 'college'];
+        $newJournalRole = collect($names)->first(fn($n) => in_array($n, $journalRoles));
+        if ($newJournalRole) {
+            app(JurnalSetupService::class)->setupForRole($user, $newJournalRole);
+        }
+
         return back()->with('success', 'Role diperbarui.');
     }
 

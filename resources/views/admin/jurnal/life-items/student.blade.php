@@ -71,9 +71,18 @@
                 </div>
             @endforeach
         </div>
-        <div class="card-footer">
-            <button class="btn btn-primary"><i class="fas fa-save"></i> Simpan</button>
-            <a href="{{ route('admin.jurnal.life-items.index') }}" class="btn btn-secondary">Batal</a>
+        <div class="card-footer d-flex justify-content-between align-items-center">
+            <div>
+                <button class="btn btn-primary"><i class="fas fa-save"></i> Simpan</button>
+                <a href="{{ route('admin.jurnal.life-items.index') }}" class="btn btn-secondary">Batal</a>
+            </div>
+            <form method="POST" action="{{ route('admin.jurnal.life-items.reset-defaults', $student) }}"
+                  onsubmit="return confirm('Reset semua item jurnal ke default role siswa?')">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-warning">
+                    <i class="fas fa-undo mr-1"></i> Reset ke Default
+                </button>
+            </form>
         </div>
     </div>
 </form>

@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cabang;
+use App\Models\Role;
 use App\Models\User;
+use App\Services\JurnalSetupService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -54,11 +56,14 @@ class PendaftaranAdminController extends Controller
             'status'        => 'required|in:diterima,ditolak,perbaikan',
             'catatan_admin' => 'nullable|string|max:1000',
             'cabang_id'     => 'nullable|exists:cabangs,id',
+            'target_role'   => 'required_if:status,diterima|nullable|in:student,scholarship_teenager,college',
         ], [
-            'status.required'   => 'Status validasi wajib dipilih.',
-            'status.in'         => 'Pilih status yang valid.',
-            'catatan_admin.max' => 'Catatan maksimal 1000 karakter.',
-            'cabang_id.exists'  => 'Cabang tidak valid.',
+            'status.required'      => 'Status validasi wajib dipilih.',
+            'status.in'            => 'Pilih status yang valid.',
+            'catatan_admin.max'    => 'Catatan maksimal 1000 karakter.',
+            'cabang_id.exists'     => 'Cabang tidak valid.',
+            'target_role.required_if' => 'Pilih role akun ketika status Diterima.',
+            'target_role.in'       => 'Role tidak valid.',
         ]);
 
         if (!empty($data['cabang_id'])) {
@@ -74,6 +79,16 @@ class PendaftaranAdminController extends Controller
                 'status'        => 'diterima',
                 'catatan_admin' => $data['catatan_admin'] ?? null,
             ]);
+
+            // Assign role yang dipilih admin
+            $targetRole = $data['target_role'];
+            $role = Role::where('name', $targetRole)->first();
+            if ($role) {
+                $user->roles()->sync([$role->id]);
+            }
+
+            // Auto-setup jurnal items sesuai role
+            app(JurnalSetupService::class)->setupForRole($user, $targetRole);
         } elseif ($data['status'] === 'ditolak') {
             $user->update(['is_active' => false]);
             $profile->update([

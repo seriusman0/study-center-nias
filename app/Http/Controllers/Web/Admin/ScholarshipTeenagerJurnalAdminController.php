@@ -3,20 +3,26 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Admin\Traits\HasJurnalAdminActions;
 use App\Models\CollegeBibleItem;
 use App\Models\CollegeConfig;
 use App\Models\JurnalEntry;
 use App\Models\JurnalLifeCheck;
-use App\Models\JurnalLifeItem;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\JurnalWeek;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class ScholarshipTeenagerJurnalAdminController extends Controller
 {
-    private const KATEGORI = ['pembacaan', 'sidang', 'rohani'];
+    use HasJurnalAdminActions;
+
+    protected string $role            = 'scholarship_teenager';
+    protected string $viewPrefix      = 'admin.scholarship-teenager-jurnal';
+    protected string $csvPrefix       = 'jurnal-remaja-beasiswa';
+    protected string $userVar         = 'targetUser';
+    protected string $profileRelation = 'studentProfile';
+    protected array  $kategori        = ['pembacaan', 'sidang', 'rohani'];
 
     public function dashboard(Request $request)
     {
@@ -41,16 +47,17 @@ class ScholarshipTeenagerJurnalAdminController extends Controller
 
         $activeToday = User::where('is_active', true)
             ->whereHas('roles', fn($r) => $r->where('roles.id', $roleId))
-            ->where(function ($q) use ($today) {
-                $q->whereHas('jurnalEntries', fn($e) => $e->whereDate('tanggal', $today))
-                  ->orWhereHas('jurnalLifeChecks', fn($c) => $c->whereDate('tanggal', $today)->where('checked', true));
-            })->count();
+            ->where(fn($q) => $q
+                ->whereHas('jurnalEntries', fn($e) => $e->whereDate('tanggal', $today))
+                ->orWhereHas('jurnalLifeChecks', fn($c) => $c->whereDate('tanggal', $today)->where('checked', true))
+            )->count();
 
         $totalUsers = User::where('is_active', true)
             ->whereHas('roles', fn($r) => $r->where('roles.id', $roleId))
             ->count();
 
-        $userIds     = $users->pluck('id');
+        $userIds = $users->pluck('id');
+
         $checkCounts = JurnalLifeCheck::whereIn('student_id', $userIds)
             ->whereBetween('tanggal', [$sevenDaysAgo, $today])
             ->where('checked', true)
@@ -87,117 +94,5 @@ class ScholarshipTeenagerJurnalAdminController extends Controller
         $users = $usersQ->paginate(20)->withQueryString();
 
         return view('admin.scholarship-teenager-jurnal.index', compact('users'));
-    }
-
-    public function show(Request $request, User $user)
-    {
-        abort_unless($user->hasRole('scholarship_teenager'), 404);
-
-        $today = JurnalWeek::today();
-        $from  = $request->filled('from')
-            ? Carbon::parse($request->from, JurnalWeek::TZ)->startOfDay()
-            : $today->copy()->subDays(13);
-        $to = $request->filled('to')
-            ? Carbon::parse($request->to, JurnalWeek::TZ)->startOfDay()
-            : $today->copy();
-        if ($to->gt($today)) $to = $today->copy();
-
-        $matrix = $this->buildMatrix($user, $from, $to);
-
-        return view('admin.scholarship-teenager-jurnal.show', [
-            'targetUser' => $user->load('studentProfile'),
-            'from'       => $from,
-            'to'         => $to,
-            'matrix'     => $matrix,
-        ]);
-    }
-
-    public function export(Request $request, User $user)
-    {
-        abort_unless($user->hasRole('scholarship_teenager'), 404);
-
-        $today = JurnalWeek::today();
-        $from  = $request->filled('from')
-            ? Carbon::parse($request->from, JurnalWeek::TZ)->startOfDay()
-            : $today->copy()->subDays(29);
-        $to = $request->filled('to')
-            ? Carbon::parse($request->to, JurnalWeek::TZ)->startOfDay()
-            : $today->copy();
-
-        $matrix   = $this->buildMatrix($user, $from, $to);
-        $filename = sprintf(
-            'jurnal-remaja-beasiswa-%s-%s-%s.csv',
-            preg_replace('/[^a-z0-9_\-]/i', '_', $user->name),
-            $from->toDateString(),
-            $to->toDateString()
-        );
-
-        return response()->streamDownload(function () use ($matrix) {
-            $out = fopen('php://output', 'w');
-            fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, $matrix['headers']);
-            foreach ($matrix['rows'] as $row) {
-                fputcsv($out, $row);
-            }
-            fclose($out);
-        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
-    }
-
-    private function buildMatrix(User $user, Carbon $from, Carbon $to): array
-    {
-        $items = JurnalLifeItem::forStudent($user->id)
-            ->whereIn('kategori', self::KATEGORI)
-            ->orderBy('kategori')->orderBy('id')->get();
-
-        $entries = JurnalEntry::forStudent($user->id)
-            ->whereBetween('tanggal', [$from->toDateString(), $to->toDateString()])
-            ->get()
-            ->keyBy(fn($e) => $e->tanggal->toDateString());
-
-        $checks = JurnalLifeCheck::forStudent($user->id)
-            ->whereBetween('tanggal', [$from->toDateString(), $to->toDateString()])
-            ->where('checked', true)
-            ->get()
-            ->groupBy(fn($c) => $c->tanggal->toDateString());
-
-        $headers = ['Tanggal', 'PL', 'PB'];
-        foreach ($items as $it) {
-            $headers[] = $it->label;
-        }
-
-        $rows = [];
-        for ($d = $from->copy(); $d->lte($to); $d->addDay()) {
-            $key   = $d->toDateString();
-            $entry = $entries->get($key);
-
-            $row = [
-                $key,
-                $entry?->pl_checked ? 'Y' : '-',
-                $entry?->pb_checked ? 'Y' : '-',
-            ];
-            $checkedIds = ($checks->get($key) ?? collect())->pluck('life_item_id')->all();
-            foreach ($items as $it) {
-                $row[] = in_array($it->id, $checkedIds) ? 'Y' : '-';
-            }
-            $rows[] = $row;
-        }
-
-        $totalCells = count($rows) * (count($headers) - 1);
-        $checked    = 0;
-        foreach ($rows as $r) {
-            for ($i = 1; $i < count($r); $i++) {
-                if ($r[$i] === 'Y') $checked++;
-            }
-        }
-        $pct = $totalCells > 0 ? round($checked / $totalCells * 100, 1) : 0;
-
-        return [
-            'headers' => $headers,
-            'rows'    => $rows,
-            'items'   => $items,
-            'pct'     => $pct,
-            'checked' => $checked,
-            'total'   => $totalCells,
-        ];
     }
 }

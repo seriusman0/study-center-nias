@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\JurnalLifeItem;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\JurnalSetupService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -147,6 +148,16 @@ class JurnalLifeItemController extends Controller
         });
 
         return back()->with('success', 'Jadwal kehidupan siswa diperbarui.');
+    }
+
+    public function resetToDefaults(Request $request, User $student)
+    {
+        $this->authorizeStudent($request, $student);
+
+        $role = $student->roles()->first()?->name ?? 'student';
+        app(JurnalSetupService::class)->resetToDefaults($student, $role);
+
+        return back()->with('success', 'Item jurnal direset ke default untuk role ' . $role . '.');
     }
 
     private function authorizeStudent(Request $request, User $student): void

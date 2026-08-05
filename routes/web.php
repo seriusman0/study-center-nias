@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\ProfileWebController;
 use App\Http\Controllers\Web\CvWebController;
 use App\Http\Controllers\Web\CommentWebController;
 use App\Http\Controllers\Web\Admin\AdminController;
+use App\Http\Controllers\Web\Admin\AdminJurnalHubController;
 use App\Http\Controllers\Web\Admin\MataPelajaranController;
 use App\Http\Controllers\Web\Admin\RoleAdminController;
 use App\Http\Controllers\Web\Admin\PermissionAdminController;
@@ -206,6 +207,7 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal')->name('
     Route::delete('life-items/{item}',                   [JurnalLifeItemController::class, 'destroy'])->name('life-items.destroy');
     Route::get   ('students/{student}/life-items',       [JurnalLifeItemController::class, 'studentAssignments'])->name('life-items.student');
     Route::post  ('students/{student}/life-items',       [JurnalLifeItemController::class, 'syncStudent'])->name('life-items.sync');
+    Route::post  ('students/{student}/reset-defaults',   [JurnalLifeItemController::class, 'resetToDefaults'])->name('life-items.reset-defaults');
 
     Route::get('reports',                                [JurnalReportController::class, 'index'])->name('reports.index');
     Route::get('reports/{student}',                      [JurnalReportController::class, 'show'])->name('reports.show');
@@ -296,9 +298,11 @@ use App\Http\Controllers\Web\Admin\CollegeBibleScheduleController;
 use App\Http\Controllers\Web\Admin\CollegeItemController;
 Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-college')->name('admin.jurnal-college.')->group(function () {
     Route::get('/',                         [CollegeJurnalAdminController::class, 'dashboard'])->name('index');
-    Route::get('/laporan',                  [CollegeJurnalAdminController::class, 'index'])->name('laporan');
-    Route::get('/laporan/{user}',           [CollegeJurnalAdminController::class, 'show'])->name('show');
-    Route::get('/laporan/{user}/export',    [CollegeJurnalAdminController::class, 'export'])->name('export');
+    Route::get('/laporan',                       [CollegeJurnalAdminController::class, 'index'])->name('laporan');
+    Route::get('/laporan/{user}',                [CollegeJurnalAdminController::class, 'show'])->name('show');
+    Route::get('/laporan/{user}/export',         [CollegeJurnalAdminController::class, 'export'])->name('export');
+    Route::get('/users/{user}/quick-setup',      [CollegeJurnalAdminController::class, 'quickSetup'])->name('quick-setup');
+    Route::post('/users/{user}/quick-setup',     [CollegeJurnalAdminController::class, 'quickUpdate'])->name('quick-update');
 
     // Jadwal Pembacaan Alkitab — CRUD
     Route::get('/bible-schedules',                    [CollegeBibleScheduleController::class, 'index'])->name('bible-schedules.index');
@@ -335,13 +339,24 @@ Route::middleware(['auth', 'role:scholarship_teenager'])->prefix('jurnal-scholar
 
 Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-scholarship-teenager')->name('admin.jurnal-scholarship-teenager.')->group(function () {
     Route::get('/',                      [ScholarshipTeenagerJurnalAdminController::class, 'dashboard'])->name('index');
-    Route::get('/laporan',               [ScholarshipTeenagerJurnalAdminController::class, 'index'])->name('laporan');
-    Route::get('/laporan/{user}',        [ScholarshipTeenagerJurnalAdminController::class, 'show'])->name('show');
-    Route::get('/laporan/{user}/export', [ScholarshipTeenagerJurnalAdminController::class, 'export'])->name('export');
+    Route::get('/laporan',                       [ScholarshipTeenagerJurnalAdminController::class, 'index'])->name('laporan');
+    Route::get('/laporan/{user}',                [ScholarshipTeenagerJurnalAdminController::class, 'show'])->name('show');
+    Route::get('/laporan/{user}/export',         [ScholarshipTeenagerJurnalAdminController::class, 'export'])->name('export');
+    Route::get('/users/{user}/quick-setup',      [ScholarshipTeenagerJurnalAdminController::class, 'quickSetup'])->name('quick-setup');
+    Route::post('/users/{user}/quick-setup',     [ScholarshipTeenagerJurnalAdminController::class, 'quickUpdate'])->name('quick-update');
     Route::get('/items',                 [ScholarshipTeenagerItemAdminController::class, 'index'])->name('items.index');
     Route::post('/items',                [ScholarshipTeenagerItemAdminController::class, 'store'])->name('items.store');
     Route::put('/items/{item}',          [ScholarshipTeenagerItemAdminController::class, 'update'])->name('items.update');
     Route::delete('/items/{item}',       [ScholarshipTeenagerItemAdminController::class, 'destroy'])->name('items.destroy');
+});
+
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-hub')->name('admin.jurnal-hub.')->group(function () {
+    Route::get('/',             [AdminJurnalHubController::class, 'index'])->name('index');
+    Route::get('/users',        [AdminJurnalHubController::class, 'users'])->name('users');
+    Route::get('/matrix/{user}',[AdminJurnalHubController::class, 'matrix'])->name('matrix');
+    Route::get('/export/{user}',[AdminJurnalHubController::class, 'exportCsv'])->name('export');
+    Route::get('/stats',        [AdminJurnalHubController::class, 'stats'])->name('stats');
+    Route::post('/config',      [AdminJurnalHubController::class, 'updateConfig'])->name('config');
 });
 
 Route::view('/privacy-policy', 'privacy');
