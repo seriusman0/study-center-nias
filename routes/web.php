@@ -31,7 +31,6 @@ use App\Http\Controllers\Web\PendaftaranController;
 use App\Http\Controllers\Web\BerandaController;
 use App\Http\Controllers\Web\Admin\AnnouncementController;
 use App\Http\Controllers\Web\AnnouncementDismissController;
-use App\Http\Controllers\Web\Admin\LeaderboardController;
 
 // Public pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -111,8 +110,8 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('presensi')->name('pres
     Route::post('/{presensi}/scan', [PresensiController::class, 'scanStudent'])->name('scan');
 });
 
-// Admin panel — dashboard + read-only users list (admin only now)
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+// Admin panel — dashboard + read-only users list shared with mentor
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/users', [AdminController::class, 'users'])->name('users');
 
@@ -183,8 +182,8 @@ Route::middleware(['auth', 'role:admin,fulltimer'])->prefix('admin/announcements
 // Dismiss announcement (any authenticated user)
 Route::middleware('auth')->post('/announcements/{id}/dismiss', [AnnouncementDismissController::class, 'dismiss'])->name('announcements.dismiss');
 
-// Beranda (student + college + scholarship_teenager + mentor)
-Route::middleware(['auth', 'role:student,college,scholarship_teenager,mentor'])->group(function () {
+// Beranda (student + college + scholarship_teenager)
+Route::middleware(['auth', 'role:student,college,scholarship_teenager'])->group(function () {
     Route::get('/beranda', [BerandaController::class, 'index'])->name('beranda');
 });
 
@@ -199,8 +198,8 @@ Route::middleware(['auth', 'role:student'])->prefix('jurnal')->name('jurnal.')->
     Route::delete('/foto', [JurnalController::class, 'deleteFoto'])->name('foto.delete');
 });
 
-// Jurnal admin management (admin only)
-Route::middleware(['auth', 'role:admin'])->prefix('admin/jurnal')->name('admin.jurnal.')->group(function () {
+// Jurnal admin/mentor management
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal')->name('admin.jurnal.')->group(function () {
     Route::get   ('life-items',                          [JurnalLifeItemController::class, 'index'])->name('life-items.index');
     Route::post  ('life-items',                          [JurnalLifeItemController::class, 'store'])->name('life-items.store');
     Route::post  ('life-items/assign-all',               [JurnalLifeItemController::class, 'assignAllToAllStudents'])->name('life-items.assign-all');
@@ -213,17 +212,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin/jurnal')->name('admin.j
     Route::get('reports',                                [JurnalReportController::class, 'index'])->name('reports.index');
     Route::get('reports/{student}',                      [JurnalReportController::class, 'show'])->name('reports.show');
     Route::get('reports/{student}/export',               [JurnalReportController::class, 'export'])->name('reports.export');
-    Route::get('reports/{student}/print',                [JurnalReportController::class, 'printPdf'])->name('reports.print');
-    Route::get('bulk',                                   [\App\Http\Controllers\Web\Admin\JurnalBulkController::class, 'create'])->name('bulk.create');
-    Route::post('bulk',                                  [\App\Http\Controllers\Web\Admin\JurnalBulkController::class, 'store'])->name('bulk.store');
-    Route::get ('scan',                                  [\App\Http\Controllers\Web\Admin\JurnalPhotoScanController::class, 'create'])->name('scan.create');
-    Route::post('scan/upload',                           [\App\Http\Controllers\Web\Admin\JurnalPhotoScanController::class, 'upload'])->name('scan.upload');
-    Route::get ('scan/{scan}/status',                    [\App\Http\Controllers\Web\Admin\JurnalPhotoScanController::class, 'status'])->name('scan.status');
-    Route::post('scan/confirm',                          [\App\Http\Controllers\Web\Admin\JurnalPhotoScanController::class, 'confirm'])->name('scan.confirm');
-    Route::get ('offline-templates',                     [\App\Http\Controllers\Web\Admin\JurnalOfflineTemplateController::class, 'index'])->name('offline-templates.index');
-    Route::post('offline-templates',                     [\App\Http\Controllers\Web\Admin\JurnalOfflineTemplateController::class, 'store'])->name('offline-templates.store');
-    Route::get ('offline-templates/{template}/download', [\App\Http\Controllers\Web\Admin\JurnalOfflineTemplateController::class, 'download'])->name('offline-templates.download');
-    Route::delete('offline-templates/{template}',        [\App\Http\Controllers\Web\Admin\JurnalOfflineTemplateController::class, 'destroy'])->name('offline-templates.destroy');
 });
 
 // Mentor self-attendance
@@ -242,31 +230,16 @@ Route::middleware(['auth', 'role:admin,mentor'])
     ->get('/presensi/api/kelas-master', [MentorPresensiController::class, 'searchKelas'])
     ->name('presensi.kelas-master.search');
 
-// Kelas master (admin only via /admin/)
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+// Kelas master (admin+mentor full CRUD)
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin')->name('admin.')->group(function () {
     Route::get   ('/kelas-master',          [KelasMasterController::class, 'index'])->name('kelas-master.index');
     Route::post  ('/kelas-master',          [KelasMasterController::class, 'store'])->name('kelas-master.store');
     Route::put   ('/kelas-master/{kelas}',  [KelasMasterController::class, 'update'])->name('kelas-master.update');
     Route::delete('/kelas-master/{kelas}',  [KelasMasterController::class, 'destroy'])->name('kelas-master.destroy');
-
-    Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
 });
 
-// Kelas master (mentor via /mentor/)
-Route::middleware(['auth', 'role:mentor'])->prefix('mentor')->name('mentor.')->group(function () {
-    Route::get   ('/kelas-master',          [KelasMasterController::class, 'index'])->name('kelas-master.index');
-    Route::post  ('/kelas-master',          [KelasMasterController::class, 'store'])->name('kelas-master.store');
-    Route::put   ('/kelas-master/{kelas}',  [KelasMasterController::class, 'update'])->name('kelas-master.update');
-    Route::delete('/kelas-master/{kelas}',  [KelasMasterController::class, 'destroy'])->name('kelas-master.destroy');
-
-    // Jurnal siswa — laporan (cabang-scoped via controller)
-    Route::get('/jurnal',                   [\App\Http\Controllers\Web\Admin\JurnalReportController::class, 'index'])->name('jurnal.index');
-    Route::get('/jurnal/{student}',          [\App\Http\Controllers\Web\Admin\JurnalReportController::class, 'show'])->name('jurnal.show');
-    Route::get('/jurnal/{student}/export',   [\App\Http\Controllers\Web\Admin\JurnalReportController::class, 'export'])->name('jurnal.export');
-});
-
-// Admin: mentor-presensi list, reports, export (admin only)
-Route::middleware(['auth', 'role:admin'])->prefix('admin/mentor-presensi')->name('admin.mentor-presensi.')->group(function () {
+// Admin: mentor-presensi list, reports, export
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/mentor-presensi')->name('admin.mentor-presensi.')->group(function () {
     Route::get('/',             [MentorPresensiAdminController::class, 'index'])->name('index');
     Route::get('/reports',      [MentorPresensiAdminController::class, 'reports'])->name('reports');
     Route::get('/export/excel', [MentorPresensiAdminController::class, 'exportExcel'])->name('export.excel');
@@ -323,7 +296,7 @@ use App\Http\Controllers\Web\Admin\CollegeJurnalAdminController;
 use App\Http\Controllers\Web\Admin\CollegeBibleController;
 use App\Http\Controllers\Web\Admin\CollegeBibleScheduleController;
 use App\Http\Controllers\Web\Admin\CollegeItemController;
-Route::middleware(['auth', 'role:admin'])->prefix('admin/jurnal-college')->name('admin.jurnal-college.')->group(function () {
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-college')->name('admin.jurnal-college.')->group(function () {
     Route::get('/',                         [CollegeJurnalAdminController::class, 'dashboard'])->name('index');
     Route::get('/laporan',                       [CollegeJurnalAdminController::class, 'index'])->name('laporan');
     Route::get('/laporan/{user}',                [CollegeJurnalAdminController::class, 'show'])->name('show');
@@ -364,7 +337,7 @@ Route::middleware(['auth', 'role:scholarship_teenager'])->prefix('jurnal-scholar
     Route::delete('/foto',       [ScholarshipTeenagerJurnalController::class, 'deleteFoto'])->name('foto.delete');
 });
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin/jurnal-scholarship-teenager')->name('admin.jurnal-scholarship-teenager.')->group(function () {
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-scholarship-teenager')->name('admin.jurnal-scholarship-teenager.')->group(function () {
     Route::get('/',                      [ScholarshipTeenagerJurnalAdminController::class, 'dashboard'])->name('index');
     Route::get('/laporan',                       [ScholarshipTeenagerJurnalAdminController::class, 'index'])->name('laporan');
     Route::get('/laporan/{user}',                [ScholarshipTeenagerJurnalAdminController::class, 'show'])->name('show');
@@ -377,7 +350,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin/jurnal-scholarship-teen
     Route::delete('/items/{item}',       [ScholarshipTeenagerItemAdminController::class, 'destroy'])->name('items.destroy');
 });
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin/jurnal-hub')->name('admin.jurnal-hub.')->group(function () {
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-hub')->name('admin.jurnal-hub.')->group(function () {
     Route::get('/',             [AdminJurnalHubController::class, 'index'])->name('index');
     Route::get('/users',        [AdminJurnalHubController::class, 'users'])->name('users');
     Route::get('/matrix/{user}',[AdminJurnalHubController::class, 'matrix'])->name('matrix');

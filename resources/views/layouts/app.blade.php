@@ -40,7 +40,7 @@
     @php
         $isCollegeUser = auth()->check() && auth()->user()->hasRole('college');
         $hasBottomNav  = auth()->check() && auth()->user()->hasRole(['student','college','scholarship_teenager','mentor']);
-        $isAdminMentor = auth()->check() && auth()->user()->hasRole('admin');
+        $isAdminMentor = auth()->check() && auth()->user()->hasRole(['admin','mentor']);
     @endphp
 
     {{-- Top Navbar --}}
@@ -129,7 +129,7 @@
         $u = auth()->user();
 
         // Beranda
-        $berandaUrl    = $u->hasRole(['student','college','scholarship_teenager','mentor']) ? route('beranda') : route('home');
+        $berandaUrl    = $u->hasRole(['student','college','scholarship_teenager']) ? route('beranda') : route('home');
         $berandaActive = request()->routeIs('beranda') || request()->routeIs('home');
 
         // Jurnal
@@ -151,9 +151,6 @@
         if ($u->hasRole(['student','college','scholarship_teenager'])) {
             $laporanUrl    = route('laporan');
             $laporanActive = request()->routeIs('laporan');
-        } elseif ($u->hasRole('mentor')) {
-            $laporanUrl    = route('mentor.jurnal.index');
-            $laporanActive = request()->routeIs('mentor.jurnal.*') || request()->routeIs('mentor.kelas-master.*');
         } else {
             $laporanUrl    = route('admin.jurnal.reports.index');
             $laporanActive = request()->routeIs('admin.jurnal.reports.*');
