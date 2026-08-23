@@ -40,7 +40,7 @@
     @php
         $isCollegeUser = auth()->check() && auth()->user()->hasRole('college');
         $hasBottomNav  = auth()->check() && auth()->user()->hasRole(['student','college','scholarship_teenager','mentor']);
-        $isAdminMentor = auth()->check() && auth()->user()->hasRole(['admin','mentor']);
+        $isAdminMentor = auth()->check() && auth()->user()->hasRole('admin');
     @endphp
 
     {{-- Top Navbar --}}
@@ -113,6 +113,11 @@
         <div class="max-w-3xl mx-auto px-4 text-center">
             <p class="text-sc-yellow-300 font-semibold mb-1">Study Center Nias</p>
             <p class="text-xs">Gunungsitoli · Kab. Nias · Kab. Nias Selatan · Kab. Nias Utara</p>
+            <p class="mt-4">
+                <a href="{{ route('download.android') }}" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
+                    Download Aplikasi Android
+                </a>
+            </p>
             <p class="mt-3 text-white/40 text-xs">© {{ date('Y') }} Study Center Nias</p>
         </div>
     </footer>
@@ -124,7 +129,7 @@
         $u = auth()->user();
 
         // Beranda
-        $berandaUrl    = $u->hasRole(['student','college','scholarship_teenager']) ? route('beranda') : route('home');
+        $berandaUrl    = $u->hasRole(['student','college','scholarship_teenager','mentor']) ? route('beranda') : route('home');
         $berandaActive = request()->routeIs('beranda') || request()->routeIs('home');
 
         // Jurnal
@@ -146,6 +151,9 @@
         if ($u->hasRole(['student','college','scholarship_teenager'])) {
             $laporanUrl    = route('laporan');
             $laporanActive = request()->routeIs('laporan');
+        } elseif ($u->hasRole('mentor')) {
+            $laporanUrl    = route('mentor.jurnal.index');
+            $laporanActive = request()->routeIs('mentor.jurnal.*') || request()->routeIs('mentor.kelas-master.*');
         } else {
             $laporanUrl    = route('admin.jurnal.reports.index');
             $laporanActive = request()->routeIs('admin.jurnal.reports.*');
