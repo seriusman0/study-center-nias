@@ -10,6 +10,8 @@ use App\Http\Controllers\Web\ProfileWebController;
 use App\Http\Controllers\Web\CvWebController;
 use App\Http\Controllers\Web\CommentWebController;
 use App\Http\Controllers\Web\Admin\AdminController;
+use App\Http\Controllers\Web\Admin\LeaderboardController;
+use App\Http\Controllers\Web\Admin\JurnalPhotoScanController;
 use App\Http\Controllers\Web\Admin\AdminJurnalHubController;
 use App\Http\Controllers\Web\Admin\MataPelajaranController;
 use App\Http\Controllers\Web\Admin\RoleAdminController;
@@ -21,6 +23,8 @@ use App\Http\Controllers\Web\Admin\JurnalBibleScheduleController;
 use App\Http\Controllers\Web\Admin\JurnalWeeklyVerseController;
 use App\Http\Controllers\Web\Admin\JurnalLifeItemController;
 use App\Http\Controllers\Web\Admin\JurnalReportController;
+use App\Http\Controllers\Web\Admin\JurnalBulkController;
+use App\Http\Controllers\Web\Admin\JurnalOfflineTemplateController;
 use App\Http\Controllers\Web\Admin\KelasMasterController;
 use App\Http\Controllers\Web\MentorPresensiController;
 use App\Http\Controllers\Web\Admin\MentorPresensiAdminController;
@@ -114,6 +118,12 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('presensi')->name('pres
 Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/users', [AdminController::class, 'users'])->name('users');
+    Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
+
+    Route::get('/jurnal/scan', [JurnalPhotoScanController::class, 'create'])->name('jurnal.scan.create');
+    Route::post('/jurnal/scan', [JurnalPhotoScanController::class, 'upload'])->name('jurnal.scan.upload');
+    Route::get('/jurnal/scan/{scan}/status', [JurnalPhotoScanController::class, 'status'])->name('jurnal.scan.status');
+    Route::post('/jurnal/scan/confirm', [JurnalPhotoScanController::class, 'confirm'])->name('jurnal.scan.confirm');
 
     Route::get('/pendaftaran', [PendaftaranAdminController::class, 'index'])->name('pendaftaran.index');
     Route::get('/pendaftaran/{user}', [PendaftaranAdminController::class, 'show'])->name('pendaftaran.show');
@@ -212,6 +222,26 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal')->name('
     Route::get('reports',                                [JurnalReportController::class, 'index'])->name('reports.index');
     Route::get('reports/{student}',                      [JurnalReportController::class, 'show'])->name('reports.show');
     Route::get('reports/{student}/export',               [JurnalReportController::class, 'export'])->name('reports.export');
+    Route::get('reports/{student}/print',                [JurnalReportController::class, 'printPdf'])->name('reports.print');
+
+    Route::get('/bulk', [JurnalBulkController::class, 'create'])->name('bulk.create');
+    Route::post('/bulk', [JurnalBulkController::class, 'store'])->name('bulk.store');
+
+    Route::get('/offline-templates', [JurnalOfflineTemplateController::class, 'index'])->name('offline-templates.index');
+    Route::post('/offline-templates', [JurnalOfflineTemplateController::class, 'store'])->name('offline-templates.store');
+    Route::get('/offline-templates/{template}/download', [JurnalOfflineTemplateController::class, 'download'])->name('offline-templates.download');
+    Route::delete('/offline-templates/{template}', [JurnalOfflineTemplateController::class, 'destroy'])->name('offline-templates.destroy');
+
+    Route::get('/bible-schedules', [JurnalBibleScheduleController::class, 'index'])->name('bible-schedules.index');
+    Route::post('/bible-schedules', [JurnalBibleScheduleController::class, 'store'])->name('bible-schedules.store');
+    Route::post('/bible-schedules/bulk', [JurnalBibleScheduleController::class, 'bulkStore'])->name('bible-schedules.bulk');
+    Route::put('/bible-schedules/{bibleSchedule}', [JurnalBibleScheduleController::class, 'update'])->name('bible-schedules.update');
+    Route::delete('/bible-schedules/{bibleSchedule}', [JurnalBibleScheduleController::class, 'destroy'])->name('bible-schedules.destroy');
+
+    Route::get('/weekly-verses', [JurnalWeeklyVerseController::class, 'index'])->name('weekly-verses.index');
+    Route::post('/weekly-verses', [JurnalWeeklyVerseController::class, 'store'])->name('weekly-verses.store');
+    Route::put('/weekly-verses/{weeklyVerse}', [JurnalWeeklyVerseController::class, 'update'])->name('weekly-verses.update');
+    Route::delete('/weekly-verses/{weeklyVerse}', [JurnalWeeklyVerseController::class, 'destroy'])->name('weekly-verses.destroy');
 });
 
 // Mentor self-attendance
@@ -223,6 +253,17 @@ Route::middleware(['auth', 'role:mentor'])->prefix('mentor/presensi')->name('men
     Route::put('/{presensi}',      [MentorPresensiController::class, 'update'])->name('update');
     Route::delete('/{presensi}',   [MentorPresensiController::class, 'destroy'])->name('destroy');
     Route::get('/api/kelas',       [MentorPresensiController::class, 'searchKelas'])->name('kelas.search');
+});
+
+Route::middleware(['auth', 'role:mentor'])->prefix('mentor')->name('mentor.')->group(function () {
+    Route::get('/jurnal', [JurnalReportController::class, 'index'])->name('jurnal.index');
+    Route::get('/jurnal/{student}', [JurnalReportController::class, 'show'])->name('jurnal.show');
+    Route::get('/jurnal/{student}/export', [JurnalReportController::class, 'export'])->name('jurnal.export');
+
+    Route::get('/kelas-master', [KelasMasterController::class, 'index'])->name('kelas-master.index');
+    Route::post('/kelas-master', [KelasMasterController::class, 'store'])->name('kelas-master.store');
+    Route::put('/kelas-master/{kelas}', [KelasMasterController::class, 'update'])->name('kelas-master.update');
+    Route::delete('/kelas-master/{kelas}', [KelasMasterController::class, 'destroy'])->name('kelas-master.destroy');
 });
 
 // Shared kelas master search (for /presensi/create form)
@@ -360,6 +401,12 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-hub')->na
 });
 
 Route::view('/privacy-policy', 'privacy');
+
+// ── Penghapusan Data Akun (Google Play Data Safety) ─────────────────────
+use App\Http\Controllers\Web\DataDeletionController;
+Route::get('/hapus-akun', [DataDeletionController::class, 'show'])->name('data-deletion.show');
+Route::delete('/hapus-akun', [DataDeletionController::class, 'destroy'])->middleware('auth')->name('data-deletion.destroy');
+
 
 // ── Android APK download (non-Play-Store distribution) ──────────────────
 Route::view('/download-android', 'download-android')->name('download.android');
