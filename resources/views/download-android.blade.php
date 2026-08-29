@@ -54,7 +54,7 @@
         <h2>Cara Instalasi</h2>
         <ol>
             <li>Ketuk tombol <strong>Download APK</strong> di atas menggunakan browser HP Anda (Chrome, dsb).</li>
-            <li>Setelah unduhan selesai, buka file <code>study-center-nias-v2.1.0.apk</code> dari notifikasi
+            <li>Setelah unduhan selesai, buka file <code>study-center-nias-v3.1.0.apk</code> dari notifikasi
                 unduhan atau folder <em>Downloads</em>.</li>
             <li>Android akan menampilkan peringatan "sumber tidak dikenal" — ini normal untuk aplikasi
                 di luar Play Store. Ketuk <strong>Setelan</strong>, lalu aktifkan

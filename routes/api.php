@@ -246,12 +246,12 @@ Route::middleware('auth:sanctum')->group(function () {
 // ── Android App Version Check (public, no auth) ─────────────────────────
 Route::get("/app/version", function () {
     return response()->json([
-        "latest_version" => "2.0.1",
-        "latest_build"   => 3,
+        "latest_version" => "3.1.0",
+        "latest_build"   => 7,
         "download_url"   => url("/download/apk"),
-        "release_notes"  => "v2.0.0: Login multi-role, saved profiles 1-tap, auto-extend session, role-aware navigation.",
+        "release_notes"  => "v3.1.0: Jurnal scholarship_teenager terpisah, hapus Google login, verse per-hari, multi-role support.",
         "force_update"   => false,
-        "min_version"    => "1.0.0",
+        "min_version"    => "3.0.0",
     ]);
 });
 
