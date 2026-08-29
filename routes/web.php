@@ -60,6 +60,7 @@ Route::get('/cek-pendaftaran/{username}', [PendaftaranController::class, 'cekSta
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthWebController::class, 'loginForm'])->name('login');
     Route::post('/login', [AuthWebController::class, 'login']);
+    Route::post('/login/fast', [AuthWebController::class, 'fastLogin'])->name('login.fast');
     Route::get('/daftar', [AuthWebController::class, 'pilihRegistrasi'])->name('register');
     Route::get('/daftar/tamu', [AuthWebController::class, 'registerForm'])->name('register.tamu');
     Route::post('/daftar/tamu', [AuthWebController::class, 'register']);
@@ -192,8 +193,8 @@ Route::middleware(['auth', 'role:admin,fulltimer'])->prefix('admin/announcements
 // Dismiss announcement (any authenticated user)
 Route::middleware('auth')->post('/announcements/{id}/dismiss', [AnnouncementDismissController::class, 'dismiss'])->name('announcements.dismiss');
 
-// Beranda (student + college + scholarship_teenager)
-Route::middleware(['auth', 'role:student,college,scholarship_teenager'])->group(function () {
+// Beranda (student + college + scholarship_teenager + mentor)
+Route::middleware(['auth', 'role:student,college,scholarship_teenager,mentor'])->group(function () {
     Route::get('/beranda', [BerandaController::class, 'index'])->name('beranda');
 });
 
@@ -411,7 +412,7 @@ Route::delete('/hapus-akun', [DataDeletionController::class, 'destroy'])->middle
 // ── Android APK download (non-Play-Store distribution) ──────────────────
 Route::view('/download-android', 'download-android')->name('download.android');
 Route::get('/download/apk', function () {
-    $path = public_path('downloads/study-center-nias-v1.0.0.apk');
+    $path = public_path('downloads/study-center-nias-v2.1.0.apk');
     abort_unless(file_exists($path), 404);
-    return response()->download($path, 'study-center-nias-v1.0.0.apk');
+    return response()->download($path, 'study-center-nias-v2.1.0.apk');
 })->name('download.apk');

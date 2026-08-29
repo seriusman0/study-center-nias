@@ -31,18 +31,18 @@
             <div class="brand-badge">SC</div>
             <div>
                 <h1>Study Center Nias — Aplikasi Android</h1>
-                <p class="subtitle">Aplikasi resmi untuk siswa binaan Study Center Nias</p>
+                <p class="subtitle">Aplikasi resmi untuk anggota Study Center Nias</p>
             </div>
         </div>
 
-        <span class="version-badge">Versi 1.0.0</span>
+        <span class="version-badge">Versi 2.0.0</span>
 
         <div>
             <a class="download-btn" href="/download/apk" download>
-                ⬇ Download APK (55 MB)
+                ⬇ Download APK (58 MB)
             </a>
         </div>
-        <p class="meta">Terakhir diperbarui: 24 Agustus 2026 &middot; Android 7.0 (Nougat) ke atas</p>
+        <p class="meta">Terakhir diperbarui: 25 Agustus 2026 &middot; Android 7.0 (Nougat) ke atas</p>
 
         <div class="note">
             <strong>Belum tersedia di Google Play Store.</strong> Untuk saat ini, instal
@@ -54,7 +54,7 @@
         <h2>Cara Instalasi</h2>
         <ol>
             <li>Ketuk tombol <strong>Download APK</strong> di atas menggunakan browser HP Anda (Chrome, dsb).</li>
-            <li>Setelah unduhan selesai, buka file <code>study-center-nias-v1.0.0.apk</code> dari notifikasi
+            <li>Setelah unduhan selesai, buka file <code>study-center-nias-v2.1.0.apk</code> dari notifikasi
                 unduhan atau folder <em>Downloads</em>.</li>
             <li>Android akan menampilkan peringatan "sumber tidak dikenal" — ini normal untuk aplikasi
                 di luar Play Store. Ketuk <strong>Setelan</strong>, lalu aktifkan
