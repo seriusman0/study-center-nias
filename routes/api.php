@@ -275,3 +275,14 @@ Route::middleware(['auth:sanctum', 'role:college'])->group(function () {
     Route::get('/college/review/{journal}',              [\App\Http\Controllers\Api\College\CollegeReviewApiController::class, 'show']);
     Route::post('/college/review/{journal}',             [\App\Http\Controllers\Api\College\CollegeReviewApiController::class, 'review']);
 });
+
+// ── Scholarship Teenager: jurnal harian ───────────────────────────────────
+Route::middleware(['auth:sanctum', 'role:scholarship_teenager'])->group(function () {
+    Route::prefix('scholarship-teenager-jurnal')->group(function () {
+        Route::get('/today',    [\App\Http\Controllers\Api\ScholarshipTeenager\ScholarshipTeenagerJurnalApiController::class, 'today']);
+        Route::post('/check',   [\App\Http\Controllers\Api\ScholarshipTeenager\ScholarshipTeenagerJurnalApiController::class, 'check']);
+        Route::get('/history',  [\App\Http\Controllers\Api\ScholarshipTeenager\ScholarshipTeenagerJurnalApiController::class, 'history']);
+        Route::post('/foto',    [\App\Http\Controllers\Api\ScholarshipTeenager\ScholarshipTeenagerJurnalApiController::class, 'uploadFoto']);
+        Route::delete('/foto',  [\App\Http\Controllers\Api\ScholarshipTeenager\ScholarshipTeenagerJurnalApiController::class, 'deleteFoto']);
+    });
+});
