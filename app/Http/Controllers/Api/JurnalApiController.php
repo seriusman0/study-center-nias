@@ -30,7 +30,7 @@ class JurnalApiController extends Controller
     {
         $user = $request->user();
         $data = $request->validate([
-            'item_type' => 'required|in:pl,pb,verse,life',
+            'item_type' => 'required|in:pl,pb,verse,verse_check,life',
             'item_id'   => 'nullable|integer',
             'date'      => 'nullable|date',
             'checked'   => 'nullable|boolean',
@@ -66,6 +66,7 @@ class JurnalApiController extends Controller
                 case 'pb':
                     $entry->update(['pb_checked' => $checked]); break;
                 case 'verse':
+                    // Simpan/hapus teks ayat hafalan untuk minggu ini (shared, boleh diisi 1x seminggu)
                     $verseRef = $data['verse_ref'] ?? null;
                     $key = JurnalWeek::weekKeyFor($date);
                     if ($verseRef) {
@@ -81,7 +82,28 @@ class JurnalApiController extends Controller
                         JurnalEntry::where('student_id', $user->id)
                             ->where('verse_week_key', $key)
                             ->update(['verse_week_key' => null, 'verse_ref' => null]);
+                        // Jika hapus verse_ref, reset semua verse_checked minggu ini
+                        JurnalEntry::where('student_id', $user->id)
+                            ->whereBetween('tanggal', [
+                                \Carbon\Carbon::parse($key)->startOfWeek(\Carbon\CarbonInterface::SUNDAY)->toDateString(),
+                                \Carbon\Carbon::parse($key)->endOfWeek(\Carbon\CarbonInterface::SATURDAY)->toDateString(),
+                            ])
+                            ->update(['verse_checked' => false]);
                     }
+                    break;
+                case 'verse_check':
+                    // Centang/uncentang hafalan ayat HANYA untuk hari ini (per-hari)
+                    // verse_ref (teks ayat) harus sudah ada dulu di minggu ini
+                    $key = JurnalWeek::weekKeyFor($date);
+                    $hasVerse = JurnalEntry::where('student_id', $user->id)
+                        ->where('verse_week_key', $key)
+                        ->whereNotNull('verse_ref')
+                        ->exists();
+                    if (! $hasVerse && $checked) {
+                        // Tidak bisa centang kalau belum ada teks ayat
+                        break;
+                    }
+                    $entry->update(['verse_checked' => $checked]);
                     break;
                 case 'life':
                     $itemId = (int) ($data['item_id'] ?? 0);
@@ -164,6 +186,8 @@ class JurnalApiController extends Controller
             ->whereNotNull('verse_ref')
             ->first();
         $verseRef = $verseEntry?->verse_ref;
+        // verse_checked: centang per-hari (harus dicentang setiap hari, tidak otomatis dari verse_ref)
+        $verseChecked = (bool) ($entry?->verse_checked);
 
         $items = JurnalLifeItem::forStudent($user->id)
             ->orderBy('kategori')->orderBy('label')->get();
@@ -186,6 +210,7 @@ class JurnalApiController extends Controller
                 'pb_checked' => (bool) ($entry?->pb_checked),
             ],
             'verse_ref' => $verseRef,
+            'verse_checked' => $verseChecked,
             'foto_belajar_url' => $entry?->foto_belajar ? asset('storage/' . $entry->foto_belajar) : null,
             'life_items' => $items->map(fn($it) => [
                 'id'            => $it->id,

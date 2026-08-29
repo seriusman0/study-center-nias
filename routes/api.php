@@ -59,7 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
 
     // Jurnal (student)
-    Route::middleware('role:student')->prefix('jurnal')->group(function () {
+    Route::middleware('role:student,college,scholarship_teenager')->prefix('jurnal')->group(function () {
         Route::get ('/today',   [\App\Http\Controllers\Api\JurnalApiController::class, 'today']);
         Route::post('/check',   [\App\Http\Controllers\Api\JurnalApiController::class, 'check']);
         Route::get ('/history', [\App\Http\Controllers\Api\JurnalApiController::class, 'history']);
@@ -68,10 +68,10 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Galeri (student)
-    Route::middleware('role:student')->get('/galeri', [\App\Http\Controllers\Api\GaleriController::class, 'index']);
+    Route::middleware('role:student,scholarship_teenager')->get('/galeri', [\App\Http\Controllers\Api\GaleriController::class, 'index']);
 
     // Laporan (student)
-    Route::middleware('role:student')->prefix('laporan')->group(function () {
+    Route::middleware('role:student,scholarship_teenager')->prefix('laporan')->group(function () {
         Route::get('/my',        [\App\Http\Controllers\Api\LaporanStudentController::class, 'summary']);
         Route::get('/my/matrix', [\App\Http\Controllers\Api\LaporanStudentController::class, 'matrix']);
     });
@@ -203,6 +203,24 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/jurnal/reports/{student}',           [\App\Http\Controllers\Api\Admin\JurnalReportController::class, 'show']);
         Route::get('/jurnal/reports/{student}/export',    [\App\Http\Controllers\Api\Admin\JurnalReportController::class, 'export']);
 
+        // Jurnal offline templates (mobile API)
+        Route::get('/jurnal-offline-templates',                  [\App\Http\Controllers\Api\Admin\JurnalOfflineTemplateApiController::class, 'index']);
+        Route::post('/jurnal-offline-templates',                  [\App\Http\Controllers\Api\Admin\JurnalOfflineTemplateApiController::class, 'store']);
+        Route::get('/jurnal-offline-templates/{template}/download', [\App\Http\Controllers\Api\Admin\JurnalOfflineTemplateApiController::class, 'download']);
+        Route::delete('/jurnal-offline-templates/{template}',      [\App\Http\Controllers\Api\Admin\JurnalOfflineTemplateApiController::class, 'destroy']);
+
+        // Jurnal photo scans (mobile API)
+        Route::get('/jurnal-photo-scans',                         [\App\Http\Controllers\Api\Admin\JurnalPhotoScanApiController::class, 'index']);
+        Route::post('/jurnal-photo-scans',                         [\App\Http\Controllers\Api\Admin\JurnalPhotoScanApiController::class, 'store']);
+
+        // Cross-role jurnal monitoring (student + college + scholarship_teenager)
+        Route::prefix('jurnal-monitor')->group(function () {
+            Route::get('summary',                    [\App\Http\Controllers\Api\Admin\JurnalMonitorController::class, 'summary']);
+            Route::get('{role}',                      [\App\Http\Controllers\Api\Admin\JurnalMonitorController::class, 'index']);
+            Route::get('{role}/{targetUser}',         [\App\Http\Controllers\Api\Admin\JurnalMonitorController::class, 'show']);
+            Route::get('{role}/{targetUser}/export',  [\App\Http\Controllers\Api\Admin\JurnalMonitorController::class, 'export']);
+        });
+
         // Name tags
         Route::get ('/nametags',          [\App\Http\Controllers\Api\Admin\NameTagController::class, 'index']);
         Route::post('/nametags/generate', [\App\Http\Controllers\Api\Admin\NameTagController::class, 'generate']);
@@ -218,5 +236,42 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/blogs/{blog}',         [BlogController::class, 'destroy']);
         Route::get   ('/comments',             fn() => \App\Models\Comment::with('user:id,name,username', 'blog:id,title,slug')->latest()->paginate(20));
         Route::delete('/comments/{comment}',   [CommentController::class, 'destroy']);
+
+        // Admin notifications
+        Route::get  ('/admin-notifications',                [\App\Http\Controllers\Api\Admin\AdminNotificationController::class, 'index']);
+        Route::post('/admin-notifications/{notif}/mark-read',  [\App\Http\Controllers\Api\Admin\AdminNotificationController::class, 'markRead']);
     });
+});
+
+// ── Android App Version Check (public, no auth) ─────────────────────────
+Route::get("/app/version", function () {
+    return response()->json([
+        "latest_version" => "2.0.1",
+        "latest_build"   => 3,
+        "download_url"   => url("/download/apk"),
+        "release_notes"  => "v2.0.0: Login multi-role, saved profiles 1-tap, auto-extend session, role-aware navigation.",
+        "force_update"   => false,
+        "min_version"    => "1.0.0",
+    ]);
+});
+
+// ── College: self-service API (role:college) ───────────────────────────────
+// Mirror web college-jurnal + college dashboard, JSON for Android.
+Route::middleware(['auth:sanctum', 'role:college'])->group(function () {
+    // College jurnal harian
+    Route::prefix('college-jurnal')->group(function () {
+        Route::get('/today',    [\App\Http\Controllers\Api\College\CollegeJurnalApiController::class, 'today']);
+        Route::post('/check',   [\App\Http\Controllers\Api\College\CollegeJurnalApiController::class, 'check']);
+        Route::get('/history',  [\App\Http\Controllers\Api\College\CollegeJurnalApiController::class, 'history']);
+        Route::post('/foto',    [\App\Http\Controllers\Api\College\CollegeJurnalApiController::class, 'uploadFoto']);
+        Route::delete('/foto',  [\App\Http\Controllers\Api\College\CollegeJurnalApiController::class, 'deleteFoto']);
+    });
+
+    // College profile
+    Route::get('/college/profile', [\App\Http\Controllers\Api\College\CollegeJurnalApiController::class, 'profile']);
+
+    // College review dashboard (scholarship journal review)
+    Route::get('/college/review',                        [\App\Http\Controllers\Api\College\CollegeReviewApiController::class, 'index']);
+    Route::get('/college/review/{journal}',              [\App\Http\Controllers\Api\College\CollegeReviewApiController::class, 'show']);
+    Route::post('/college/review/{journal}',             [\App\Http\Controllers\Api\College\CollegeReviewApiController::class, 'review']);
 });
