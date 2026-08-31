@@ -140,6 +140,21 @@ Dicek via `$user->hasRole($roles)` — array intersect nama role. Jika gagal: **
 | POST | `/api/blogs/{blog}/comments` | Komentar (throttle 20/menit) |
 | DELETE | `/api/comments/{comment}` | Hapus komentar (author/admin) |
 
+### 🏠 Beranda (Home) — Integrasi UI Web ke Android
+
+Karena tidak ada endpoint `/api/beranda` khusus, halaman Beranda (khususnya untuk `student` dan `scholarship_teenager`) di Android harus dirakit menggunakan pemanggilan beberapa endpoint berikut sesuai dengan perubahan di web UI:
+
+1. **Profil, Role, dan Cabang:** GET `/api/me`
+2. **Progress Jurnal Hari Ini:**
+   - `student`: GET `/api/jurnal/today`
+   - `scholarship_teenager`: GET `/api/scholarship-teenager-jurnal/today`
+   - *(Tombol navigasi "Mulai Isi Jurnal Remaja SC" atau "Mulai Isi Jurnal Remaja Beasiswa" diatur berdasarkan role user).*
+3. **Blog Terbaru:** GET `/api/blogs` (ambil 6 teratas, bisa difilter berdasarkan `cabang_id` user).
+4. **Galeri/Foto Terbaru:** GET `/api/galeri` (menampilkan foto presensi terbaru cabang).
+5. **QR Code Siswa:** Digenerate secara lokal di sisi Android dengan value string `user.id`.
+
+---
+
 ### 📖 Jurnal — role `student`, prefix `/api/jurnal`
 
 | Method | Endpoint | Deskripsi |
@@ -283,7 +298,7 @@ Kirim `jam_mulai: null` + `jam_selesai: null` untuk hapus log studi hari itu.
 |---|---|---|
 | GET | `/api/galeri` | 20 foto presensi terakhir **di cabang user sendiri** (dari tabel `presensi`, bukan jurnal) |
 
-### 📊 Laporan — role `student`, prefix `/api/laporan`
+### 📊 Laporan — role `student` & `scholarship_teenager`, prefix `/api/laporan`
 
 | Method | Endpoint | Deskripsi |
 |---|---|---|
@@ -450,10 +465,11 @@ Data real saat ini (4 cabang):
 | guest | `test_guest` | test_guest@studycenter.test | `Test12345` |
 | scholarship_teenager | `test_scholarship_teenager` | test_scholarship_teenager@studycenter.test | `Test12345` |
 | college | `test_college` | test_college@studycenter.test | `Test12345` |
+| (general testing) | `testuser` | testuser@studycenter.test | `12345` |
 
 Semua akun: `cabang_id = 1` (Gunungsitoli), `is_active = true`. Login sudah **diverifikasi nyata** via `test_student` (lihat contoh curl di bagian 1) — berhasil dapat token.
 
-Login endpoint: `POST /api/auth/login` dengan body `{"login": "<username>", "password": "Test12345"}`.
+Login endpoint: `POST /api/auth/login` dengan body `{"login": "<username>", "password": "Test12345"}` (Gunakan password `12345` khusus untuk `testuser`).
 
 ---
 
