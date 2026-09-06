@@ -200,7 +200,7 @@ const SCAN_URL  = "{{ route('admin.jurnal-prajurit.scan') }}";
 const SAVE_URL  = "{{ route('admin.jurnal-prajurit.save') }}";
 const CSRF      = "{{ csrf_token() }}";
 
-let html5QrcodeScanner = null;
+let html5Qrcode = null;
 let scanning    = false;
 let currentUser = null;
 let currentItems = [];
@@ -210,20 +210,35 @@ document.getElementById('btnOpenScanner').addEventListener('click', () => {
 });
 
 $('#scannerModal').on('shown.bs.modal', function () {
-    if (!html5QrcodeScanner) {
-        html5QrcodeScanner = new Html5QrcodeScanner(
-            "qr-reader",
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            false
-        );
-        html5QrcodeScanner.render(onScanSuccess, () => {});
-    }
+    document.getElementById('scan-status').innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin mr-1"></i>Meminta akses kamera...</span>';
+    
+    Html5Qrcode.getCameras().then(devices => {
+        if (devices && devices.length) {
+            html5Qrcode = new Html5Qrcode("qr-reader");
+            html5Qrcode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                onScanSuccess,
+                (errorMessage) => { /* ignore */ }
+            ).then(() => {
+                document.getElementById('scan-status').innerHTML = 'Arahkan QR Code Prajurit ke kamera.';
+            }).catch(err => {
+                document.getElementById('scan-status').innerHTML = '<span class="text-danger">Gagal memulai kamera: ' + err + '</span>';
+            });
+        } else {
+            document.getElementById('scan-status').innerHTML = '<span class="text-danger">Kamera tidak ditemukan pada perangkat ini.</span>';
+        }
+    }).catch(err => {
+        document.getElementById('scan-status').innerHTML = '<span class="text-danger">Izin kamera ditolak/gagal. Pastikan browser mengizinkan akses kamera. (' + err + ')</span>';
+    });
 });
 
 $('#scannerModal').on('hide.bs.modal', function () {
-    if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear().catch(e => console.error(e));
-        html5QrcodeScanner = null;
+    if (html5Qrcode) {
+        html5Qrcode.stop().then(() => {
+            html5Qrcode.clear();
+            html5Qrcode = null;
+        }).catch(e => console.error(e));
     }
 });
 
