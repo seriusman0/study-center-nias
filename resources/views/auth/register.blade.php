@@ -40,10 +40,6 @@
             Sudah punya akun?
             <a href="{{ route('login') }}" class="text-sc-teal-700 font-medium hover:underline">Masuk</a>
         </p>
-        <p class="text-center text-xs text-gray-400 mt-2">
-            Pengurus internal?
-            <a href="{{ route('auth.google') }}" class="text-sc-teal-700 hover:underline">Masuk dengan Google</a>
-        </p>
     </div>
 </div>
 @endsection

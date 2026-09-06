@@ -82,6 +82,72 @@ class LaporanController extends Controller
         // Best week
         $bestWeek = collect($weeks)->sortByDesc('pct')->first();
 
-        return view('laporan.index', compact('weeks', 'totalItems', 'overallActiveDays', 'bestWeek', 'user'));
+        // -- Leaderboard Logic --
+        $leaderboards = [];
+        $rolesToCheck = $user->roles()->whereIn('name', ['student', 'college', 'scholarship_teenager'])->pluck('name');
+        $cabangId = $user->cabang_id;
+        $sevendaysAgoStr = $today->copy()->subDays(6)->toDateString();
+        $todayStr = $today->toDateString();
+
+        foreach ($rolesToCheck as $roleName) {
+            $roleId = \App\Models\Role::where('name', $roleName)->value('id');
+            $usersQ = \Illuminate\Support\Facades\DB::table('users as u')
+                ->join('user_roles as ur', 'ur.user_id', '=', 'u.id')
+                ->where('ur.role_id', $roleId)
+                ->where('u.is_active', true)
+                ->whereNull('u.deleted_at');
+            
+            if ($cabangId) {
+                $usersQ->where('u.cabang_id', $cabangId);
+            }
+            
+            $usersMap = $usersQ->select('u.id', 'u.name', 'u.avatar')->get()->keyBy('id');
+            $userIds = $usersMap->keys()->all();
+            
+            if (empty($userIds)) continue;
+            
+            $plQ = \Illuminate\Support\Facades\DB::table('jurnal_entries')
+                ->whereIn('student_id', $userIds)
+                ->where('pl_checked', true)
+                ->whereBetween('tanggal', [$sevendaysAgoStr, $todayStr])
+                ->select('student_id', \Illuminate\Support\Facades\DB::raw('COUNT(*) as count'))
+                ->groupBy('student_id')->get()->keyBy('student_id');
+
+            $pbQ = \Illuminate\Support\Facades\DB::table('jurnal_entries')
+                ->whereIn('student_id', $userIds)
+                ->where('pb_checked', true)
+                ->whereBetween('tanggal', [$sevendaysAgoStr, $todayStr])
+                ->select('student_id', \Illuminate\Support\Facades\DB::raw('COUNT(*) as count'))
+                ->groupBy('student_id')->get()->keyBy('student_id');
+
+            $lifeQ = \Illuminate\Support\Facades\DB::table('jurnal_life_checks')
+                ->whereIn('student_id', $userIds)
+                ->where('checked', true)
+                ->whereBetween('tanggal', [$sevendaysAgoStr, $todayStr])
+                ->select('student_id', \Illuminate\Support\Facades\DB::raw('COUNT(*) as count'))
+                ->groupBy('student_id')->get()->keyBy('student_id');
+
+            $studentsRanked = $usersMap->map(function ($u) use ($plQ, $pbQ, $lifeQ) {
+                $score = ($plQ->get($u->id)->count ?? 0)
+                       + ($pbQ->get($u->id)->count ?? 0)
+                       + ($lifeQ->get($u->id)->count ?? 0);
+                return (object) [
+                    'id'     => $u->id,
+                    'name'   => $u->name,
+                    'avatar' => $u->avatar,
+                    'score'  => $score,
+                ];
+            })->sortByDesc('score')->values()->take(10);
+            
+            $roleLabel = [
+                'student' => 'Siswa',
+                'college' => 'College',
+                'scholarship_teenager' => 'Remaja Beasiswa'
+            ][$roleName] ?? ucfirst($roleName);
+            
+            $leaderboards[$roleLabel] = $studentsRanked;
+        }
+
+        return view('laporan.index', compact('weeks', 'totalItems', 'overallActiveDays', 'bestWeek', 'user', 'leaderboards'));
     }
 }

@@ -25,7 +25,7 @@
             </a>
 
             {{-- Siswa --}}
-            <a href="{{ route('pendaftaran.form') }}"
+            <a href="{{ route('pendaftaran.pilih-cabang') }}"
                class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center text-center hover:shadow-xl hover:border-sc-teal-500 border-2 border-transparent transition group">
                 <div class="w-16 h-16 rounded-full bg-sc-teal-50 flex items-center justify-center mb-4 group-hover:bg-sc-teal-100 transition">
                     <svg class="w-8 h-8 text-sc-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

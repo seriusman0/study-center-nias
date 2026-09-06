@@ -33,23 +33,78 @@ class AuthWebController extends Controller
         ];
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Email/username atau password salah.'], 401);
+            }
             return back()->withErrors(['login' => 'Email/username atau password salah.'])->withInput();
         }
 
         $user = Auth::user();
         if (! $user->is_active) {
             Auth::logout();
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Akun tidak aktif.'], 403);
+            }
             return back()->withErrors(['login' => 'Akun tidak aktif.']);
         }
 
         $request->session()->regenerate();
 
-        $user = Auth::user();
-        if ($user->hasRole(['student', 'college', 'scholarship_teenager'])) {
-            return redirect()->intended(route('beranda'));
+        $redirect = '/';
+        if ($user->hasRole(['admin', 'fulltimer'])) {
+            $redirect = route('admin.dashboard');
+        } elseif ($user->hasRole(['student', 'college', 'scholarship_teenager', 'mentor'])) {
+            $redirect = route('beranda');
         }
 
-        return redirect()->intended('/');
+        if ($request->wantsJson()) {
+            $token = null;
+            if ($request->boolean('save_login')) {
+                $token = $user->createToken('fast-login')->plainTextToken;
+            }
+            return response()->json([
+                'success' => true,
+                'redirect' => $redirect,
+                'token' => $token,
+                'user' => [
+                    'name' => $user->name,
+                    'username' => $user->username,
+                    'avatar' => $user->avatar
+                ]
+            ]);
+        }
+
+        return redirect()->intended($redirect);
+    }
+
+    public function fastLogin(Request $request)
+    {
+        $request->validate(['token' => 'required|string']);
+        $token = \Laravel\Sanctum\PersonalAccessToken::findToken($request->token);
+        
+        if (!$token || !$token->tokenable) {
+            return response()->json(['message' => 'Token tidak valid atau sudah kadaluarsa.'], 401);
+        }
+
+        $user = $token->tokenable;
+        if (! $user->is_active) {
+            return response()->json(['message' => 'Akun tidak aktif.'], 403);
+        }
+
+        Auth::login($user, true);
+        $request->session()->regenerate();
+
+        $redirect = '/';
+        if ($user->hasRole(['admin', 'fulltimer'])) {
+            $redirect = route('admin.dashboard');
+        } elseif ($user->hasRole(['student', 'college', 'scholarship_teenager', 'mentor'])) {
+            $redirect = route('beranda');
+        }
+
+        return response()->json([
+            'success' => true,
+            'redirect' => $redirect
+        ]);
     }
 
     public function pilihRegistrasi()

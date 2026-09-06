@@ -17,6 +17,7 @@ class JurnalLifeCheck extends Model
     protected $casts = [
         'tanggal' => 'date',
         'checked' => 'boolean',
+        'value'   => 'integer',
     ];
 
     public function student()

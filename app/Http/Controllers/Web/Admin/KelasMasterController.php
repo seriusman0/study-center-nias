@@ -38,7 +38,8 @@ class KelasMasterController extends Controller
             ? Cabang::orderBy('nama')->get()
             : Cabang::where('id', $user->cabang_id)->get();
 
-        return view('admin.kelas-master.index', compact('kelas', 'cabangs'));
+        $view = $user->hasRole('mentor') ? 'mentor.kelas-master.index' : 'admin.kelas-master.index';
+        return view($view, compact('kelas', 'cabangs'));
     }
 
     public function store(Request $request)

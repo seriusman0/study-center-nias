@@ -5,7 +5,7 @@ export default defineConfig({
     testDir: './e2e',
     timeout: 30000,
     use: {
-        baseURL: 'http://dev.seriusman.shop',
+        baseURL: 'http://localhost:8888',
         headless: true,
         viewport: { width: 1280, height: 900 },
         ignoreHTTPSErrors: true,

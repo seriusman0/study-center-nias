@@ -5,7 +5,6 @@ use App\Http\Controllers\Web\HomeController;
 use App\Http\Controllers\Web\BlogWebController;
 use App\Http\Controllers\Web\CabangWebController;
 use App\Http\Controllers\Web\AuthWebController;
-use App\Http\Controllers\Web\GoogleWebController;
 use App\Http\Controllers\Web\ProfileWebController;
 use App\Http\Controllers\Web\CvWebController;
 use App\Http\Controllers\Web\CommentWebController;
@@ -65,8 +64,6 @@ Route::middleware('guest')->group(function () {
     Route::get('/daftar/tamu', [AuthWebController::class, 'registerForm'])->name('register.tamu');
     Route::post('/daftar/tamu', [AuthWebController::class, 'register']);
 });
-Route::get('/auth/google', [GoogleWebController::class, 'redirect'])->name('auth.google');
-Route::get('/auth/google/callback', [GoogleWebController::class, 'callback']);
 Route::post('/logout', [AuthWebController::class, 'logout'])->name('logout')->middleware('auth');
 
 // Profile edit must be before wildcard /profil/{username}
@@ -75,6 +72,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/profil/edit', [ProfileWebController::class, 'update'])->name('profile.update');
     Route::get('/cv/edit', [CvWebController::class, 'edit'])->name('cv.edit');
     Route::post('/cv/edit', [CvWebController::class, 'update'])->name('cv.update');
+    Route::post('/admin/stop-impersonating', [AdminController::class, 'stopImpersonating'])->name('admin.stop-impersonating');
 });
 
 // Public profile routes (after static /profil/edit)
@@ -141,6 +139,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/users/{user}/role', [AdminController::class, 'updateRole'])->name('users.role');
     Route::post('/users/{user}/toggle-active', [AdminController::class, 'toggleActive'])->name('users.toggle');
     Route::delete('/users/{user}', [AdminController::class, 'deleteUser'])->name('users.delete');
+    Route::post('/users/{user}/impersonate', [AdminController::class, 'impersonateUser'])->name('users.impersonate');
     Route::get('/cabangs', [AdminController::class, 'cabangs'])->name('cabangs');
     Route::post('/cabangs', [AdminController::class, 'storeCabang'])->name('cabangs.store');
     Route::post('/cabangs/{cabang}', [AdminController::class, 'updateCabang'])->name('cabangs.update');
@@ -392,6 +391,23 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-scholarsh
     Route::delete('/items/{item}',       [ScholarshipTeenagerItemAdminController::class, 'destroy'])->name('items.destroy');
 });
 
+use App\Http\Controllers\Web\Prajurit\PrajuritJurnalController;
+use App\Http\Controllers\Web\Admin\PrajuritJurnalAdminController;
+
+Route::middleware(['auth', 'role:prajurit'])->prefix('jurnal-prajurit')->name('prajurit-jurnal.')->group(function () {
+    Route::get('/',        [PrajuritJurnalController::class, 'index'])->name('index');
+    Route::post('/toggle', [PrajuritJurnalController::class, 'toggle'])->name('toggle');
+});
+
+Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-prajurit')->name('admin.jurnal-prajurit.')->group(function () {
+    Route::get('/',                    [PrajuritJurnalAdminController::class, 'dashboard'])->name('index');
+    Route::get('/laporan',             [PrajuritJurnalAdminController::class, 'index'])->name('laporan');
+    Route::get('/laporan/{user}',      [PrajuritJurnalAdminController::class, 'show'])->name('show');
+    Route::get('/laporan/{user}/export', [PrajuritJurnalAdminController::class, 'export'])->name('export');
+    Route::post('/scan',               [PrajuritJurnalAdminController::class, 'scanJurnal'])->name('scan');
+    Route::post('/save',               [PrajuritJurnalAdminController::class, 'saveJurnal'])->name('save');
+});
+
 Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-hub')->name('admin.jurnal-hub.')->group(function () {
     Route::get('/',             [AdminJurnalHubController::class, 'index'])->name('index');
     Route::get('/users',        [AdminJurnalHubController::class, 'users'])->name('users');
@@ -412,7 +428,7 @@ Route::delete('/hapus-akun', [DataDeletionController::class, 'destroy'])->middle
 // ── Android APK download (non-Play-Store distribution) ──────────────────
 Route::view('/download-android', 'download-android')->name('download.android');
 Route::get('/download/apk', function () {
-    $path = public_path('downloads/study-center-nias-v2.1.0.apk');
+    $path = public_path('downloads/study-center-nias-v3.3.0.apk');
     abort_unless(file_exists($path), 404);
-    return response()->download($path, 'study-center-nias-v2.1.0.apk');
+    return response()->download($path, 'study-center-nias-v3.3.0.apk');
 })->name('download.apk');

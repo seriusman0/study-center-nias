@@ -1,0 +1,630 @@
+<!DOCTYPE html><html lang="id"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="csrf-token" content="puBrtBZnIU3YdSLuJalfqXOmLE69FOy7FWW0OU4g">
+    <title>Jurnal Harian</title>
+
+    
+    <meta name="theme-color" content="#007a5c">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SC Nias">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="http://localhost:8888/build/assets/app-DzLOrRTq.css"><link rel="modulepreload" as="script" href="http://localhost:8888/build/assets/app-B4KFWzyF.js"><link rel="stylesheet" href="http://localhost:8888/build/assets/app-DzLOrRTq.css"><script type="module" src="http://localhost:8888/build/assets/app-B4KFWzyF.js"></script>    </head>
+<body class="font-sans bg-sc-bg text-sc-ink-900 min-h-screen flex flex-col">
+
+    
+        
+    
+    
+    <nav class="bg-sc-teal-700 text-white shadow-sc-2 sticky top-0 z-40" style="padding-top: env(safe-area-inset-top)">
+        <div class="max-w-3xl mx-auto px-4 flex items-center justify-between h-14">
+            
+            <a href="http://localhost:8888/beranda" class="flex items-center gap-2 font-bold text-base">
+                <span class="text-sc-yellow-300">SC</span>
+                <span class="text-white/80 text-sm font-normal">Nias</span>
+            </a>
+
+            
+            <div class="flex items-center gap-1">
+                                    
+                                        
+                                        
+                                        
+                                            <form method="POST" action="http://localhost:8888/logout" class="inline">
+                            <input type="hidden" name="_token" value="puBrtBZnIU3YdSLuJalfqXOmLE69FOy7FWW0OU4g" autocomplete="off">                            <button type="submit" class="text-xs px-3 py-1.5 rounded-lg text-white/60 hover:bg-white/15">
+                                Keluar
+                            </button>
+                        </form>
+                                                </div>
+        </div>
+    </nav>
+
+    
+    
+    
+    <main class="flex-1 w-full">
+            <div class="max-w-3xl mx-auto px-4 py-6" x-data="scholarshipTeenagerJurnalPage({
+        date: '2026-08-31',
+        today: '2026-08-31',
+        csrf: 'puBrtBZnIU3YdSLuJalfqXOmLE69FOy7FWW0OU4g',
+        formOpen: true,
+        readOnly: false,
+        toggleUrl: 'http://localhost:8888/jurnal-scholarship-teenager/toggle',
+        fotoUrl: 'http://localhost:8888/jurnal-scholarship-teenager/foto',
+        verseRef: '',
+        state: {
+            pl: false,
+            pb: false,
+            verse_check: false,
+            life: [],
+            study: []        }
+     })">
+
+    
+    
+    
+    <div class="bg-gradient-to-br from-sc-teal-700 to-sc-teal-600 text-white shadow-sc-3 rounded-2xl p-5 mb-4 relative overflow-hidden">
+        <div class="absolute -right-4 -top-4 w-28 opacity-10 pointer-events-none">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+                <path d="M30,55 L50,10 L70,55 Z" fill="#e0c020"></path>
+                <rect x="25" y="60" width="50" height="10" fill="#e0c020"></rect>
+                <rect x="25" y="72" width="50" height="10" fill="#f19121"></rect>
+            </svg>
+        </div>
+        <div class="flex items-center justify-between gap-2 mb-2 relative">
+            <div>
+                <h1 class="font-display text-2xl">Halo, Test User Edited</h1>
+                <p class="text-sm text-white/85">Senin, 31 Agustus 2026</p>
+                                <div class="inline-flex items-center gap-1.5 mt-3 bg-sc-orange-100 text-sc-orange-700 border border-sc-orange-300 px-3 py-1 rounded-full text-xs font-bold">
+                    🔥 Streak 1 hari berturut-turut
+                </div>
+                            </div>
+                        <div class="flex items-center gap-1">
+                <a href="http://localhost:8888/jurnal-scholarship-teenager?date=2026-08-30" class="px-3 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-sm">←</a>
+                                    <span class="px-3 py-2 rounded-lg bg-white/5 text-white/30 text-sm cursor-not-allowed">→</span>
+                                            </div>
+                    </div>
+    </div>
+
+    
+    
+    
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4" :class="!formOpen &amp;&amp; 'opacity-60 pointer-events-none'">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">1</span>
+            Pembacaan Alkitab
+        </h2>
+                <p class="text-xs text-sc-ink-500 mb-3 ml-9">Hari ke-218 — <span class="font-medium text-sc-ink-700">Mzm 7-10</span> / <span class="font-medium text-sc-ink-700">Rom 12:1-21</span></p>
+        
+        <div class="grid sm:grid-cols-2 gap-3 mb-3">
+            <label class="flex items-start gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition" :class="state.pl &amp;&amp; 'border-sc-teal-400 bg-sc-teal-50'">
+                <input type="checkbox" class="mt-1 w-5 h-5 accent-sc-teal-600" x-model="state.pl" @change="toggle('pl', null, state.pl)">
+                <div>
+                    <div class="font-semibold text-sm text-sc-ink-900">Perjanjian Lama</div>
+                                        <div class="text-xs text-sc-ink-500">Mzm 7-10</div>
+                                    </div>
+            </label>
+            <label class="flex items-start gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition" :class="state.pb &amp;&amp; 'border-sc-teal-400 bg-sc-teal-50'">
+                <input type="checkbox" class="mt-1 w-5 h-5 accent-sc-teal-600" x-model="state.pb" @change="toggle('pb', null, state.pb)">
+                <div>
+                    <div class="font-semibold text-sm text-sc-ink-900">Perjanjian Baru</div>
+                                        <div class="text-xs text-sc-ink-500">Rom 12:1-21</div>
+                                    </div>
+            </label>
+        </div>
+
+        
+                                                                                                                            <div class="flex items-center justify-between p-3 rounded-lg border border-sc-line mb-2">
+                    <span class="text-sm font-medium text-sc-ink-900">Upload Pembacaan Alkitab di Group</span>
+                    <div class="flex gap-2">
+                        <button type="button" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100" :class="state.life.includes(11) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'" @click="toggleBoolean(11, true)">Sudah</button>
+                        <button type="button" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-sc-teal-600 text-white shadow-sc-focus" :class="!state.life.includes(11) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'" @click="toggleBoolean(11, false)">Belum</button>
+                    </div>
+                </div>
+                                                        </div>
+
+    
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4" :class="!formOpen &amp;&amp; 'opacity-60 pointer-events-none'" x-data="scholarshipTeenagerJurnalHafalAyat(scholarshipTeenagerJurnalPage_cfg)">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">2</span>
+            Hafal Ayat Mingguan
+        </h2>
+                    <p class="text-xs text-sc-ink-500 mb-3 ml-9">
+                Dari porsi hari ini: <span class="font-medium text-sc-teal-700">Mzm 7-10 / Rom 12:1-21</span>
+            </p>
+                <div class="flex flex-wrap gap-2 items-end ml-9">
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-sc-ink-500 font-medium">Kitab</label>
+                <select x-model="kitab" @change="save()" class="border border-sc-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+                    <option value="">— Pilih kitab —</option>
+                                            <option value="Kejadian">Kejadian</option>
+                                            <option value="Keluaran">Keluaran</option>
+                                            <option value="Imamat">Imamat</option>
+                                            <option value="Bilangan">Bilangan</option>
+                                            <option value="Ulangan">Ulangan</option>
+                                            <option value="Yosua">Yosua</option>
+                                            <option value="Hakim-hakim">Hakim-hakim</option>
+                                            <option value="Rut">Rut</option>
+                                            <option value="1 Samuel">1 Samuel</option>
+                                            <option value="2 Samuel">2 Samuel</option>
+                                            <option value="1 Raja-raja">1 Raja-raja</option>
+                                            <option value="2 Raja-raja">2 Raja-raja</option>
+                                            <option value="1 Tawarikh">1 Tawarikh</option>
+                                            <option value="2 Tawarikh">2 Tawarikh</option>
+                                            <option value="Ezra">Ezra</option>
+                                            <option value="Nehemia">Nehemia</option>
+                                            <option value="Ester">Ester</option>
+                                            <option value="Ayub">Ayub</option>
+                                            <option value="Mazmur">Mazmur</option>
+                                            <option value="Amsal">Amsal</option>
+                                            <option value="Pengkhotbah">Pengkhotbah</option>
+                                            <option value="Kidung Agung">Kidung Agung</option>
+                                            <option value="Yesaya">Yesaya</option>
+                                            <option value="Yeremia">Yeremia</option>
+                                            <option value="Ratapan">Ratapan</option>
+                                            <option value="Yehezkiel">Yehezkiel</option>
+                                            <option value="Daniel">Daniel</option>
+                                            <option value="Hosea">Hosea</option>
+                                            <option value="Yoel">Yoel</option>
+                                            <option value="Amos">Amos</option>
+                                            <option value="Obaja">Obaja</option>
+                                            <option value="Yunus">Yunus</option>
+                                            <option value="Mikha">Mikha</option>
+                                            <option value="Nahum">Nahum</option>
+                                            <option value="Habakuk">Habakuk</option>
+                                            <option value="Zefanya">Zefanya</option>
+                                            <option value="Hagai">Hagai</option>
+                                            <option value="Zakharia">Zakharia</option>
+                                            <option value="Maleakhi">Maleakhi</option>
+                                            <option value="Matius">Matius</option>
+                                            <option value="Markus">Markus</option>
+                                            <option value="Lukas">Lukas</option>
+                                            <option value="Yohanes">Yohanes</option>
+                                            <option value="Kisah Para Rasul">Kisah Para Rasul</option>
+                                            <option value="Roma">Roma</option>
+                                            <option value="1 Korintus">1 Korintus</option>
+                                            <option value="2 Korintus">2 Korintus</option>
+                                            <option value="Galatia">Galatia</option>
+                                            <option value="Efesus">Efesus</option>
+                                            <option value="Filipi">Filipi</option>
+                                            <option value="Kolose">Kolose</option>
+                                            <option value="1 Tesalonika">1 Tesalonika</option>
+                                            <option value="2 Tesalonika">2 Tesalonika</option>
+                                            <option value="1 Timotius">1 Timotius</option>
+                                            <option value="2 Timotius">2 Timotius</option>
+                                            <option value="Titus">Titus</option>
+                                            <option value="Filemon">Filemon</option>
+                                            <option value="Ibrani">Ibrani</option>
+                                            <option value="Yakobus">Yakobus</option>
+                                            <option value="1 Petrus">1 Petrus</option>
+                                            <option value="2 Petrus">2 Petrus</option>
+                                            <option value="1 Yohanes">1 Yohanes</option>
+                                            <option value="2 Yohanes">2 Yohanes</option>
+                                            <option value="3 Yohanes">3 Yohanes</option>
+                                            <option value="Yudas">Yudas</option>
+                                            <option value="Wahyu">Wahyu</option>
+                                    </select>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-sc-ink-500 font-medium">Pasal</label>
+                <input type="number" x-model="pasal" min="1" max="150" placeholder="1" @blur="save()" class="border border-sc-line rounded-lg px-3 py-2 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-sc-ink-500 font-medium">Ayat</label>
+                <input type="number" x-model="ayat" min="1" max="200" placeholder="1" @blur="save()" class="border border-sc-line rounded-lg px-3 py-2 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+            </div>
+                        <button type="button" x-show="kitab || pasal || ayat" @click="clear()" class="px-3 py-2 rounded-lg bg-sc-ink-100 text-sc-ink-500 text-sm hover:bg-sc-ink-200 transition" style="display: none;">
+                Hapus
+            </button>
+                    </div>
+        <div class="ml-9">
+            <p x-show="saved" x-transition="" class="text-xs text-sc-teal-600 mt-2 font-medium" style="display:none">
+                Tersimpan: <span x-text="saved"></span>
+            </p>
+            <label class="flex items-center gap-3 mt-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" x-model="state.verse_check" @change="toggle('verse_check', null, state.verse_check)">
+                <span class="text-sm font-medium">Sudah hafal ayat ini</span>
+            </label>
+        </div>
+    </div>
+    
+        <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4" :class="!formOpen &amp;&amp; 'opacity-60 pointer-events-none'">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">3</span>
+            Sidang-Sidang Gereja
+        </h2>
+        <p class="text-xs text-sc-ink-500 mb-3 ml-9">Opsional — bisa pilih lebih dari satu</p>
+        <div class="space-y-2">
+                                            <label class="flex items-center gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                    <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" :value="13" x-model="state.life" @change="toggle('life', 13, state.life.includes(13))" value="13">
+                    <span class="text-sm">SPR</span>
+                </label>
+                                                            <label class="flex items-center gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                    <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" :value="14" x-model="state.life" @change="toggle('life', 14, state.life.includes(14))" value="14">
+                    <span class="text-sm">Sidang Remaja</span>
+                </label>
+                                                            <label class="flex items-center gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                    <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" :value="15" x-model="state.life" @change="toggle('life', 15, state.life.includes(15))" value="15">
+                    <span class="text-sm">Sidang Kelompok</span>
+                </label>
+                                                            <label class="flex items-center gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                    <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" :value="16" x-model="state.life" @change="toggle('life', 16, state.life.includes(16))" value="16">
+                    <span class="text-sm">Sidang Doa</span>
+                </label>
+                                                            <label class="flex items-center gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                    <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" :value="17" x-model="state.life" @change="toggle('life', 17, state.life.includes(17))" value="17">
+                    <span class="text-sm">Sidang Saudari</span>
+                </label>
+                                                            <label class="flex items-center gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                    <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" :value="18" x-model="state.life" @change="toggle('life', 18, state.life.includes(18))" value="18">
+                    <span class="text-sm">Sidang Pemuda</span>
+                </label>
+                                                            <label class="flex items-center gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                    <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" :value="19" x-model="state.life" @change="toggle('life', 19, state.life.includes(19))" value="19">
+                    <span class="text-sm">Sidang Spesial (Seminar / Sidang Khusus)</span>
+                </label>
+                                                            <div class="flex items-center justify-between p-3 rounded-lg border border-sc-line">
+                    <span class="text-sm font-medium text-sc-ink-900">Sharing di Sidang SPR</span>
+                    <div class="flex gap-2">
+                        <button type="button" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100" :class="state.life.includes(20) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'" @click="toggleBoolean(20, true)">Sudah</button>
+                        <button type="button" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-sc-teal-600 text-white shadow-sc-focus" :class="!state.life.includes(20) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'" @click="toggleBoolean(20, false)">Belum</button>
+                    </div>
+                </div>
+                                    </div>
+    </div>
+    
+    
+        <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4" :class="!formOpen &amp;&amp; 'opacity-60 pointer-events-none'">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">4</span>
+            Rohani &amp; Pelayanan
+        </h2>
+        <div class="space-y-2">
+                                            <div class="flex items-center justify-between p-3 rounded-lg border border-sc-line">
+                    <span class="text-sm font-medium text-sc-ink-900">Baca Buku Rohani (1 Bab / 1 Judul per Minggu)</span>
+                    <div class="flex gap-2">
+                        <button type="button" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100" :class="state.life.includes(12) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'" @click="toggleBoolean(12, true)">Sudah</button>
+                        <button type="button" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-sc-teal-600 text-white shadow-sc-focus" :class="!state.life.includes(12) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'" @click="toggleBoolean(12, false)">Belum</button>
+                    </div>
+                </div>
+
+                                                            <div class="flex items-center justify-between p-3 rounded-lg border border-sc-line">
+                    <span class="text-sm font-medium text-sc-ink-900">Buku Catatan</span>
+                    <div class="flex gap-2">
+                        <button type="button" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100" :class="state.life.includes(21) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'" @click="toggleBoolean(21, true)">Sudah</button>
+                        <button type="button" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-sc-teal-600 text-white shadow-sc-focus" :class="!state.life.includes(21) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'" @click="toggleBoolean(21, false)">Belum</button>
+                    </div>
+                </div>
+
+                                                            <div class="flex items-center justify-between p-3 rounded-lg border border-sc-line">
+                    <span class="text-sm font-medium text-sc-ink-900">Doa saat SPR</span>
+                    <div class="flex gap-2">
+                        <button type="button" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100" :class="state.life.includes(22) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'" @click="toggleBoolean(22, true)">Sudah</button>
+                        <button type="button" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-sc-teal-600 text-white shadow-sc-focus" :class="!state.life.includes(22) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'" @click="toggleBoolean(22, false)">Belum</button>
+                    </div>
+                </div>
+
+                                                            <div class="p-3 rounded-lg border border-sc-line" x-data="{
+                    itemId: 23,
+                    jamMulai: '',
+                    jamSelesai: '',
+                    tipe: 'mandiri',
+                    get totalMenit() {
+                        if (!this.jamMulai || !this.jamSelesai) return 0;
+                        const [hm, mm] = this.jamMulai.split(':').map(Number);
+                        const [hs, ms] = this.jamSelesai.split(':').map(Number);
+                        return Math.max(0, (hs * 60 + ms) - (hm * 60 + mm));
+                    },
+                    get totalLabel() {
+                        const t = this.totalMenit;
+                        if (t &lt;= 0) return '';
+                        const h = Math.floor(t / 60), m = t % 60;
+                        return h &gt; 0 ? h + ' jam ' + (m &gt; 0 ? m + ' mnt' : '') : m + ' mnt';
+                    },
+                    async save(parent) {
+                        await parent.saveStudy(this.itemId, this.jamMulai, this.jamSelesai, this.tipe);
+                    }
+                }">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-sc-ink-900">Belajar</span>
+                        <span class="text-xs text-sc-teal-600 font-semibold" x-text="totalLabel"></span>
+                    </div>
+                    <div class="text-xs text-sc-ink-400 mb-2">Di luar jam kuliah — mandiri atau kelompok</div>
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <div class="flex items-center gap-1">
+                            <label class="text-xs text-sc-ink-500">Mulai</label>
+                            <input type="time" x-model="jamMulai" @change="save($root)" class="border border-sc-line rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <label class="text-xs text-sc-ink-500">Selesai</label>
+                            <input type="time" x-model="jamSelesai" @change="save($root)" class="border border-sc-line rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+                        </div>
+                        <div class="flex gap-1">
+                            <button type="button" @click="tipe='mandiri'; save($root)" class="px-3 py-1 rounded-lg text-xs font-semibold transition bg-sc-teal-600 text-white" :class="tipe==='mandiri' ? 'bg-sc-teal-600 text-white' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-50'">Mandiri</button>
+                            <button type="button" @click="tipe='kelompok'; save($root)" class="px-3 py-1 rounded-lg text-xs font-semibold transition bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-50" :class="tipe==='kelompok' ? 'bg-sc-teal-600 text-white' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-50'">Kelompok</button>
+                        </div>
+                    </div>
+                </div>
+
+                                                            <label class="flex items-center gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                    <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" :value="24" x-model="state.life" @change="toggle('life', 24, state.life.includes(24))" value="24">
+                    <span class="text-sm">Pelayanan</span>
+                </label>
+                                    </div>
+    </div>
+    
+    
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4" x-data="scholarshipTeenagerJurnalFoto({ date: '2026-08-31', csrf: 'puBrtBZnIU3YdSLuJalfqXOmLE69FOy7FWW0OU4g', existing: null, readOnly: false })">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">5</span>
+            Foto Saat Belajar
+            <span class="text-xs font-normal text-sc-ink-400 ml-1">(opsional)</span>
+        </h2>
+
+        <div x-show="preview || current" class="mb-3" style="display:none">
+            <img :src="preview || current" alt="Foto belajar" class="rounded-xl max-h-72 w-full object-cover border border-sc-line">
+        </div>
+
+        <div class="flex flex-wrap gap-2 items-center" x-show="!readOnly">
+            <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sc-teal-700 text-white text-sm font-semibold hover:bg-sc-teal-800 transition">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <span x-text="current || preview ? 'Ganti Foto' : 'Upload Foto'">Upload Foto</span>
+                <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" @change="onFile($event)">
+            </label>
+            <button type="button" x-show="preview" @click="upload()" :disabled="uploading" class="px-4 py-2 rounded-lg bg-sc-orange-500 text-white text-sm font-semibold hover:bg-sc-orange-600 transition disabled:opacity-50" style="display: none;">
+                <span x-text="uploading ? 'Menyimpan...' : 'Simpan Foto'">Simpan Foto</span>
+            </button>
+            <button type="button" x-show="current &amp;&amp; !preview" @click="remove()" class="px-4 py-2 rounded-lg bg-sc-ink-100 text-sc-ink-600 text-sm hover:bg-sc-ink-200 transition" style="display: none;">
+                Hapus Foto
+            </button>
+            <button type="button" x-show="preview" @click="cancelPreview()" class="px-4 py-2 rounded-lg bg-sc-ink-100 text-sc-ink-500 text-sm hover:bg-sc-ink-200 transition" style="display: none;">
+                Batal
+            </button>
+        </div>
+        <p x-show="!readOnly &amp;&amp; !current &amp;&amp; !preview" class="text-xs text-sc-ink-400 mt-2">Belum ada foto.</p>
+        <p x-show="readOnly &amp;&amp; !current" class="text-xs text-sc-ink-400 mt-2" style="display:none">Tidak ada foto.</p>
+        <p x-show="error" x-text="error" class="text-xs text-red-500 mt-2" style="display:none"></p>
+        <p x-show="!readOnly" class="text-xs text-sc-ink-400 mt-2">Format: JPG, PNG, WebP. Maks. 4 MB.</p>
+    </div>
+
+    <div x-show="msg" x-transition="" class="fixed bottom-4 right-4 bg-sc-ink-900 text-white text-sm px-4 py-2 rounded-lg shadow-sc-3" x-text="msg" style="display:none"></div>
+</div>
+
+    </main>
+
+    
+    
+    
+            <nav id="bottom-nav" class="mt-auto w-full" style="position:sticky;bottom:0;z-index:50;background:#fff;border-top:1px solid #e5e7eb;display:flex;padding-bottom:env(safe-area-inset-bottom)">
+        
+        <a href="http://localhost:8888/beranda" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.6rem 0;gap:.2rem;text-decoration:none;color:#9ca3af">
+            <svg width="22" height="22" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            <span style="font-size:.65rem;font-weight:500">Beranda</span>
+        </a>
+
+        
+        <a href="http://localhost:8888/jurnal-scholarship-teenager" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.6rem 0;gap:.2rem;text-decoration:none;color:#007a5c">
+            <svg width="22" height="22" fill="#007a5c" stroke="#007a5c" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+            <span style="font-size:.65rem;font-weight:700">Jurnal</span>
+        </a>
+
+        
+        <a href="http://localhost:8888/laporan" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.6rem 0;gap:.2rem;text-decoration:none;color:#9ca3af">
+            <svg width="22" height="22" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            <span style="font-size:.65rem;font-weight:500">Laporan</span>
+        </a>
+
+        
+        <a href="http://localhost:8888/profil/testuser" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.6rem 0;gap:.2rem;text-decoration:none;color:#9ca3af">
+            <svg width="22" height="22" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            </svg>
+            <span style="font-size:.65rem;font-weight:500">Profil</span>
+        </a>
+    </nav>
+    
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+        }
+    </script>
+
+    <script>
+(function() {
+    const toggleUrl = 'http://localhost:8888/jurnal-scholarship-teenager/toggle';
+    const fotoEndpoint = 'http://localhost:8888/jurnal-scholarship-teenager/foto';
+
+    window['scholarshipTeenagerJurnalPage'] = function(cfg) {
+        window['scholarshipTeenagerJurnalPage_cfg'] = cfg;
+        return {
+            date: cfg.date,
+            today: cfg.today,
+            csrf: cfg.csrf,
+            formOpen: cfg.formOpen,
+            readOnly: cfg.readOnly || false,
+            state: cfg.state,
+            msg: '',
+            showMsg(m) {
+                this.msg = m;
+                clearTimeout(this._t);
+                this._t = setTimeout(() => this.msg = '', 2200);
+            },
+            async toggle(type, itemId, checked) {
+                const prev = this._snap(type, itemId);
+                this._apply(type, itemId, checked);
+                try {
+                    const res = await fetch(toggleUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrf, 'Accept': 'application/json' },
+                        body: JSON.stringify({ type, item_id: itemId, date: this.date, checked }),
+                    });
+                    const json = await res.json();
+                    if (!res.ok) throw new Error(json.message || 'Gagal menyimpan');
+                    this.showMsg('Tersimpan');
+                } catch (e) {
+                    this._apply(type, itemId, prev);
+                    this.showMsg(e.message || 'Gagal menyimpan, coba lagi.');
+                }
+            },
+            toggleBoolean(itemId, val) {
+                this.toggle('life', itemId, val === true);
+            },
+            async saveStudy(itemId, jamMulai, jamSelesai, tipe) {
+                try {
+                    const res = await fetch(toggleUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrf, 'Accept': 'application/json' },
+                        body: JSON.stringify({ type: 'study', item_id: itemId, date: this.date, jam_mulai: jamMulai || null, jam_selesai: jamSelesai || null, tipe }),
+                    });
+                    const json = await res.json();
+                    if (!res.ok) throw new Error(json.message || 'Gagal menyimpan');
+                    this.state.study[itemId] = { jam_mulai: jamMulai, jam_selesai: jamSelesai, tipe };
+                    this.showMsg('Tersimpan');
+                } catch (e) {
+                    this.showMsg(e.message || 'Gagal menyimpan, coba lagi.');
+                }
+            },
+            _snap(type, itemId) {
+                if (type === 'life') return this.state.life.includes(itemId);
+                return this.state[type];
+            },
+            _apply(type, itemId, checked) {
+                if (type === 'life') {
+                    const has = this.state.life.includes(itemId);
+                    if (checked && !has) this.state.life.push(itemId);
+                    if (!checked && has) this.state.life = this.state.life.filter(x => x !== itemId);
+                } else {
+                    this.state[type] = checked;
+                }
+            },
+        };
+    };
+    window['scholarshipTeenagerJurnalHafalAyat'] = function(cfg) {
+        function parse(ref) {
+            if (!ref) return { kitab: '', pasal: '', ayat: '' };
+            const m = ref.match(/^(.+?)\s+(\d+):(\d+)$/);
+            if (m) return { kitab: m[1], pasal: m[2], ayat: m[3] };
+            return { kitab: ref, pasal: '', ayat: '' };
+        }
+        const parsed = parse(cfg ? cfg.verseRef : null);
+        return {
+            kitab: parsed.kitab,
+            pasal: parsed.pasal,
+            ayat:  parsed.ayat,
+            saved: cfg && cfg.verseRef ? cfg.verseRef : '',
+            async save() {
+                if (!this.kitab || !this.pasal || !this.ayat) return;
+                const ref = `${this.kitab} ${this.pasal}:${this.ayat}`;
+                await this._post(ref);
+            },
+            async clear() {
+                this.kitab = ''; this.pasal = ''; this.ayat = '';
+                await this._post(null);
+            },
+            async _post(verseRef) {
+                if (!cfg) return;
+                try {
+                    const res = await fetch(cfg.toggleUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': cfg.csrf, 'Accept': 'application/json' },
+                        body: JSON.stringify({ type: 'verse', date: cfg.date, verse_ref: verseRef }),
+                    });
+                    if (!res.ok) throw new Error();
+                    this.saved = verseRef || '';
+                } catch {
+                    // silent fail
+                }
+            },
+        };
+    };
+
+
+    window['scholarshipTeenagerJurnalFoto'] = function({ date, csrf, existing, readOnly }) {
+        return {
+            readOnly: readOnly || false,
+            current: existing,
+            preview: null,
+            file: null,
+            uploading: false,
+            error: '',
+            onFile(e) {
+                const f = e.target.files[0];
+                if (!f) return;
+                const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                if (!allowed.includes(f.type)) {
+                    this.error = 'Format tidak didukung. Gunakan JPG, PNG, atau WebP.';
+                    return;
+                }
+                if (f.size > 4 * 1024 * 1024) {
+                    this.error = 'Ukuran file melebihi 4 MB.';
+                    return;
+                }
+                this.error = '';
+                this.file = f;
+                const reader = new FileReader();
+                reader.onload = (ev) => { this.preview = ev.target.result; };
+                reader.readAsDataURL(f);
+            },
+            cancelPreview() {
+                this.preview = null;
+                this.file = null;
+                this.error = '';
+            },
+            async upload() {
+                if (!this.file || this.uploading) return;
+                this.uploading = true;
+                this.error = '';
+                try {
+                    const form = new FormData();
+                    form.append('foto', this.file);
+                    form.append('date', date);
+                    form.append('_token', csrf);
+                    const res = await fetch(fotoEndpoint, { method: 'POST', body: form });
+                    const json = await res.json();
+                    if (!res.ok || !json.ok) throw new Error(json.message || 'Gagal upload');
+                    this.current = json.url;
+                    this.preview = null;
+                    this.file = null;
+                } catch (e) {
+                    this.error = e.message || 'Gagal upload, coba lagi.';
+                } finally {
+                    this.uploading = false;
+                }
+            },
+            async remove() {
+                if (!confirm('Hapus foto ini?')) return;
+                try {
+                    const res = await fetch(fotoEndpoint, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                        body: JSON.stringify({ date }),
+                    });
+                    if (!res.ok) throw new Error();
+                    this.current = null;
+                } catch {
+                    alert('Gagal menghapus foto.');
+                }
+            },
+        };
+    };
+})();
+</script>
+
+
+</body></html>

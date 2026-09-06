@@ -45,6 +45,11 @@
         <i class="fas fa-user-edit" style="color:#1971c2"></i>
         <span>Tambah Pengguna</span>
     </a>
+    <a href="{{ route('admin.leaderboard') }}" class="sc-card">
+        <i class="fas fa-trophy" style="color:#f59f00"></i>
+        <span>Leaderboard</span>
+        <small>Peringkat siswa</small>
+    </a>
 </div>
 
 {{-- Jurnal --}}
@@ -59,6 +64,21 @@
         <i class="fas fa-chart-bar" style="color:#2f9e44"></i>
         <span>Laporan Jurnal</span>
         <small>Siswa</small>
+    </a>
+    <a href="{{ route('admin.jurnal.scan.create') }}" class="sc-card">
+        <i class="fas fa-camera" style="color:#1971c2"></i>
+        <span>Scan Foto Jurnal</span>
+        <small>Input otomatis via AI</small>
+    </a>
+    <a href="{{ route('admin.jurnal.bulk.create') }}" class="sc-card">
+        <i class="fas fa-edit" style="color:#2f9e44"></i>
+        <span>Input Massal</span>
+        <small>Jurnal siswa</small>
+    </a>
+    <a href="{{ route('admin.jurnal.offline-templates.index') }}" class="sc-card">
+        <i class="fas fa-file-pdf" style="color:#c92a2a"></i>
+        <span>Template Offline</span>
+        <small>Jurnal cetak per cabang</small>
     </a>
     <a href="{{ route('admin.jurnal-college.index') }}" class="sc-card">
         <i class="fas fa-university" style="color:#2f9e44"></i>

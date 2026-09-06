@@ -41,11 +41,7 @@
                     <i class="fas fa-bars"></i>
                 </a>
             </li>
-            <li class="nav-item d-none d-sm-inline-block">
-                <a href="{{ route('home') }}" class="nav-link text-muted" style="font-size:13px">
-                    <i class="fas fa-home mr-1"></i> Beranda
-                </a>
-            </li>
+
             @if(auth()->check() && auth()->user()->hasRole('mentor'))
             <li class="nav-item d-none d-sm-inline-block">
                 <a href="{{ route('presensi.index') }}" class="nav-link text-muted" style="font-size:13px">
@@ -80,6 +76,22 @@
             </li>
         </ul>
     </nav>
+
+    {{-- ── Impersonation Banner ── --}}
+    @if(session()->has('impersonator_id'))
+    <div style="background:#d97706;color:#fff;padding:.45rem 1rem;font-size:.8rem;display:flex;align-items:center;gap:.75rem;justify-content:space-between;z-index:1040;position:sticky;top:57px">
+        <span>
+            <i class="fas fa-user-secret mr-1"></i>
+            Anda sedang <strong>masuk sebagai {{ auth()->user()->name }}</strong>. Semua perubahan akan berpengaruh pada akun ini.
+        </span>
+        <form method="POST" action="{{ route('admin.stop-impersonating') }}" class="m-0">
+            @csrf
+            <button type="submit" class="btn btn-sm" style="background:#fff;color:#d97706;font-weight:600;padding:.2rem .75rem;line-height:1.5">
+                <i class="fas fa-sign-out-alt mr-1"></i> Kembali ke Admin
+            </button>
+        </form>
+    </div>
+    @endif
 
     {{-- Sidebar --}}
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -128,6 +140,11 @@
                             <i class="nav-icon fas fa-clipboard-check"></i><p>Presensi</p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.leaderboard') }}" class="nav-link {{ request()->routeIs('admin.leaderboard') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-trophy"></i><p>Leaderboard</p>
+                        </a>
+                    </li>
                     @endif
 
                     {{-- ── JURNAL ── --}}
@@ -172,6 +189,26 @@
                             <li class="nav-item"><a href="{{ route('admin.jurnal-scholarship-teenager.items.index') }}" class="nav-link {{ request()->routeIs('admin.jurnal-scholarship-teenager.items.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Item Jurnal</p></a></li>
                         </ul>
                     </li>
+                    <li class="nav-item has-treeview {{ request()->routeIs('admin.jurnal-prajurit.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('admin.jurnal-prajurit.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-shield-alt"></i>
+                            <p>Jurnal Prajurit<i class="right fas fa-angle-left"></i></p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ route('admin.jurnal-prajurit.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.jurnal-prajurit.index') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i><p>Progress</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.jurnal-prajurit.laporan') }}"
+                                   class="nav-link {{ request()->routeIs('admin.jurnal-prajurit.laporan') || request()->routeIs('admin.jurnal-prajurit.show') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i><p>Laporan</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                     <li class="nav-item has-treeview {{ request()->routeIs('admin.mentor-presensi.*') || request()->routeIs('admin.kelas-master.*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->routeIs('admin.mentor-presensi.*') || request()->routeIs('admin.kelas-master.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-clock"></i>
@@ -193,16 +230,7 @@
                             <i class="nav-icon fas fa-bullhorn"></i><p>Pengumuman</p>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a href="{{ route('admin.cabangs') }}" class="nav-link {{ request()->routeIs('admin.cabangs*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-map-marker-alt"></i><p>Cabang</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('admin.blogs') }}" class="nav-link {{ request()->routeIs('admin.blogs*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-newspaper"></i><p>Blog</p>
-                        </a>
-                    </li>
+
                     <li class="nav-item">
                         <a href="{{ route('admin.nametags') }}" class="nav-link {{ request()->routeIs('admin.nametags*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-id-card"></i><p>Name Tag</p>

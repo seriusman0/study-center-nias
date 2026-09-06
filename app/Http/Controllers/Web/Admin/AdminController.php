@@ -91,14 +91,19 @@ class AdminController extends Controller
             $query->whereHas('roles', fn($q) => $q->where('name', $request->role));
         }
 
+        if ($request->filled('cabang') && $isAdmin) {
+            $query->where('cabang_id', $request->cabang);
+        }
+
         if ($request->filled('q')) {
             $term = '%' . $request->q . '%';
             $query->where(fn($w) => $w->where('name', 'like', $term)->orWhere('email', 'like', $term)->orWhere('username', 'like', $term));
         }
 
-        $users = $query->latest()->paginate(20)->withQueryString();
-        $roles = Role::orderBy('name')->get();
-        return view('admin.users', compact('users', 'roles'));
+        $users   = $query->latest()->paginate(20)->withQueryString();
+        $roles   = Role::orderBy('name')->get();
+        $cabangs = Cabang::orderBy('nama')->get();
+        return view('admin.users', compact('users', 'roles', 'cabangs'));
     }
 
     public function createUser()
@@ -227,6 +232,52 @@ class AdminController extends Controller
         $user->delete();
         return back()->with('success', 'Pengguna dihapus.');
     }
+
+    /**
+     * Impersonate (masuk sebagai) pengguna lain — hanya untuk admin.
+     * ID admin asli disimpan di session agar bisa kembali.
+     */
+    public function impersonateUser(User $user)
+    {
+        // Jangan impersonate diri sendiri
+        if (auth()->id() === $user->id) {
+            return back()->with('error', 'Tidak bisa masuk sebagai diri sendiri.');
+        }
+
+        // Simpan ID admin asli di session (hanya jika belum dalam mode impersonate)
+        if (! session()->has('impersonator_id')) {
+            session()->put('impersonator_id', auth()->id());
+        }
+
+        auth()->login($user);
+
+        // Redirect langsung sesuai role user (hindari loop melalui HomeController)
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard')
+                ->with('info', 'Anda sedang masuk sebagai ' . $user->name . '.');
+        }
+
+        return redirect()->route('beranda')
+            ->with('info', 'Anda sedang masuk sebagai ' . $user->name . '.');
+    }
+
+    /**
+     * Hentikan impersonasi dan kembali ke akun admin asli.
+     */
+    public function stopImpersonating()
+    {
+        $adminId = session()->pull('impersonator_id');
+
+        if (! $adminId) {
+            return redirect('/');
+        }
+
+        $admin = User::findOrFail($adminId);
+        auth()->login($admin);
+
+        return redirect()->route('admin.users')->with('success', 'Anda telah kembali ke akun admin.');
+    }
+
 
     private function validateUser(Request $request, ?User $user = null): array
     {

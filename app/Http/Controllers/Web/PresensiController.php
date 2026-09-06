@@ -54,7 +54,8 @@ class PresensiController extends Controller
         $mentors = $this->mentorList();
         $cabangs = Cabang::orderBy('nama')->get();
 
-        return view('presensi.index', compact('presensi', 'mentors', 'cabangs'));
+        $view = $user->hasRole('mentor') ? 'mentor.presensi-siswa.index' : 'presensi.index';
+        return view($view, compact('presensi', 'mentors', 'cabangs'));
     }
 
     public function report(Request $request)
@@ -120,7 +121,8 @@ class PresensiController extends Controller
         $mentors = $this->mentorList();
         $cabangs = Cabang::orderBy('nama')->get();
 
-        return view('presensi.report', compact('rows', 'summary', 'mentors', 'cabangs'));
+        $view = $user->hasRole('mentor') ? 'mentor.presensi-siswa.report' : 'presensi.report';
+        return view($view, compact('rows', 'summary', 'mentors', 'cabangs'));
     }
 
     public function create(Request $request)
@@ -144,7 +146,8 @@ class PresensiController extends Controller
             'label'     => $k->cabang ? "{$k->nama} — {$k->cabang->nama}" : $k->nama,
         ]);
 
-        return view('presensi.form', [
+        $view = $request->user()->hasRole('mentor') ? 'mentor.presensi-siswa.form' : 'presensi.form';
+        return view($view, [
             'mentors'          => $mentors,
             'cabangs'          => $cabangs,
             'defaultMentorId'  => $defaultMentorId,
@@ -184,7 +187,8 @@ class PresensiController extends Controller
 
         $presensi->load(['mentor', 'cabang', 'creator', 'students.studentProfile', 'students.cabang']);
 
-        return view('presensi.show', compact('presensi'));
+        $view = $request->user()->hasRole('mentor') ? 'mentor.presensi-siswa.show' : 'presensi.show';
+        return view($view, compact('presensi'));
     }
 
     public function edit(Presensi $presensi, Request $request)
@@ -225,7 +229,8 @@ class PresensiController extends Controller
             'label'     => $k->cabang ? "{$k->nama} — {$k->cabang->nama}" : $k->nama,
         ]);
 
-        return view('presensi.form', [
+        $view = $request->user()->hasRole('mentor') ? 'mentor.presensi-siswa.form' : 'presensi.form';
+        return view($view, [
             'mentors'           => $mentors,
             'cabangs'           => $cabangs,
             'defaultMentorId'   => $presensi->mentor_id,

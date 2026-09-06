@@ -13,4 +13,6 @@ class ScholarshipTeenagerJurnalController extends Controller
     protected string $routePrefix = 'scholarship-teenager-jurnal';
     protected string $viewName    = 'scholarship-teenager.jurnal';
     protected array  $kategori    = ['pembacaan', 'sidang', 'rohani'];
+    protected bool   $showVerse   = false;
+    protected array  $hiddenItemLabels = ['Baca Buku Rohani (1 Bab / 1 Judul per Minggu)'];
 }

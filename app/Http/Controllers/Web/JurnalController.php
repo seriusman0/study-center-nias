@@ -101,6 +101,7 @@ class JurnalController extends Controller
             'bibleItem'      => $bibleItem,
             'weekKey'        => $weekKey,
             'verseRef'       => $verseRef,
+            'verseChecked'   => $entry?->verse_checked ?? false,
             'entry'          => $entry,
             'lifeItems'      => $lifeItems,
             'checkedItemIds' => $lifeChecks,
@@ -113,7 +114,7 @@ class JurnalController extends Controller
         $user = $request->user();
 
         $data = $request->validate([
-            'type'      => 'required|in:pl,pb,verse,life',
+            'type'      => 'required|in:pl,pb,verse,verse_check,life',
             'date'      => 'nullable|date',
             'item_id'   => 'nullable|integer',
             'checked'   => 'nullable|boolean',
@@ -170,6 +171,9 @@ class JurnalController extends Controller
                             ->where('verse_week_key', $key)
                             ->update(['verse_week_key' => null, 'verse_ref' => null]);
                     }
+                    break;
+                case 'verse_check':
+                    $entry->update(['verse_checked' => (bool) $data['checked']]);
                     break;
                 case 'life':
                     $itemId  = (int) ($data['item_id'] ?? 0);

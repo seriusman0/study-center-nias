@@ -12,11 +12,18 @@ class CheckRole
     {
         $user = $request->user();
 
-        if (! $user || ! $user->hasRole($roles)) {
+        if (! $user) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
+            return redirect()->route('login');
+        }
+
+        if (! $user->hasRole($roles)) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Forbidden.'], 403);
             }
-            abort(403);
+            return redirect('/')->with('error', 'Akses ditolak.');
         }
 
         return $next($request);

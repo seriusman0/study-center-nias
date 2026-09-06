@@ -3,7 +3,6 @@
 use App\Http\Controllers\Admin\CabangController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\GuestAuthController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CommentController;
@@ -18,9 +17,6 @@ Route::get('/sync/export', [SyncProviderController::class, 'export']);
 // Auth
 Route::post('/auth/register', [GuestAuthController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/auth/login', [GuestAuthController::class, 'login'])->middleware('throttle:10,1');
-Route::get('/auth/google', [GoogleController::class, 'redirect']);
-Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
-Route::post('/auth/google', [GoogleController::class, 'mobileLogin'])->middleware('throttle:10,1');
 
 // Public
 Route::get('/blogs', [BlogController::class, 'index']);

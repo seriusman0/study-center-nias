@@ -444,7 +444,7 @@ function generateUpdateLink() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Memproses...';
     if (errEl) errEl.classList.add('d-none');
 
-    fetch('{{ route('admin.pendaftaran.generate-update-link', $user) }}', {
+    fetch('{{ route('admin.pendaftaran.generate-update-link', $user, false) }}', {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,

@@ -2,7 +2,8 @@
 @section('page-title', 'Laporan: ' . $student->name)
 
 @section('content')
-<a href="{{ route('admin.jurnal.reports.index') }}" class="btn btn-sm btn-link mb-2"><i class="fas fa-arrow-left"></i> Kembali</a>
+@php $isMentor = auth()->user()->hasRole('mentor'); @endphp
+<a href="{{ $isMentor ? route('mentor.jurnal.index') : route('admin.jurnal.reports.index') }}" class="btn btn-sm btn-link mb-2"><i class="fas fa-arrow-left"></i> Kembali</a>
 
 <div class="card mb-3">
     <div class="card-body d-flex flex-wrap align-items-center">
@@ -25,8 +26,12 @@
             <label class="mr-2 mb-0 small">Sampai</label>
             <input type="date" name="to" value="{{ $to->toDateString() }}" class="form-control form-control-sm mr-2">
             <button class="btn btn-sm btn-outline-primary mr-2">Tampilkan</button>
-            <a href="{{ route('admin.jurnal.reports.export', ['student' => $student->id, 'from' => $from->toDateString(), 'to' => $to->toDateString()]) }}"
+            <a href="{{ $isMentor ? route('mentor.jurnal.export', ['student' => $student->id, 'from' => $from->toDateString(), 'to' => $to->toDateString()]) : route('admin.jurnal.reports.export', ['student' => $student->id, 'from' => $from->toDateString(), 'to' => $to->toDateString()]) }}"
                class="btn btn-sm btn-success"><i class="fas fa-file-csv"></i> Export CSV</a>
+            @if(!$isMentor)
+            <a href="{{ route('admin.jurnal.reports.print', ['student' => $student->id, 'from' => $from->toDateString(), 'to' => $to->toDateString()]) }}"
+               class="btn btn-sm btn-outline-secondary" target="_blank"><i class="fas fa-print"></i> Cetak PDF</a>
+            @endif
         </form>
     </div>
     <div class="card-body p-0" style="overflow-x:auto">

@@ -72,6 +72,8 @@ class GuestAuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        event(new \Illuminate\Auth\Events\Login('sanctum', $user, false));
+
         return response()->json([
             'user' => $user->load('roles', 'cabang'),
             'token' => $token,

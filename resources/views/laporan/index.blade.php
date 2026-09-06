@@ -45,6 +45,35 @@
         </div>
     </div>
 
+    {{-- Leaderboard --}}
+    @if(isset($leaderboards) && count($leaderboards) > 0)
+    <div class="space-y-4">
+        @foreach($leaderboards as $roleLabel => $rankedUsers)
+        <div class="bg-white rounded-2xl border border-sc-line shadow-sc-1 overflow-hidden">
+            <div class="px-5 py-4 border-b border-sc-line">
+                <h2 class="font-semibold text-sc-ink-900 text-sm">Leaderboard {{ $roleLabel }} (7 Hari Terakhir)</h2>
+            </div>
+            <div class="divide-y divide-sc-line">
+                @foreach($rankedUsers as $index => $u)
+                <div class="px-5 py-3 flex items-center justify-between {{ $u->id === $user->id ? 'bg-sc-teal-50/50' : '' }}">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 text-center text-sm font-bold {{ $index < 3 ? 'text-sc-teal-700' : 'text-sc-ink-400' }}">
+                            #{{ $index + 1 }}
+                        </div>
+                        <img src="{{ $u->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($u->name).'&background=007a5c&color=fff' }}" alt="{{ $u->name }}" class="w-8 h-8 rounded-full border border-sc-line object-cover">
+                        <span class="text-sm font-medium {{ $u->id === $user->id ? 'text-sc-teal-700' : 'text-sc-ink-700' }}">{{ $u->name }}</span>
+                    </div>
+                    <div class="text-sm font-bold text-sc-ink-900">
+                        {{ $u->score }} <span class="text-xs font-normal text-sc-ink-500">pts</span>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @endif
+
     <p class="text-xs text-sc-ink-400 text-center pb-2">
         Data jurnal {{ $user->name }} · {{ now()->format('d M Y') }}
     </p>

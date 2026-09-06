@@ -13,4 +13,5 @@ class CollegeJurnalController extends Controller
     protected string $routePrefix = 'college-jurnal';
     protected string $viewName    = 'college.jurnal';
     protected array  $kategori    = ['pembacaan', 'sidang', 'rohani'];
+    protected bool   $showVerse   = false;
 }

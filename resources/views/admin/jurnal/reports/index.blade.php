@@ -17,6 +17,12 @@
     </div>
 </div>
 
+<div class="mb-3 text-right">
+    <a href="{{ route('admin.jurnal.bulk.create') }}" class="btn btn-primary btn-sm">
+        <i class="fas fa-edit mr-1"></i> Input Massal Jurnal
+    </a>
+</div>
+
 <div class="card">
     <div class="card-header">
         <form method="GET" class="form-inline">
@@ -49,7 +55,8 @@
                     <td><small class="text-muted">{{ $s->username }}</small></td>
                     <td>{{ $s->cabang?->nama ?? '—' }}</td>
                     <td class="text-right">
-                        <a href="{{ route('admin.jurnal.reports.show', $s) }}" class="btn btn-sm btn-outline-primary">Lihat Detail</a>
+                        @php $showRoute = auth()->user()->hasRole('mentor') ? route('mentor.jurnal.show', $s) : route('admin.jurnal.reports.show', $s); @endphp
+                        <a href="{{ $showRoute }}" class="btn btn-sm btn-outline-primary">Lihat Detail</a>
                     </td>
                 </tr>
                 @empty

@@ -8,7 +8,7 @@
         body { font-family: sans-serif; line-height: 1.6; max-width: 760px; margin: 0 auto; padding: 24px 20px 60px; color: #1f2937; background: #f8fafc; }
         .card { background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
         .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
-        .brand-badge { width: 56px; height: 56px; border-radius: 14px; background: #007A5C; color: #fff; font-weight: 800; font-size: 22px; display: flex; align-items: center; justify-content: center; }
+        .brand-logo { width: 72px; height: 72px; object-fit: contain; border-radius: 14px; background: #fff; padding: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.10); }
         h1 { color: #0F766E; font-size: 1.5rem; margin: 0 0 4px; }
         .subtitle { color: #64748b; margin: 0; }
         .version-badge { display: inline-block; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 3px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; margin: 16px 0; }
@@ -28,21 +28,21 @@
 <body>
     <div class="card">
         <div class="brand">
-            <div class="brand-badge">SC</div>
+            <img src="/assets/img/logo.png" alt="Study Center Nias" class="brand-logo">
             <div>
                 <h1>Study Center Nias — Aplikasi Android</h1>
                 <p class="subtitle">Aplikasi resmi untuk anggota Study Center Nias</p>
             </div>
         </div>
 
-        <span class="version-badge">Versi 2.0.0</span>
+        <span class="version-badge">Versi 3.3.0</span>
 
         <div>
             <a class="download-btn" href="/download/apk" download>
-                ⬇ Download APK (58 MB)
+                ⬇ Download APK (59 MB)
             </a>
         </div>
-        <p class="meta">Terakhir diperbarui: 25 Agustus 2026 &middot; Android 7.0 (Nougat) ke atas</p>
+        <p class="meta">Terakhir diperbarui: 5 September 2026 &middot; Android 7.0 (Nougat) ke atas</p>
 
         <div class="note">
             <strong>Belum tersedia di Google Play Store.</strong> Untuk saat ini, instal
@@ -54,7 +54,7 @@
         <h2>Cara Instalasi</h2>
         <ol>
             <li>Ketuk tombol <strong>Download APK</strong> di atas menggunakan browser HP Anda (Chrome, dsb).</li>
-            <li>Setelah unduhan selesai, buka file <code>study-center-nias-v3.1.0.apk</code> dari notifikasi
+            <li>Setelah unduhan selesai, buka file <code>study-center-nias-v3.3.0.apk</code> dari notifikasi
                 unduhan atau folder <em>Downloads</em>.</li>
             <li>Android akan menampilkan peringatan "sumber tidak dikenal" — ini normal untuk aplikasi
                 di luar Play Store. Ketuk <strong>Setelan</strong>, lalu aktifkan

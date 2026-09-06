@@ -294,10 +294,22 @@ class ScholarshipTeenagerJurnalApiController extends Controller
         // verse_checked: centang per-hari
         $verseChecked = (bool) ($entry?->verse_checked);
 
-        $items = JurnalLifeItem::forStudent($user->id)
+        $hiddenLabels = [
+            'Baca Buku Rohani (1 Bab / 1 Judul per Minggu)',
+            'Perjanjian Lama',   // Sudah ditangani oleh Bible section
+            'Perjanjian Baru',   // Sudah ditangani oleh Bible section
+        ];
+
+        $items = JurnalLifeItem::where('is_active', true)
             ->whereIn('kategori', self::KATEGORI)
+            ->whereNotIn('label', $hiddenLabels)
+            ->where(function ($q) use ($user) {
+                $q->whereNull('student_id')
+                  ->orWhere('student_id', $user->id)
+                  ->orWhereHas('assignedStudents', fn($a) => $a->where('users.id', $user->id));
+            })
             ->orderBy('kategori')
-            ->orderBy('label')
+            ->orderBy('id')
             ->get();
 
         $itemIds = $items->pluck('id');
@@ -336,6 +348,7 @@ class ScholarshipTeenagerJurnalApiController extends Controller
             ],
             'verse_ref'     => $verseRef,
             'verse_checked' => $verseChecked,
+            'show_verse'    => false,
             'life_items' => $items->map(fn($it) => [
                 'id'            => $it->id,
                 'kategori'      => $it->kategori,

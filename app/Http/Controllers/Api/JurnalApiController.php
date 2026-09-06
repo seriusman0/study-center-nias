@@ -189,7 +189,14 @@ class JurnalApiController extends Controller
         // verse_checked: centang per-hari (harus dicentang setiap hari, tidak otomatis dari verse_ref)
         $verseChecked = (bool) ($entry?->verse_checked);
 
+        // Determine visibility based on roles
+        $isCollege = $user->hasRole('college');
+        $isScholarshipTeenager = $user->hasRole('scholarship_teenager');
+        $showVerse = !($isCollege || $isScholarshipTeenager);
+        $hiddenLabels = $isScholarshipTeenager ? ['Baca Buku Rohani (1 Bab / 1 Judul per Minggu)'] : [];
+
         $items = JurnalLifeItem::forStudent($user->id)
+            ->when(!empty($hiddenLabels), fn($q) => $q->whereNotIn('label', $hiddenLabels))
             ->orderBy('kategori')->orderBy('label')->get();
         $itemIds = $items->pluck('id');
         $checkedIds = JurnalLifeCheck::forStudent($user->id)
@@ -211,6 +218,7 @@ class JurnalApiController extends Controller
             ],
             'verse_ref' => $verseRef,
             'verse_checked' => $verseChecked,
+            'show_verse' => $showVerse,
             'foto_belajar_url' => $entry?->foto_belajar ? asset('storage/' . $entry->foto_belajar) : null,
             'life_items' => $items->map(fn($it) => [
                 'id'            => $it->id,

@@ -1,7 +1,7 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
 
-const BASE = 'http://dev.seriusman.shop';
+const BASE = 'http://localhost:8888';
 const ADMIN_EMAIL = 'admin@studycenter.com';
 const ADMIN_PASS  = 'password';
 
@@ -10,7 +10,10 @@ async function loginAsAdmin(page) {
     await page.fill('input[name="login"]', ADMIN_EMAIL);
     await page.fill('input[name="password"]', ADMIN_PASS);
     await page.click('button[type="submit"]');
+    const err = await page.locator(".text-red-500, .alert-danger, [role=alert]").textContent().catch(()=>"");
+    if(err) console.log("Login error:", err);
     await page.waitForURL(/\//, { timeout: 10000 });
+    await page.screenshot({ path: "/var/www/study-center-nias/test-results/login-debug.png" });
     await expect(page).not.toHaveURL(/\/login/);
 }
 

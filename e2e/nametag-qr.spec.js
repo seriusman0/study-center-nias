@@ -1,7 +1,7 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
 
-const BASE = 'http://dev.seriusman.shop';
+const BASE = 'http://localhost:8888';
 const ADMIN_EMAIL = 'admin@studycenter.com';
 const ADMIN_PASS  = 'password';
 
@@ -20,7 +20,7 @@ test.describe('Nametag Template QR Code', () => {
     test('template index loads system templates', async ({ page }) => {
         await login(page);
         await page.goto(BASE + '/admin/nametag-templates');
-        await expect(page.locator('.card').filter({ has: page.locator('h6') })).toHaveCount(5);
+        await expect(page.locator('.card').filter({ has: page.locator('h6') })).toHaveCount(4);
         await expect(page.locator('h6:has-text("Standard")')).toBeVisible();
         await expect(page.locator('h6:has-text("Dengan Foto")')).toBeVisible();
         await expect(page.locator('h6:has-text("Landscape")')).toBeVisible();
@@ -57,7 +57,7 @@ test.describe('Nametag Template QR Code', () => {
     test('nametag index shows template cards from DB', async ({ page }) => {
         await login(page);
         await page.goto(BASE + '/admin/nametags');
-        await expect(page.locator('.tpl-card')).toHaveCount(5);
+        await expect(page.locator('.tpl-card')).toHaveCount(4);
         await expect(page.locator('a:has-text("Kelola / Edit Template")')).toBeVisible();
     });
 

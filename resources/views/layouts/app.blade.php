@@ -37,9 +37,25 @@
     </div>
     @endif
 
+    {{-- ── Impersonation Banner ── --}}
+    @if(session()->has('impersonator_id'))
+    <div style="background:#d97706;color:#fff;padding:.5rem 1rem;font-size:.8rem;display:flex;align-items:center;gap:.75rem;justify-content:space-between;position:sticky;top:0;z-index:9999">
+        <span>
+            <i class="fas fa-user-secret" style="margin-right:.3rem"></i>
+            Mode Admin: Anda sedang <strong>masuk sebagai {{ auth()->user()->name }}</strong>.
+        </span>
+        <form method="POST" action="{{ route('admin.stop-impersonating') }}" style="margin:0">
+            @csrf
+            <button type="submit" style="background:#fff;color:#d97706;font-weight:700;border:none;padding:.2rem .8rem;border-radius:.4rem;cursor:pointer;font-size:.8rem">
+                ← Kembali ke Admin
+            </button>
+        </form>
+    </div>
+    @endif
+
     @php
         $isCollegeUser = auth()->check() && auth()->user()->hasRole('college');
-        $hasBottomNav  = auth()->check() && auth()->user()->hasRole(['student','college','scholarship_teenager','mentor']);
+        $hasBottomNav  = auth()->check() && auth()->user()->hasRole(['student','college','scholarship_teenager','prajurit','mentor']);
         $isAdminMentor = auth()->check() && auth()->user()->hasRole(['admin','mentor']);
     @endphp
 
@@ -48,7 +64,7 @@
          style="padding-top: env(safe-area-inset-top)">
         <div class="max-w-3xl mx-auto px-4 flex items-center justify-between h-14">
             {{-- Logo --}}
-            <a href="{{ auth()->check() && auth()->user()->hasRole(['student','college','scholarship_teenager']) ? route('beranda') : route('home') }}"
+            <a href="{{ auth()->check() && auth()->user()->hasRole(['student','college','scholarship_teenager','prajurit']) ? route('beranda') : route('home') }}"
                class="flex items-center gap-2 font-bold text-base">
                 <span class="text-sc-yellow-300">{{ $isCollegeUser ? 'Mahasiswa' : 'SC' }}</span>
                 <span class="text-white/80 text-sm font-normal">Nias</span>
@@ -103,7 +119,7 @@
     @include('partials.announcement-banner')
 
     {{-- Main Content --}}
-    <main class="flex-1" style="{{ $hasBottomNav ? 'padding-bottom: calc(4rem + env(safe-area-inset-bottom))' : '' }}">
+    <main class="flex-1 w-full">
         @yield('content')
     </main>
 
@@ -129,7 +145,7 @@
         $u = auth()->user();
 
         // Beranda
-        $berandaUrl    = $u->hasRole(['student','college','scholarship_teenager']) ? route('beranda') : route('home');
+        $berandaUrl    = $u->hasRole(['student','college','scholarship_teenager','prajurit']) ? route('beranda') : route('home');
         $berandaActive = request()->routeIs('beranda') || request()->routeIs('home');
 
         // Jurnal
@@ -139,6 +155,9 @@
         } elseif ($u->hasRole('scholarship_teenager')) {
             $jurnalUrl    = route('scholarship-teenager-jurnal.index');
             $jurnalActive = request()->routeIs('scholarship-teenager-jurnal.*');
+        } elseif ($u->hasRole('prajurit')) {
+            $jurnalUrl    = route('prajurit-jurnal.index');
+            $jurnalActive = request()->routeIs('prajurit-jurnal.*');
         } elseif ($u->hasRole('student')) {
             $jurnalUrl    = route('jurnal.index');
             $jurnalActive = request()->routeIs('jurnal.*');
@@ -148,7 +167,7 @@
         }
 
         // Laporan
-        if ($u->hasRole(['student','college','scholarship_teenager'])) {
+        if ($u->hasRole(['student','college','scholarship_teenager','prajurit'])) {
             $laporanUrl    = route('laporan');
             $laporanActive = request()->routeIs('laporan');
         } else {
@@ -160,8 +179,8 @@
         $profilUrl    = route('profile.show', $u->username);
         $profilActive = request()->routeIs('profile.*');
     @endphp
-    <nav id="bottom-nav"
-         style="position:fixed;bottom:0;left:0;right:0;z-index:50;background:#fff;border-top:1px solid #e5e7eb;display:flex;padding-bottom:env(safe-area-inset-bottom)">
+    <nav id="bottom-nav" class="mt-auto w-full"
+         style="position:sticky;bottom:0;z-index:50;background:#fff;border-top:1px solid #e5e7eb;display:flex;padding-bottom:env(safe-area-inset-bottom)">
         {{-- Beranda --}}
         <a href="{{ $berandaUrl }}" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.6rem 0;gap:.2rem;text-decoration:none;color:{{ $berandaActive ? '#007a5c' : '#9ca3af' }}">
             <svg width="22" height="22" fill="{{ $berandaActive ? '#007a5c' : 'none' }}" stroke="{{ $berandaActive ? '#007a5c' : '#9ca3af' }}" stroke-width="2" viewBox="0 0 24 24">

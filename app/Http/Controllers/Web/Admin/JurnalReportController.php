@@ -49,7 +49,9 @@ class JurnalReportController extends Controller
         $totalToday = JurnalEntry::whereDate('tanggal', $today)->count();
         $totalWeek  = JurnalEntry::whereBetween('tanggal', [$weekStart, $today])->count();
 
-        return view('admin.jurnal.reports.index', [
+        $view = $request->user()->hasRole('mentor') ? 'mentor.jurnal.index' : 'admin.jurnal.reports.index';
+
+        return view($view, [
             'students'   => $students,
             'cabangs'    => $cabangs,
             'totalToday' => $totalToday,
@@ -72,12 +74,46 @@ class JurnalReportController extends Controller
 
         $matrix = $this->buildMatrix($student, $from, $to);
 
-        return view('admin.jurnal.reports.show', [
+        $view = $request->user()->hasRole('mentor') ? 'mentor.jurnal.show' : 'admin.jurnal.reports.show';
+
+        return view($view, [
             'student' => $student->load('cabang', 'studentProfile'),
             'from'    => $from,
             'to'      => $to,
             'matrix'  => $matrix,
         ]);
+    }
+
+    public function printPdf(Request $request, User $student)
+    {
+        $this->authorizeStudent($request, $student);
+
+        $today = JurnalWeek::today();
+        $from = $request->filled('from')
+            ? Carbon::parse($request->from, JurnalWeek::TZ)->startOfDay()
+            : $today->copy()->subDays(6);
+        $to = $request->filled('to')
+            ? Carbon::parse($request->to, JurnalWeek::TZ)->startOfDay()
+            : $today->copy();
+        if ($to->gt($today)) $to = $today->copy();
+
+        $matrix = $this->buildMatrix($student, $from, $to);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.jurnal.reports.print', [
+            'student' => $student->load('cabang'),
+            'from'    => $from,
+            'to'      => $to,
+            'matrix'  => $matrix,
+        ])->setPaper('a5', 'landscape');
+
+        $filename = sprintf(
+            'jurnal-%s-%s-%s.pdf',
+            preg_replace('/[^a-z0-9_\-]/i', '_', $student->name),
+            $from->toDateString(),
+            $to->toDateString()
+        );
+
+        return $pdf->download($filename);
     }
 
     public function export(Request $request, User $student)

@@ -19,10 +19,14 @@ use Illuminate\Support\Facades\Storage;
  * Shared daily journal actions for College and ScholarshipTeenager controllers.
  *
  * Consuming class must declare:
- *   protected string $role;        // e.g. 'college'
- *   protected string $routePrefix; // e.g. 'college-jurnal'
- *   protected string $viewName;    // e.g. 'college.jurnal'
- *   protected array  $kategori;    // e.g. ['pembacaan', 'sidang', 'rohani']
+ *   protected string $role;              // e.g. 'college'
+ *   protected string $routePrefix;       // e.g. 'college-jurnal'
+ *   protected string $viewName;          // e.g. 'college.jurnal'
+ *   protected array  $kategori;          // e.g. ['pembacaan', 'sidang', 'rohani']
+ *
+ * Optional overrides:
+ *   protected bool   $showVerse;         // show Hafal Ayat section (default true)
+ *   protected array  $hiddenItemLabels;  // item labels to hide from the UI
  */
 trait HasJurnalDailyActions
 {
@@ -42,12 +46,27 @@ trait HasJurnalDailyActions
         $formOpen = !$isToday || $config->isFormOpen();
         $dayNo    = $config->dayNoFor($date);
 
+        $weekKey    = JurnalWeek::weekKeyFor($date);
+        $verseEntry = JurnalEntry::forStudent($user->id)
+            ->where('verse_week_key', $weekKey)
+            ->whereNotNull('verse_ref')
+            ->first();
+        $verseRef   = $verseEntry?->verse_ref;
+
         $entry = JurnalEntry::forStudent($user->id)
             ->whereDate('tanggal', $date->toDateString())
             ->first();
 
-        $lifeItems = JurnalLifeItem::forStudent($user->id)
+        $hiddenLabels = property_exists($this, 'hiddenItemLabels') ? $this->hiddenItemLabels : [];
+
+        $lifeItems = JurnalLifeItem::where('is_active', true)
             ->whereIn('kategori', $this->kategori)
+            ->where(function ($q) use ($user) {
+                $q->whereNull('student_id')
+                  ->orWhere('student_id', $user->id)
+                  ->orWhereHas('assignedStudents', fn($a) => $a->where('users.id', $user->id));
+            })
+            ->when(!empty($hiddenLabels), fn($q) => $q->whereNotIn('label', $hiddenLabels))
             ->orderBy('kategori')->orderBy('id')
             ->get()->groupBy('kategori');
 
@@ -72,6 +91,9 @@ trait HasJurnalDailyActions
             'config'         => $config,
             'dayNo'          => $dayNo,
             'bibleItem'      => CollegeBibleItem::forDayNo($dayNo),
+            'weekKey'        => $weekKey,
+            'verseRef'       => $verseRef,
+            'verseChecked'   => $entry?->verse_checked ?? false,
             'entry'          => $entry,
             'lifeItems'      => $lifeItems,
             'checkedItemIds' => $checkedItemIds,
@@ -80,6 +102,7 @@ trait HasJurnalDailyActions
             'streak'         => $streak,
             'fotoUrl'        => $entry?->foto_belajar ? asset('storage/' . $entry->foto_belajar) : null,
             'routePrefix'    => $this->routePrefix,
+            'showVerse'      => property_exists($this, 'showVerse') ? $this->showVerse : true,
         ]);
     }
 
@@ -102,12 +125,22 @@ trait HasJurnalDailyActions
         $isToday   = $date->isSameDay($today);
         $dayNo     = $config->dayNoFor($date);
 
+        $weekKey    = JurnalWeek::weekKeyFor($date);
+        $verseEntry = JurnalEntry::forStudent($targetUser->id)
+            ->where('verse_week_key', $weekKey)
+            ->whereNotNull('verse_ref')
+            ->first();
+        $verseRef   = $verseEntry?->verse_ref;
+
         $entry = JurnalEntry::forStudent($targetUser->id)
             ->whereDate('tanggal', $date->toDateString())
             ->first();
 
+        $hiddenLabels = property_exists($this, 'hiddenItemLabels') ? $this->hiddenItemLabels : [];
+
         $lifeItems = JurnalLifeItem::forStudent($targetUser->id)
             ->whereIn('kategori', $this->kategori)
+            ->when(!empty($hiddenLabels), fn($q) => $q->whereNotIn('label', $hiddenLabels))
             ->orderBy('kategori')->orderBy('id')
             ->get()->groupBy('kategori');
 
@@ -130,6 +163,9 @@ trait HasJurnalDailyActions
             'config'         => $config,
             'dayNo'          => $dayNo,
             'bibleItem'      => CollegeBibleItem::forDayNo($dayNo),
+            'weekKey'        => $weekKey,
+            'verseRef'       => $verseRef,
+            'verseChecked'   => $entry?->verse_checked ?? false,
             'entry'          => $entry,
             'lifeItems'      => $lifeItems,
             'checkedItemIds' => $checkedItemIds,
@@ -140,6 +176,7 @@ trait HasJurnalDailyActions
             'readOnly'       => true,
             'readOnlyUser'   => $targetUser,
             'routePrefix'    => $this->routePrefix,
+            'showVerse'      => property_exists($this, 'showVerse') ? $this->showVerse : true,
         ]);
     }
 
@@ -149,13 +186,14 @@ trait HasJurnalDailyActions
         $config = CollegeConfig::current();
 
         $data = $request->validate([
-            'type'        => 'required|in:pl,pb,life,study',
+            'type'        => 'required|in:pl,pb,verse,verse_check,life,study',
             'date'        => 'nullable|date',
             'item_id'     => 'nullable|integer',
             'checked'     => 'nullable|boolean',
             'jam_mulai'   => 'nullable|date_format:H:i',
             'jam_selesai' => 'nullable|date_format:H:i',
             'tipe'        => 'nullable|in:mandiri,kelompok',
+            'verse_ref'   => 'nullable|string|max:100',
         ]);
 
         $date  = isset($data['date'])
@@ -188,13 +226,43 @@ trait HasJurnalDailyActions
                 return;
             }
 
+            if ($type === 'verse_check') {
+                $entry = JurnalEntry::firstOrCreate(
+                    ['student_id' => $user->id, 'tanggal' => $date->toDateString()],
+                    ['cabang_id'  => $user->cabang_id]
+                );
+                $entry->update(['verse_checked' => (bool) $data['checked']]);
+                return;
+            }
+
+            if ($type === 'verse') {
+                $entry = JurnalEntry::firstOrCreate(
+                    ['student_id' => $user->id, 'tanggal' => $date->toDateString()],
+                    ['cabang_id'  => $user->cabang_id]
+                );
+                $key = JurnalWeek::weekKeyFor($date);
+                $ref = $data['verse_ref'] ?? null;
+                if ($ref) {
+                    $weekEntry = JurnalEntry::where('student_id', $user->id)->where('verse_week_key', $key)->first();
+                    if ($weekEntry) {
+                        $weekEntry->update(['verse_ref' => $ref]);
+                    } else {
+                        $entry->update(['verse_week_key' => $key, 'verse_ref' => $ref]);
+                    }
+                } else {
+                    JurnalEntry::where('student_id', $user->id)->where('verse_week_key', $key)
+                        ->update(['verse_week_key' => null, 'verse_ref' => null]);
+                }
+                return;
+            }
+
             if ($type === 'life') {
                 $itemId  = (int) ($data['item_id'] ?? 0);
                 abort_if($itemId === 0, 422, 'item_id wajib untuk tipe life.');
                 if ((bool) $data['checked']) {
-                    JurnalLifeCheck::updateOrCreate(
+                    DB::table('jurnal_life_checks')->updateOrInsert(
                         ['student_id' => $user->id, 'life_item_id' => $itemId, 'tanggal' => $date->toDateString()],
-                        ['checked' => true]
+                        ['checked' => true, 'updated_at' => now(), 'created_at' => DB::raw('COALESCE(created_at, NOW())')]
                     );
                 } else {
                     JurnalLifeCheck::where('student_id', $user->id)

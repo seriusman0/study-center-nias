@@ -18,6 +18,7 @@
         "@tiptap/core": "^2.10.4",
         "@tiptap/starter-kit": "^2.10.4",
         "alpinejs": "^3.14.1",
+        "aos": "^2.3.4",
         "chart.js": "^4.4.4"
     }
 }

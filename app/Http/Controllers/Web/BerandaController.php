@@ -8,6 +8,7 @@ use App\Models\CollegeConfig;
 use App\Models\JurnalEntry;
 use App\Models\JurnalLifeCheck;
 use App\Models\JurnalLifeItem;
+use App\Models\MentorPresensi;
 use App\Models\Presensi;
 use App\Models\Role;
 use App\Models\User;
@@ -31,11 +32,33 @@ class BerandaController extends Controller
         $todayEntry = JurnalEntry::where('student_id', $user->id)
             ->where('tanggal', $today)->first();
 
-        $lifeChecksToday = JurnalLifeCheck::where('student_id', $user->id)
-            ->where('tanggal', $today)->where('checked', true)->count();
+        $studentItemsQuery = JurnalLifeItem::where('is_active', true)
+            ->where(function ($query) use ($user) {
+                $query->where('student_id', $user->id)
+                      ->orWhereHas('assignedStudents', fn($a) => $a->where('users.id', $user->id));
+                
+                $templateCats = [];
+                if ($user->hasRole(['college', 'scholarship_teenager'])) {
+                    $templateCats = array_merge($templateCats, ['pembacaan', 'sidang', 'rohani']);
+                }
+                
+                if (!empty($templateCats)) {
+                    $query->orWhere(function ($q2) use ($templateCats) {
+                        $q2->whereNull('student_id')
+                           ->whereIn('kategori', $templateCats);
+                    });
+                }
+            });
 
-        $studentItems   = JurnalLifeItem::forStudent($user->id)->get(['id', 'label']);
+        $studentItems = $studentItemsQuery->get(['id', 'label']);
         $totalLifeItems = $studentItems->count();
+        $itemIds = $studentItems->pluck('id')->all();
+
+        $lifeChecksToday = JurnalLifeCheck::where('student_id', $user->id)
+            ->where('tanggal', $today)
+            ->where('checked', true)
+            ->whereIn('life_item_id', $itemIds)
+            ->count();
 
         // "Baca Alkitab" and "Hafal Ayat" are special — they write to jurnal_entries,
         // not jurnal_life_checks, so count them separately.
@@ -78,6 +101,25 @@ class BerandaController extends Controller
             ->take(20)
             ->pluck('foto');
 
+        // Mentor-specific data
+        $mentorPresensiToday = null;
+        $mentorPresensiCount = 0;
+        $presensiSiswaToday  = null;
+        $presensiSiswaCount  = 0;
+        if ($user->hasRole('mentor')) {
+            $mentorPresensiToday = MentorPresensi::where('mentor_id', $user->id)
+                ->whereDate('tanggal', $today)
+                ->latest()
+                ->first();
+            $mentorPresensiCount = MentorPresensi::where('mentor_id', $user->id)->count();
+            $presensiSiswaToday  = Presensi::where('mentor_id', $user->id)
+                ->whereDate('tanggal', $today)
+                ->with(['kelasMaster:id,nama', 'students:id,name'])
+                ->latest()
+                ->get();
+            $presensiSiswaCount  = Presensi::where('mentor_id', $user->id)->count();
+        }
+
         $collegeUsers = collect();
         if ($user->hasRole('college')) {
             $collegeRoleId = Role::where('name', 'college')->value('id');
@@ -95,6 +137,10 @@ class BerandaController extends Controller
                 ->get(['id', 'name', 'avatar', 'username']);
         }
 
-        return view('beranda', compact('user', 'qrHtml', 'todayEntry', 'lifeChecksToday', 'totalLifeItems', 'blogs', 'photos', 'today', 'bibleItem', 'dayNo', 'collegeUsers'));
+        return view('beranda', compact(
+            'user', 'qrHtml', 'todayEntry', 'lifeChecksToday', 'totalLifeItems',
+            'blogs', 'photos', 'today', 'bibleItem', 'dayNo', 'collegeUsers',
+            'mentorPresensiToday', 'mentorPresensiCount', 'presensiSiswaToday', 'presensiSiswaCount'
+        ));
     }
 }

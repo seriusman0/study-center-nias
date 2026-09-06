@@ -9,6 +9,18 @@
 --}}
 
 @php
+$kitabList = [
+    'Kejadian','Keluaran','Imamat','Bilangan','Ulangan','Yosua','Hakim-hakim','Rut','1 Samuel','2 Samuel',
+    '1 Raja-raja','2 Raja-raja','1 Tawarikh','2 Tawarikh','Ezra','Nehemia','Ester','Ayub','Mazmur','Amsal',
+    'Pengkhotbah','Kidung Agung','Yesaya','Yeremia','Ratapan','Yehezkiel','Daniel','Hosea','Yoel','Amos','Obaja',
+    'Yunus','Mikha','Nahum','Habakuk','Zefanya','Hagai','Zakharia','Maleakhi',
+    'Matius','Markus','Lukas','Yohanes','Kisah Para Rasul','Roma','1 Korintus','2 Korintus','Galatia','Efesus',
+    'Filipi','Kolose','1 Tesalonika','2 Tesalonika','1 Timotius','2 Timotius','Titus','Filemon','Ibrani',
+    'Yakobus','1 Petrus','2 Petrus','1 Yohanes','2 Yohanes','3 Yohanes','Yudas','Wahyu'
+];
+@endphp
+@php
+    $jsFnPrefix = \Illuminate\Support\Str::camel($routePrefix);
     $isReadOnly = isset($readOnly) && $readOnly;
     // Derive JS function prefix from routePrefix for unique Alpine fn names per page
     $jsFnPrefix = \Illuminate\Support\Str::camel($routePrefix);
@@ -21,12 +33,14 @@
         csrf: '{{ csrf_token() }}',
         formOpen: {{ $formOpen ? 'true' : 'false' }},
         readOnly: {{ $isReadOnly ? 'true' : 'false' }},
-        toggleUrl: '{{ url($routePrefix . '/toggle') }}',
-        fotoUrl: '{{ url($routePrefix . '/foto') }}',
+        toggleUrl: '{{ route($routePrefix . '.toggle', [], false) }}',
+        fotoUrl: '{{ route($routePrefix . '.foto.upload', [], false) }}',
+        verseRef: '{{ addslashes($verseRef ?? '') }}',
         state: {
             pl: {{ $entry?->pl_checked ? 'true' : 'false' }},
             pb: {{ $entry?->pb_checked ? 'true' : 'false' }},
-            life: {{ json_encode($checkedItemIds) }},
+            verse_check: {{ $verseChecked ? 'true' : 'false' }},
+            life: {{ json_encode($checkedItemIds) }}.map(Number),
             study: @json($studyState)
         }
      })">
@@ -99,7 +113,8 @@
     {{-- Section 1: Pembacaan Alkitab --}}
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ $isReadOnly ? 'pointer-events-none' : '' }}" :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
-            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">1</span>
+            @php $secNo = 1; @endphp
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">{{ $secNo++ }}</span>
             Pembacaan Alkitab
         </h2>
         @if($bibleItem)
@@ -111,8 +126,8 @@
         <div class="grid sm:grid-cols-2 gap-3 mb-3">
             <label class="flex items-start gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition"
                    :class="state.pl && 'border-sc-teal-400 bg-sc-teal-50'">
-                <input type="checkbox" class="mt-1 w-5 h-5 accent-sc-teal-600" :checked="state.pl"
-                    @change="toggle('pl', null, $event.target.checked)">
+                <input type="checkbox" class="mt-1 w-5 h-5 accent-sc-teal-600" x-model="state.pl"
+                    @change="toggle('pl', null, state.pl)">
                 <div>
                     <div class="font-semibold text-sm text-sc-ink-900">Perjanjian Lama</div>
                     @if($bibleItem)
@@ -122,8 +137,8 @@
             </label>
             <label class="flex items-start gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition"
                    :class="state.pb && 'border-sc-teal-400 bg-sc-teal-50'">
-                <input type="checkbox" class="mt-1 w-5 h-5 accent-sc-teal-600" :checked="state.pb"
-                    @change="toggle('pb', null, $event.target.checked)">
+                <input type="checkbox" class="mt-1 w-5 h-5 accent-sc-teal-600" x-model="state.pb"
+                    @change="toggle('pb', null, state.pb)">
                 <div>
                     <div class="font-semibold text-sm text-sc-ink-900">Perjanjian Baru</div>
                     @if($bibleItem)
@@ -143,19 +158,19 @@
                     <div class="flex gap-2">
                         <button type="button"
                             class="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
-                            :class="state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'"
-                            @click="toggleBoolean({{ $item->id }}, true)">Sudah</button>
+                            :class="hasLife({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'"
+                            @click="toggleLife({{ $item->id }}, true)">Sudah</button>
                         <button type="button"
                             class="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
-                            :class="!state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'"
-                            @click="toggleBoolean({{ $item->id }}, false)">Belum</button>
+                            :class="!hasLife({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'"
+                            @click="toggleLife({{ $item->id }}, false)">Belum</button>
                     </div>
                 </div>
                 @else
                 <label class="flex items-center gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition mb-2">
                     <input type="checkbox" class="w-5 h-5 accent-sc-teal-600"
-                        :checked="state.life.includes({{ $item->id }})"
-                        @change="toggle('life', {{ $item->id }}, $event.target.checked)">
+                        :value="{{ $item->id }}" x-model="state.life"
+                        @change="toggle('life', {{ $item->id }}, hasLife({{ $item->id }}))">
                     <span class="text-sm">{{ $item->label }}</span>
                 </label>
                 @endif
@@ -164,12 +179,69 @@
         @endif
     </div>
 
-    {{-- Section 2: Sidang-Sidang Gereja --}}
+    @if($showVerse ?? true)
+    {{-- Hafal Ayat --}}
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ $isReadOnly ? 'pointer-events-none' : '' }}"
+         :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'"
+         x-data="{{ $jsFnPrefix }}HafalAyat({{ $jsFnPrefix }}Page_cfg)">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">{{ $secNo++ }}</span>
+            Hafal Ayat Mingguan
+        </h2>
+        @if($bibleItem)
+            <p class="text-xs text-sc-ink-500 mb-3 ml-9">
+                Dari porsi hari ini: <span class="font-medium text-sc-teal-700">{{ implode(' / ', array_filter([$bibleItem->pl_text, $bibleItem->pb_text])) }}</span>
+            </p>
+        @else
+            <p class="text-xs text-sc-ink-500 mb-3 ml-9">Pilih satu ayat dari porsi bacaan hari ini.</p>
+        @endif
+        <div class="flex flex-wrap gap-2 items-end ml-9">
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-sc-ink-500 font-medium">Kitab</label>
+                <select x-model="kitab" @change="save()"
+                    class="border border-sc-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+                    <option value="">— Pilih kitab —</option>
+                    @foreach($kitabList as $k)
+                        <option value="{{ $k }}">{{ $k }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-sc-ink-500 font-medium">Pasal</label>
+                <input type="number" x-model="pasal" min="1" max="150" placeholder="1"
+                    @blur="save()"
+                    class="border border-sc-line rounded-lg px-3 py-2 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-sc-ink-500 font-medium">Ayat</label>
+                <input type="number" x-model="ayat" min="1" max="200" placeholder="1"
+                    @blur="save()"
+                    class="border border-sc-line rounded-lg px-3 py-2 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+            </div>
+            @unless($isReadOnly)
+            <button type="button" x-show="kitab || pasal || ayat" @click="clear()"
+                class="px-3 py-2 rounded-lg bg-sc-ink-100 text-sc-ink-500 text-sm hover:bg-sc-ink-200 transition">
+                Hapus
+            </button>
+            @endunless
+        </div>
+        <div class="ml-9">
+            <p x-show="saved" x-transition class="text-xs text-sc-teal-600 mt-2 font-medium" style="display:none">
+                Tersimpan: <span x-text="saved"></span>
+            </p>
+            <label class="flex items-center gap-3 mt-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" x-model="state.verse_check" @change="toggle('verse_check', null, state.verse_check)">
+                <span class="text-sm font-medium">Sudah hafal ayat ini</span>
+            </label>
+        </div>
+    </div>
+    @endif
+    {{-- Section 3: Sidang-Sidang Gereja --}}
     @if(isset($lifeItems['sidang']) && $lifeItems['sidang']->isNotEmpty())
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ $isReadOnly ? 'pointer-events-none' : '' }}"
          :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
-            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">2</span>
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">{{ $secNo++ }}</span>
             Sidang-Sidang Gereja
         </h2>
         <p class="text-xs text-sc-ink-500 mb-3 ml-9">Opsional &mdash; bisa pilih lebih dari satu</p>
@@ -181,19 +253,19 @@
                     <div class="flex gap-2">
                         <button type="button"
                             class="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
-                            :class="state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'"
-                            @click="toggleBoolean({{ $item->id }}, true)">Sudah</button>
+                            :class="hasLife({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'"
+                            @click="toggleLife({{ $item->id }}, true)">Sudah</button>
                         <button type="button"
                             class="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
-                            :class="!state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'"
-                            @click="toggleBoolean({{ $item->id }}, false)">Belum</button>
+                            :class="!hasLife({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'"
+                            @click="toggleLife({{ $item->id }}, false)">Belum</button>
                     </div>
                 </div>
                 @else
                 <label class="flex items-center gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
                     <input type="checkbox" class="w-5 h-5 accent-sc-teal-600"
-                        :checked="state.life.includes({{ $item->id }})"
-                        @change="toggle('life', {{ $item->id }}, $event.target.checked)">
+                        :value="{{ $item->id }}" x-model="state.life"
+                        @change="toggle('life', {{ $item->id }}, hasLife({{ $item->id }}))">
                     <span class="text-sm">{{ $item->label }}</span>
                 </label>
                 @endif
@@ -202,12 +274,12 @@
     </div>
     @endif
 
-    {{-- Section 3: Rohani & Pelayanan --}}
+    {{-- Section 4: Rohani & Pelayanan --}}
     @if(isset($lifeItems['rohani']) && $lifeItems['rohani']->isNotEmpty())
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ $isReadOnly ? 'pointer-events-none' : '' }}"
          :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
-            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">3</span>
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">{{ $secNo++ }}</span>
             Rohani & Pelayanan
         </h2>
         <div class="space-y-2">
@@ -218,12 +290,12 @@
                     <div class="flex gap-2">
                         <button type="button"
                             class="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
-                            :class="state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'"
-                            @click="toggleBoolean({{ $item->id }}, true)">Sudah</button>
+                            :class="hasLife({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'"
+                            @click="toggleLife({{ $item->id }}, true)">Sudah</button>
                         <button type="button"
                             class="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
-                            :class="!state.life.includes({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'"
-                            @click="toggleBoolean({{ $item->id }}, false)">Belum</button>
+                            :class="!hasLife({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'"
+                            @click="toggleLife({{ $item->id }}, false)">Belum</button>
                     </div>
                 </div>
 
@@ -279,8 +351,8 @@
                 @else
                 <label class="flex items-center gap-3 p-3 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
                     <input type="checkbox" class="w-5 h-5 accent-sc-teal-600"
-                        :checked="state.life.includes({{ $item->id }})"
-                        @change="toggle('life', {{ $item->id }}, $event.target.checked)">
+                        :value="{{ $item->id }}" x-model="state.life"
+                        @change="toggle('life', {{ $item->id }}, hasLife({{ $item->id }}))">
                     <span class="text-sm">{{ $item->label }}</span>
                 </label>
                 @endif
@@ -289,11 +361,11 @@
     </div>
     @endif
 
-    {{-- Section 4: Foto Saat Belajar --}}
+    {{-- Section 5: Foto Saat Belajar --}}
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
-         x-data="{{ $jsFnPrefix }}Foto({ date: '{{ $date->toDateString() }}', csrf: '{{ csrf_token() }}', existing: {{ json_encode($fotoUrl) }}, readOnly: {{ $isReadOnly ? 'true' : 'false' }} })">
+         x-data="{{ $jsFnPrefix }}Foto({ date: '{{ $date->toDateString() }}', csrf: '{{ csrf_token() }}', existing: {{ $fotoUrl ? json_encode($fotoUrl) : 'null' }}, readOnly: {{ $isReadOnly ? 'true' : 'false' }} })">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
-            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">4</span>
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">{{ $secNo++ }}</span>
             Foto Saat Belajar
             <span class="text-xs font-normal text-sc-ink-400 ml-1">(opsional)</span>
         </h2>
@@ -336,10 +408,11 @@
 @push('scripts')
 <script>
 (function() {
-    const toggleUrl = '{{ url($routePrefix . '/toggle') }}';
-    const fotoEndpoint = '{{ url($routePrefix . '/foto') }}';
+    const toggleUrl = '{{ route($routePrefix . '.toggle', [], false) }}';
+    const fotoEndpoint = '{{ route($routePrefix . '.foto.upload', [], false) }}';
 
     window['{{ $jsFnPrefix }}Page'] = function(cfg) {
+        window['{{ $jsFnPrefix }}Page_cfg'] = cfg;
         return {
             date: cfg.date,
             today: cfg.today,
@@ -370,7 +443,7 @@
                     this.showMsg(e.message || 'Gagal menyimpan, coba lagi.');
                 }
             },
-            toggleBoolean(itemId, val) {
+            toggleLife(itemId, val) {
                 this.toggle('life', itemId, val === true);
             },
             async saveStudy(itemId, jamMulai, jamSelesai, tipe) {
@@ -388,21 +461,67 @@
                     this.showMsg(e.message || 'Gagal menyimpan, coba lagi.');
                 }
             },
+            hasLife(itemId) {
+                return this.state.life.some(x => Number(x) === Number(itemId));
+            },
+            toggleLife(itemId, val) {
+                if (this.hasLife(itemId) === val) return; // Already in target state
+                this.toggle('life', itemId, val === true);
+            },
             _snap(type, itemId) {
-                if (type === 'life') return this.state.life.includes(itemId);
+                if (type === 'life') return this.hasLife(itemId);
                 return this.state[type];
             },
             _apply(type, itemId, checked) {
                 if (type === 'life') {
-                    const has = this.state.life.includes(itemId);
-                    if (checked && !has) this.state.life.push(itemId);
-                    if (!checked && has) this.state.life = this.state.life.filter(x => x !== itemId);
+                    const has = this.hasLife(itemId);
+                    if (checked && !has) this.state.life = [...this.state.life, itemId];
+                    if (!checked && has) this.state.life = this.state.life.filter(x => Number(x) !== Number(itemId));
                 } else {
                     this.state[type] = checked;
                 }
             },
         };
     };
+    window['{{ $jsFnPrefix }}HafalAyat'] = function(cfg) {
+        function parse(ref) {
+            if (!ref) return { kitab: '', pasal: '', ayat: '' };
+            const m = ref.match(/^(.+?)\s+(\d+):(\d+)$/);
+            if (m) return { kitab: m[1], pasal: m[2], ayat: m[3] };
+            return { kitab: ref, pasal: '', ayat: '' };
+        }
+        const parsed = parse(cfg ? cfg.verseRef : null);
+        return {
+            kitab: parsed.kitab,
+            pasal: parsed.pasal,
+            ayat:  parsed.ayat,
+            saved: cfg && cfg.verseRef ? cfg.verseRef : '',
+            async save() {
+                if (!this.kitab || !this.pasal || !this.ayat) return;
+                const ref = `${this.kitab} ${this.pasal}:${this.ayat}`;
+                await this._post(ref);
+            },
+            async clear() {
+                this.kitab = ''; this.pasal = ''; this.ayat = '';
+                await this._post(null);
+            },
+            async _post(verseRef) {
+                if (!cfg) return;
+                try {
+                    const res = await fetch(cfg.toggleUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': cfg.csrf, 'Accept': 'application/json' },
+                        body: JSON.stringify({ type: 'verse', date: cfg.date, verse_ref: verseRef }),
+                    });
+                    if (!res.ok) throw new Error();
+                    this.saved = verseRef || '';
+                } catch {
+                    // silent fail
+                }
+            },
+        };
+    };
+
 
     window['{{ $jsFnPrefix }}Foto'] = function({ date, csrf, existing, readOnly }) {
         return {

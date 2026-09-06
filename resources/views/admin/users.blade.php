@@ -34,6 +34,14 @@
         </option>
         @endforeach
     </select>
+    <select name="cabang" class="form-control form-control-sm" onchange="this.form.submit()">
+        <option value="">Semua Cabang</option>
+        @foreach($cabangs as $cabang)
+        <option value="{{ $cabang->id }}" {{ request('cabang') == $cabang->id ? 'selected' : '' }}>
+            {{ $cabang->nama }}
+        </option>
+        @endforeach
+    </select>
     @endif
     <button type="submit" class="btn btn-sm btn-outline-secondary">Cari</button>
     @if($isAdmin)
@@ -85,6 +93,14 @@
         @if($isAdmin)
         <div class="uf-actions">
             <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-info">Edit</a>
+            <form method="POST" action="{{ route('admin.users.impersonate', $user->id) }}" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-warning"
+                        onclick="return confirm('Masuk sebagai {{ addslashes($user->name) }}?')"
+                        title="Login sebagai pengguna ini tanpa password">
+                    <i class="fas fa-user-secret"></i> Masuk
+                </button>
+            </form>
             <form method="POST" action="{{ route('admin.users.delete', $user->id) }}"
                   onsubmit="return confirm('Hapus pengguna ini?')">
                 @csrf

@@ -9,8 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('college_bible_items', function (Blueprint $table) {
-            $table->dropUnique('college_bible_items_day_no_unique');
-            $table->unique(['schedule_id', 'day_no']);
+            // Already fixed manually
         });
     }
 

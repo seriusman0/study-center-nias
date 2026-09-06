@@ -1,0 +1,55 @@
+    {{-- Hafal Ayat --}}
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ $isReadOnly ? 'pointer-events-none' : '' }}"
+         :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'"
+         x-data="{{ $jsFnPrefix }}HafalAyat({{ $jsFnPrefix }}Page_cfg)">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">2</span>
+            Hafal Ayat Mingguan
+        </h2>
+        @if($bibleItem)
+            <p class="text-xs text-sc-ink-500 mb-3 ml-9">
+                Dari porsi hari ini: <span class="font-medium text-sc-teal-700">{{ implode(' / ', array_filter([$bibleItem->pl_text, $bibleItem->pb_text])) }}</span>
+            </p>
+        @else
+            <p class="text-xs text-sc-ink-500 mb-3 ml-9">Pilih satu ayat dari porsi bacaan hari ini.</p>
+        @endif
+        <div class="flex flex-wrap gap-2 items-end ml-9">
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-sc-ink-500 font-medium">Kitab</label>
+                <select x-model="kitab" @change="save()"
+                    class="border border-sc-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+                    <option value="">— Pilih kitab —</option>
+                    @foreach($kitabList as $k)
+                        <option value="{{ $k }}">{{ $k }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-sc-ink-500 font-medium">Pasal</label>
+                <input type="number" x-model="pasal" min="1" max="150" placeholder="1"
+                    @blur="save()"
+                    class="border border-sc-line rounded-lg px-3 py-2 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-sc-ink-500 font-medium">Ayat</label>
+                <input type="number" x-model="ayat" min="1" max="200" placeholder="1"
+                    @blur="save()"
+                    class="border border-sc-line rounded-lg px-3 py-2 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
+            </div>
+            @unless($isReadOnly)
+            <button type="button" x-show="kitab || pasal || ayat" @click="clear()"
+                class="px-3 py-2 rounded-lg bg-sc-ink-100 text-sc-ink-500 text-sm hover:bg-sc-ink-200 transition">
+                Hapus
+            </button>
+            @endunless
+        </div>
+        <div class="ml-9">
+            <p x-show="saved" x-transition class="text-xs text-sc-teal-600 mt-2 font-medium" style="display:none">
+                Tersimpan: <span x-text="saved"></span>
+            </p>
+            <label class="flex items-center gap-3 mt-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" x-model="state.verse_check" @change="toggle('verse_check', null, state.verse_check)">
+                <span class="text-sm font-medium">Sudah hafal ayat ini</span>
+            </label>
+        </div>
+    </div>

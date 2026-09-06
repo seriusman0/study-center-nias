@@ -16,7 +16,6 @@ class ProfileWebController extends Controller
     {
         $user = User::where('username', $username)
             ->where('is_active', true)
-            ->where('profile_public', true)
             ->with(['roles', 'cabang', 'socialLinks'])
             ->firstOrFail();
 

@@ -28,11 +28,13 @@ $kitabList = [
         date: '{{ $date->toDateString() }}',
         today: '{{ $today->toDateString() }}',
         csrf: '{{ csrf_token() }}',
+        toggleUrl: '{{ route('jurnal.toggle', [], false) }}',
         weekKey: '{{ $weekKey }}',
         verseRef: {{ $verseRef ? json_encode($verseRef) : 'null' }},
         state: {
             pl: {{ $entry?->pl_checked ? 'true' : 'false' }},
             pb: {{ $entry?->pb_checked ? 'true' : 'false' }},
+            verse_check: {{ $verseChecked ? 'true' : 'false' }},
             life: {{ json_encode($checkedItemIds) }}
         }
      })">
@@ -158,6 +160,10 @@ $kitabList = [
         <p x-show="saved" x-transition class="text-xs text-sc-teal-600 mt-2 font-medium" style="display:none">
             Tersimpan: <span x-text="saved"></span>
         </p>
+        <label class="flex items-center gap-3 mt-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+            <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" x-model="state.verse_check" @change="toggle('verse_check', null, state.verse_check)">
+            <span class="text-sm font-medium">Sudah hafal ayat ini</span>
+        </label>
     </div>
     @endunless
 
@@ -246,6 +252,10 @@ $kitabList = [
                                     <p x-show="saved" x-transition class="text-xs text-sc-teal-600 mt-2 font-medium" style="display:none">
                                         Tersimpan: <span x-text="saved"></span>
                                     </p>
+                                    <label class="flex items-center gap-3 mt-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                                        <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" x-model="state.verse_check" @change="toggle('verse_check', null, state.verse_check)">
+                                        <span class="text-sm font-medium">Sudah hafal ayat ini</span>
+                                    </label>
                                 </div>
                             @else
                                 <label class="flex items-center gap-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
@@ -328,7 +338,7 @@ function jurnalPage(cfg) {
             const prev = this._snap(type, itemId);
             this._apply(type, itemId, checked);
             try {
-                const res = await fetch('/jurnal/toggle', {
+                const res = await fetch(cfg.toggleUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -386,7 +396,7 @@ function hafalAyat(cfg) {
         async _post(verseRef) {
             if (!cfg) return;
             try {
-                const res = await fetch('/jurnal/toggle', {
+                const res = await fetch(cfg.toggleUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': cfg.csrf, 'Accept': 'application/json' },
                     body: JSON.stringify({ type: 'verse', date: cfg.date, verse_ref: verseRef }),

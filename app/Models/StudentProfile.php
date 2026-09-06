@@ -6,6 +6,27 @@ use Illuminate\Database\Eloquent\Model;
 
 class StudentProfile extends Model
 {
+    protected static function booted()
+    {
+        static::created(function ($profile) {
+            $defaultItems = \App\Models\JurnalLifeItem::where('is_default', true)
+                ->where('is_active', true)
+                ->pluck('id');
+
+            if ($defaultItems->isNotEmpty()) {
+                $now = now();
+                $rows = $defaultItems->map(fn($itemId) => [
+                    'student_id'   => $profile->user_id,
+                    'life_item_id' => $itemId,
+                    'created_at'   => $now,
+                    'updated_at'   => $now,
+                ])->toArray();
+                
+                \Illuminate\Support\Facades\DB::table('jurnal_student_life_items')->insert($rows);
+            }
+        });
+    }
+
     protected $fillable = [
         'user_id', 'student_number', 'birth_date', 'birth_place', 'gender',
         'address', 'guardian_name', 'guardian_phone', 'student_phone', 'school_name', 'grade_class', 'entry_year',
