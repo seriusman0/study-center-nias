@@ -205,8 +205,8 @@
     @if(!auth()->user()->hasRole('mentor'))
     {{-- 1. QR Code --}}
     <div style="background:#fff;border-radius:24px;box-shadow:0 1px 4px rgba(0,0,0,.06);border:1px solid #e5e7eb;padding:40px 32px;display:flex;flex-direction:column;align-items:center;text-align:center;">
-        <h2 style="font-size:18px;font-weight:800;color:#111827;margin:0 0 8px;">QR Code Absensi</h2>
-        <p style="font-size:13px;color:#9ca3af;font-weight:500;margin:0 0 28px;">Tunjukkan kode ini ke mentor saat absensi</p>
+        <h2 style="font-size:18px;font-weight:800;color:#111827;margin:0 0 8px;">QR Code Absensi & Jurnal</h2>
+        <p style="font-size:13px;color:#9ca3af;font-weight:500;margin:0 0 28px;">Tunjukkan kode ini ke admin/mentor untuk scan</p>
         <div style="background:#f9fafb;padding:16px;border-radius:20px;border:1px solid #e5e7eb;display:inline-block;margin-bottom:20px;">
             <div style="width:180px;height:180px;">{!! $qrHtml !!}</div>
         </div>
@@ -227,6 +227,14 @@
                style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;background:#007a5c;color:#fff;font-weight:800;font-size:14px;border-radius:9999px;text-decoration:none;box-shadow:0 4px 14px rgba(0,122,92,.3);">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
                 Mulai Isi Jurnal Remaja Beasiswa
+            </a>
+            @endif
+
+            @if(auth()->user()->hasRole('prajurit'))
+            <a href="{{ route('prajurit-jurnal.index') }}"
+               style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;background:#007a5c;color:#fff;font-weight:800;font-size:14px;border-radius:9999px;text-decoration:none;box-shadow:0 4px 14px rgba(0,122,92,.3);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                Mulai Isi Jurnal Prajurit
             </a>
             @endif
 

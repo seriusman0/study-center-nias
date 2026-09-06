@@ -42,6 +42,10 @@ class BerandaController extends Controller
                     $templateCats = array_merge($templateCats, ['pembacaan', 'sidang', 'rohani']);
                 }
                 
+                if ($user->hasRole('prajurit')) {
+                    $templateCats[] = 'prajurit';
+                }
+                
                 if (!empty($templateCats)) {
                     $query->orWhere(function ($q2) use ($templateCats) {
                         $q2->whereNull('student_id')

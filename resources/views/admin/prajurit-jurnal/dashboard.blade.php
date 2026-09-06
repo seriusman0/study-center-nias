@@ -200,7 +200,7 @@ const SCAN_URL  = "{{ route('admin.jurnal-prajurit.scan') }}";
 const SAVE_URL  = "{{ route('admin.jurnal-prajurit.save') }}";
 const CSRF      = "{{ csrf_token() }}";
 
-let scanner     = null;
+let html5QrcodeScanner = null;
 let scanning    = false;
 let currentUser = null;
 let currentItems = [];
@@ -210,17 +210,21 @@ document.getElementById('btnOpenScanner').addEventListener('click', () => {
 });
 
 $('#scannerModal').on('shown.bs.modal', function () {
-    scanner = new Html5Qrcode('qr-reader');
-    scanner.start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        onScanSuccess,
-        () => {}
-    );
+    if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            "qr-reader",
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            false
+        );
+        html5QrcodeScanner.render(onScanSuccess, () => {});
+    }
 });
 
 $('#scannerModal').on('hide.bs.modal', function () {
-    if (scanner) scanner.stop().catch(() => {}).finally(() => { scanner = null; });
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear().catch(e => console.error(e));
+        html5QrcodeScanner = null;
+    }
 });
 
 function onScanSuccess(decodedText) {
