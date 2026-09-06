@@ -207,38 +207,48 @@ let currentItems = [];
 
 document.getElementById('btnOpenScanner').addEventListener('click', () => {
     $('#scannerModal').modal('show');
-});
-
-$('#scannerModal').on('shown.bs.modal', function () {
     document.getElementById('scan-status').innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin mr-1"></i>Meminta akses kamera...</span>';
     
+    // Request permission synchronously inside the click event to avoid NotAllowedError on mobile browsers
     Html5Qrcode.getCameras().then(devices => {
-        if (devices && devices.length) {
-            html5Qrcode = new Html5Qrcode("qr-reader");
-            html5Qrcode.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                onScanSuccess,
-                (errorMessage) => { /* ignore */ }
-            ).then(() => {
-                document.getElementById('scan-status').innerHTML = 'Arahkan QR Code Prajurit ke kamera.';
-            }).catch(err => {
-                document.getElementById('scan-status').innerHTML = '<span class="text-danger">Gagal memulai kamera: ' + err + '</span>';
-            });
-        } else {
-            document.getElementById('scan-status').innerHTML = '<span class="text-danger">Kamera tidak ditemukan pada perangkat ini.</span>';
-        }
+        // Wait briefly for modal transition to complete so dimensions are available
+        setTimeout(() => {
+            if (!$('#scannerModal').hasClass('show')) return; // Check if user closed modal while granting permission
+            
+            if (devices && devices.length) {
+                html5Qrcode = new Html5Qrcode("qr-reader");
+                html5Qrcode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    onScanSuccess,
+                    (errorMessage) => { /* ignore */ }
+                ).then(() => {
+                    document.getElementById('scan-status').innerHTML = 'Arahkan QR Code Prajurit ke kamera.';
+                }).catch(err => {
+                    document.getElementById('scan-status').innerHTML = '<span class="text-danger">Gagal memulai kamera: ' + err + '</span>';
+                });
+            } else {
+                document.getElementById('scan-status').innerHTML = '<span class="text-danger">Kamera tidak ditemukan pada perangkat ini.</span>';
+            }
+        }, 400); 
     }).catch(err => {
-        document.getElementById('scan-status').innerHTML = '<span class="text-danger">Izin kamera ditolak/gagal. Pastikan browser mengizinkan akses kamera. (' + err + ')</span>';
+        document.getElementById('scan-status').innerHTML = '<span class="text-danger">Izin kamera ditolak/gagal. Pastikan browser mengizinkan akses kamera (cek setelan situs). (' + err + ')</span>';
     });
 });
 
 $('#scannerModal').on('hide.bs.modal', function () {
     if (html5Qrcode) {
-        html5Qrcode.stop().then(() => {
-            html5Qrcode.clear();
+        try {
+            html5Qrcode.stop().then(() => {
+                html5Qrcode.clear();
+                html5Qrcode = null;
+            }).catch(e => {
+                html5Qrcode.clear();
+                html5Qrcode = null;
+            });
+        } catch (e) {
             html5Qrcode = null;
-        }).catch(e => console.error(e));
+        }
     }
 });
 
