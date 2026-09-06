@@ -53,9 +53,16 @@ class AuthWebController extends Controller
         $redirect = '/';
         if ($user->hasRole(['admin', 'fulltimer'])) {
             $redirect = route('admin.dashboard');
-        } elseif ($user->hasRole(['student', 'college', 'scholarship_teenager', 'mentor'])) {
+        } elseif ($user->hasRole(['student', 'college', 'scholarship_teenager', 'mentor', 'prajurit'])) {
             $redirect = route('beranda');
         }
+
+        \Log::info('Login redirect debug:', [
+            'username' => $user->username,
+            'roles' => $user->roles->pluck('name')->toArray(),
+            'has_prajurit' => $user->hasRole('prajurit'),
+            'redirect' => $redirect
+        ]);
 
         if ($request->wantsJson()) {
             $token = null;
@@ -97,7 +104,7 @@ class AuthWebController extends Controller
         $redirect = '/';
         if ($user->hasRole(['admin', 'fulltimer'])) {
             $redirect = route('admin.dashboard');
-        } elseif ($user->hasRole(['student', 'college', 'scholarship_teenager', 'mentor'])) {
+        } elseif ($user->hasRole(['student', 'college', 'scholarship_teenager', 'mentor', 'prajurit'])) {
             $redirect = route('beranda');
         }
 

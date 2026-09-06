@@ -192,8 +192,8 @@ Route::middleware(['auth', 'role:admin,fulltimer'])->prefix('admin/announcements
 // Dismiss announcement (any authenticated user)
 Route::middleware('auth')->post('/announcements/{id}/dismiss', [AnnouncementDismissController::class, 'dismiss'])->name('announcements.dismiss');
 
-// Beranda (student + college + scholarship_teenager + mentor)
-Route::middleware(['auth', 'role:student,college,scholarship_teenager,mentor'])->group(function () {
+// Beranda (student + college + scholarship_teenager + mentor + prajurit)
+Route::middleware(['auth', 'role:student,college,scholarship_teenager,mentor,prajurit'])->group(function () {
     Route::get('/beranda', [BerandaController::class, 'index'])->name('beranda');
 });
 

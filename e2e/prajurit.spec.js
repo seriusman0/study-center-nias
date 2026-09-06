@@ -17,11 +17,14 @@ test.describe('Prajurit Role E2E', () => {
         await page.click('button[type="submit"]');
 
         // Wait for redirect
-        await page.waitForURL(/\//, { timeout: 10000 });
-        await expect(page).not.toHaveURL(/\/login/);
+        await page.waitForURL(/.*beranda/, { timeout: 10000 });
+        await expect(page).toHaveURL(/.*beranda/);
         
         await page.screenshot({ path: "test-results/prajurit-login.png" });
         
+        // Ensure CTA button is visible
+        await expect(page.locator('text=Mulai Isi Jurnal Prajurit')).toBeVisible();
+
         // Go to jurnal prajurit
         await page.goto(BASE + '/jurnal-prajurit');
         await page.waitForURL(/.*jurnal-prajurit/);
