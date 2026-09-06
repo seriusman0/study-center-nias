@@ -397,6 +397,7 @@ use App\Http\Controllers\Web\Admin\PrajuritJurnalAdminController;
 Route::middleware(['auth', 'role:prajurit'])->prefix('jurnal-prajurit')->name('prajurit-jurnal.')->group(function () {
     Route::get('/',        [PrajuritJurnalController::class, 'index'])->name('index');
     Route::post('/toggle', [PrajuritJurnalController::class, 'toggle'])->name('toggle');
+    Route::post('/foto',   [PrajuritJurnalController::class, 'uploadFoto'])->name('foto.upload');
 });
 
 Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-prajurit')->name('admin.jurnal-prajurit.')->group(function () {

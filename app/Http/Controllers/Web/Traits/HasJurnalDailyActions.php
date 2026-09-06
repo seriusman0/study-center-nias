@@ -78,6 +78,11 @@ trait HasJurnalDailyActions
             ->where('checked', true)
             ->pluck('life_item_id')->all();
 
+        $checkedValues = JurnalLifeCheck::forStudent($user->id)
+            ->whereDate('tanggal', $date->toDateString())
+            ->whereIn('life_item_id', $itemIds)
+            ->pluck('value', 'life_item_id')->all();
+
         $studyLogs  = $this->loadStudyLogs($user->id, $date, $itemIds);
         $studyState = $this->buildStudyState($studyLogs);
 
@@ -97,6 +102,7 @@ trait HasJurnalDailyActions
             'entry'          => $entry,
             'lifeItems'      => $lifeItems,
             'checkedItemIds' => $checkedItemIds,
+            'checkedValues'  => $checkedValues,
             'studyLogs'      => $studyLogs,
             'studyState'     => $studyState,
             'streak'         => $streak,
@@ -152,6 +158,11 @@ trait HasJurnalDailyActions
             ->where('checked', true)
             ->pluck('life_item_id')->all();
 
+        $checkedValues = JurnalLifeCheck::forStudent($targetUser->id)
+            ->whereDate('tanggal', $date->toDateString())
+            ->whereIn('life_item_id', $itemIds)
+            ->pluck('value', 'life_item_id')->all();
+
         $studyLogs  = $this->loadStudyLogs($targetUser->id, $date, $itemIds);
         $studyState = $this->buildStudyState($studyLogs);
 
@@ -169,6 +180,7 @@ trait HasJurnalDailyActions
             'entry'          => $entry,
             'lifeItems'      => $lifeItems,
             'checkedItemIds' => $checkedItemIds,
+            'checkedValues'  => $checkedValues,
             'studyLogs'      => $studyLogs,
             'studyState'     => $studyState,
             'streak'         => 0,
@@ -190,6 +202,7 @@ trait HasJurnalDailyActions
             'date'        => 'nullable|date',
             'item_id'     => 'nullable|integer',
             'checked'     => 'nullable|boolean',
+            'value'       => 'nullable|integer',
             'jam_mulai'   => 'nullable|date_format:H:i',
             'jam_selesai' => 'nullable|date_format:H:i',
             'tipe'        => 'nullable|in:mandiri,kelompok',
@@ -259,10 +272,19 @@ trait HasJurnalDailyActions
             if ($type === 'life') {
                 $itemId  = (int) ($data['item_id'] ?? 0);
                 abort_if($itemId === 0, 422, 'item_id wajib untuk tipe life.');
-                if ((bool) $data['checked']) {
+                if (isset($data['checked']) && (bool) $data['checked']) {
+                    $updateData = ['checked' => true, 'updated_at' => now(), 'created_at' => DB::raw('COALESCE(created_at, NOW())')];
+                    if (isset($data['value'])) {
+                        $updateData['value'] = $data['value'];
+                    }
                     DB::table('jurnal_life_checks')->updateOrInsert(
                         ['student_id' => $user->id, 'life_item_id' => $itemId, 'tanggal' => $date->toDateString()],
-                        ['checked' => true, 'updated_at' => now(), 'created_at' => DB::raw('COALESCE(created_at, NOW())')]
+                        $updateData
+                    );
+                } else if (isset($data['value'])) {
+                     DB::table('jurnal_life_checks')->updateOrInsert(
+                        ['student_id' => $user->id, 'life_item_id' => $itemId, 'tanggal' => $date->toDateString()],
+                        ['checked' => true, 'value' => $data['value'], 'updated_at' => now(), 'created_at' => DB::raw('COALESCE(created_at, NOW())')]
                     );
                 } else {
                     JurnalLifeCheck::where('student_id', $user->id)

@@ -42,7 +42,8 @@ $kitabList = [
             verse_check: {{ $verseChecked ? 'true' : 'false' }},
             life: {{ json_encode($checkedItemIds) }}.map(Number),
             study: @json($studyState)
-        }
+        },
+        lifeValues: @json($checkedValues ?? new stdClass())
      })">
 
     {{-- Read-only banner --}}
@@ -361,6 +362,47 @@ $kitabList = [
     </div>
     @endif
 
+    {{-- Section Prajurit --}}
+    @if(isset($lifeItems['prajurit']) && $lifeItems['prajurit']->isNotEmpty())
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ $isReadOnly ? 'pointer-events-none' : '' }}"
+         :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">{{ $secNo++ }}</span>
+            Jurnal Prajurit
+        </h2>
+        <div class="space-y-2">
+            @foreach($lifeItems['prajurit'] as $item)
+                @if($item->response_type === 'boolean')
+                <div class="flex items-center justify-between p-3 rounded-lg border border-sc-line">
+                    <span class="text-sm font-medium text-sc-ink-900">{{ $item->label }}</span>
+                    <div class="flex gap-2">
+                        <button type="button"
+                            class="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
+                            :class="hasLife({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-600 hover:bg-sc-teal-100'"
+                            @click="toggleLife({{ $item->id }}, true)">Sudah</button>
+                        <button type="button"
+                            class="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
+                            :class="!hasLife({{ $item->id }}) ? 'bg-sc-teal-600 text-white shadow-sc-focus' : 'bg-sc-ink-100 text-sc-ink-400 hover:bg-sc-teal-100'"
+                            @click="toggleLife({{ $item->id }}, false)">Belum</button>
+                    </div>
+                </div>
+                @elseif($item->response_type === 'number')
+                <div class="flex items-center justify-between p-3 rounded-lg border border-sc-line">
+                    <span class="text-sm font-medium text-sc-ink-900">{{ $item->label }}</span>
+                    <input type="number" 
+                        class="w-24 text-center border-sc-line rounded-lg text-sm py-1.5 focus:ring-sc-teal-500 focus:border-sc-teal-500"
+                        placeholder="0"
+                        :value="lifeValues[{{ $item->id }}] ?? ''"
+                        @change="saveLifeValue({{ $item->id }}, $event.target.value)"
+                    />
+                </div>
+                @endif
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+
     {{-- Section 5: Foto Saat Belajar --}}
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
          x-data="{{ $jsFnPrefix }}Foto({ date: '{{ $date->toDateString() }}', csrf: '{{ csrf_token() }}', existing: {{ $fotoUrl ? json_encode($fotoUrl) : 'null' }}, readOnly: {{ $isReadOnly ? 'true' : 'false' }} })">
@@ -445,6 +487,23 @@ $kitabList = [
             },
             toggleLife(itemId, val) {
                 this.toggle('life', itemId, val === true);
+            },
+            async saveLifeValue(itemId, value) {
+                if (!value) return;
+                this.lifeValues[itemId] = value;
+                try {
+                    const res = await fetch(toggleUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrf, 'Accept': 'application/json' },
+                        body: JSON.stringify({ type: 'life', item_id: itemId, date: this.date, checked: true, value: value }),
+                    });
+                    const json = await res.json();
+                    if (!res.ok) throw new Error(json.message || 'Gagal menyimpan');
+                    if (!this.hasLife(itemId)) this.state.life.push(Number(itemId));
+                    this.showMsg('Tersimpan');
+                } catch (e) {
+                    this.showMsg(e.message || 'Gagal menyimpan, coba lagi.');
+                }
             },
             async saveStudy(itemId, jamMulai, jamSelesai, tipe) {
                 try {
