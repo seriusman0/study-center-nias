@@ -196,8 +196,8 @@
 @push('scripts')
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
-const SCAN_URL  = "{{ route('admin.jurnal-prajurit.scan') }}";
-const SAVE_URL  = "{{ route('admin.jurnal-prajurit.save') }}";
+const SCAN_URL  = "/admin/jurnal-prajurit/scan";
+const SAVE_URL  = "/admin/jurnal-prajurit/save";
 const CSRF      = "{{ csrf_token() }}";
 
 let html5Qrcode = null;
