@@ -140,10 +140,17 @@ trait HasJurnalAdminActions
 
     protected function buildMatrix(User $user, Carbon $from, Carbon $to): array
     {
-        $items = JurnalLifeItem::forStudent($user->id)
-            ->whereIn('kategori', $this->kategori)
-            ->orderBy('kategori')->orderBy('id')
-            ->get();
+        $itemsQuery = JurnalLifeItem::whereIn('kategori', $this->kategori)
+            ->where('is_active', true)
+            ->orderBy('kategori')->orderBy('id');
+
+        if (!property_exists($this, 'role') || $this->role !== 'prajurit') {
+            $itemsQuery->where(function ($w) use ($user) {
+                $w->where('student_id', $user->id)
+                  ->orWhereHas('assignedStudents', fn($a) => $a->where('users.id', $user->id));
+            });
+        }
+        $items = $itemsQuery->get();
 
         $entries = JurnalEntry::forStudent($user->id)
             ->whereBetween('tanggal', [$from->toDateString(), $to->toDateString()])
