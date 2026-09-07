@@ -89,7 +89,7 @@ trait HasJurnalDailyActions
         $streak = $this->calcStreak($user->id, $today);
 
         if (property_exists($this, 'role') && $this->role === 'prajurit') {
-            $prajuritAnchor = \Carbon\Carbon::parse('2026-09-06')->startOfDay();
+            $prajuritAnchor = \Carbon\Carbon::create(2026, 9, 6, 0, 0, 0, 'Asia/Jakarta');
             $diff = $prajuritAnchor->diffInDays($date->copy()->startOfDay(), false);
             $dayNo = (($diff) % 366) + 1;
             if ($dayNo < 1) $dayNo += 366;
@@ -178,7 +178,7 @@ trait HasJurnalDailyActions
         $studyState = $this->buildStudyState($studyLogs);
 
         if (property_exists($this, 'role') && $this->role === 'prajurit') {
-            $prajuritAnchor = \Carbon\Carbon::parse('2026-09-06')->startOfDay();
+            $prajuritAnchor = \Carbon\Carbon::create(2026, 9, 6, 0, 0, 0, 'Asia/Jakarta');
             $diff = $prajuritAnchor->diffInDays($date->copy()->startOfDay(), false);
             $dayNo = (($diff) % 366) + 1;
             if ($dayNo < 1) $dayNo += 366;
@@ -258,6 +258,24 @@ trait HasJurnalDailyActions
                     ['cabang_id'  => $user->cabang_id]
                 );
                 $entry->update([$type . '_checked' => (bool) $data['checked']]);
+                
+                if (property_exists($this, 'role') && $this->role === 'prajurit') {
+                    $mabId = \App\Models\JurnalLifeItem::where('label', 'like', '%Membaca Alkitab Bersama-sama%')->value('id');
+                    if ($mabId) {
+                        if ($entry->pl_checked || $entry->pb_checked) {
+                            DB::table('jurnal_life_checks')->updateOrInsert(
+                                ['student_id' => $user->id, 'life_item_id' => $mabId, 'tanggal' => $date->toDateString()],
+                                ['checked' => true, 'updated_at' => now(), 'created_at' => DB::raw('COALESCE(created_at, NOW())')]
+                            );
+                        } else {
+                            DB::table('jurnal_life_checks')
+                                ->where('student_id', $user->id)
+                                ->where('life_item_id', $mabId)
+                                ->where('tanggal', $date->toDateString())
+                                ->delete();
+                        }
+                    }
+                }
                 return;
             }
 
@@ -294,7 +312,11 @@ trait HasJurnalDailyActions
             if ($type === 'life') {
                 $itemId  = (int) ($data['item_id'] ?? 0);
                 abort_if($itemId === 0, 422, 'item_id wajib untuk tipe life.');
+                
+                $isChecked = false;
+                
                 if (isset($data['checked']) && (bool) $data['checked']) {
+                    $isChecked = true;
                     $updateData = ['checked' => true, 'updated_at' => now(), 'created_at' => DB::raw('COALESCE(created_at, NOW())')];
                     if (isset($data['value'])) {
                         $updateData['value'] = $data['value'];
@@ -304,6 +326,7 @@ trait HasJurnalDailyActions
                         $updateData
                     );
                 } else if (isset($data['value'])) {
+                     $isChecked = true;
                      DB::table('jurnal_life_checks')->updateOrInsert(
                         ['student_id' => $user->id, 'life_item_id' => $itemId, 'tanggal' => $date->toDateString()],
                         ['checked' => true, 'value' => $data['value'], 'updated_at' => now(), 'created_at' => DB::raw('COALESCE(created_at, NOW())')]
@@ -313,6 +336,20 @@ trait HasJurnalDailyActions
                         ->where('life_item_id', $itemId)
                         ->whereDate('tanggal', $date->toDateString())
                         ->delete();
+                }
+
+                if (property_exists($this, 'role') && $this->role === 'prajurit') {
+                    $mabId = \App\Models\JurnalLifeItem::where('label', 'like', '%Membaca Alkitab Bersama-sama%')->value('id');
+                    if ($mabId && $itemId == $mabId) {
+                        $entry = JurnalEntry::firstOrCreate(
+                            ['student_id' => $user->id, 'tanggal' => $date->toDateString()],
+                            ['cabang_id'  => $user->cabang_id]
+                        );
+                        $entry->update([
+                            'pl_checked' => $isChecked,
+                            'pb_checked' => $isChecked
+                        ]);
+                    }
                 }
                 return;
             }

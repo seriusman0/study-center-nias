@@ -18,17 +18,19 @@ class PrajuritJurnalAdminController extends Controller
     use HasJurnalAdminActions;
 
     protected string $role            = 'prajurit';
+    protected array $kategori         = ['prajurit'];
+    protected string $viewDashboard   = 'admin.prajurit-jurnal.dashboard';
+    protected string $viewShow        = 'admin.prajurit-jurnal.show';
     protected string $viewPrefix      = 'admin.prajurit-jurnal';
     protected string $csvPrefix       = 'jurnal-prajurit';
     protected string $userVar         = 'targetUser';
     protected string $profileRelation = 'studentProfile';
-    protected array  $kategori        = ['prajurit'];
 
     public function dashboard(Request $request)
     {
         $config       = CollegeConfig::current();
         
-        $prajuritAnchor = \Carbon\Carbon::parse('2026-09-06')->startOfDay();
+        $prajuritAnchor = \Carbon\Carbon::create(2026, 9, 6, 0, 0, 0, 'Asia/Jakarta');
         $now = JurnalWeek::today()->startOfDay();
         $diff = $prajuritAnchor->diffInDays($now, false);
         $dayNo = (($diff) % 366) + 1;
@@ -237,10 +239,19 @@ class PrajuritJurnalAdminController extends Controller
         $tanggal = $request->tanggal;
         $checks  = $request->checks ?? [];
 
+        $mabId = \App\Models\JurnalLifeItem::where('label', 'like', '%Membaca Alkitab Bersama-sama%')->value('id');
+        $mabChecked = false;
+        $mabPresent = false;
+
         foreach ($checks as $check) {
             $itemId  = $check['item_id'];
             $checked = (bool) ($check['checked'] ?? false);
             $value   = $check['value'] ?? null;
+
+            if ($mabId && $itemId == $mabId) {
+                $mabPresent = true;
+                $mabChecked = $checked;
+            }
 
             JurnalLifeCheck::updateOrCreate(
                 [
@@ -256,10 +267,17 @@ class PrajuritJurnalAdminController extends Controller
         }
 
         // Buat/update JurnalEntry untuk tanggal ini (tanda sudah ada aktivitas)
-        JurnalEntry::updateOrCreate(
+        $entry = JurnalEntry::updateOrCreate(
             ['student_id' => $prajurit->id, 'tanggal' => $tanggal],
             ['cabang_id'  => $prajurit->cabang_id]
         );
+
+        if ($mabPresent) {
+            $entry->update([
+                'pl_checked' => $mabChecked,
+                'pb_checked' => $mabChecked
+            ]);
+        }
 
         return response()->json(['status' => 'saved']);
     }

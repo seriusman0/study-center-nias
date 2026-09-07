@@ -181,7 +181,8 @@ trait HasJurnalAdminActions
         for ($d = $from->copy(); $d->lte($to); $d->addDay()) {
             $key        = $d->toDateString();
             $entry      = $entries->get($key);
-            $checkedIds = ($checks->get($key) ?? collect())->pluck('life_item_id')->all();
+            $dayChecks  = $checks->get($key) ?? collect();
+            $checkedIds = $dayChecks->pluck('life_item_id')->all();
 
             $row = [$key];
             if ($showPlPb) {
@@ -189,7 +190,16 @@ trait HasJurnalAdminActions
                 $row[] = $entry?->pb_checked ? 'Y' : '-';
             }
             foreach ($items as $it) {
-                $row[] = in_array($it->id, $checkedIds) ? 'Y' : '-';
+                if (in_array($it->id, $checkedIds)) {
+                    if ($it->response_type === 'number') {
+                        $val = $dayChecks->firstWhere('life_item_id', $it->id)->value;
+                        $row[] = 'Y:' . $val;
+                    } else {
+                        $row[] = 'Y';
+                    }
+                } else {
+                    $row[] = '-';
+                }
             }
             $rows[] = $row;
         }
@@ -198,7 +208,7 @@ trait HasJurnalAdminActions
         $checked    = 0;
         foreach ($rows as $r) {
             for ($i = 1; $i < count($r); $i++) {
-                if ($r[$i] === 'Y') $checked++;
+                if (is_string($r[$i]) && str_starts_with($r[$i], 'Y')) $checked++;
             }
         }
 

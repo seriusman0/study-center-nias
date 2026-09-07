@@ -838,11 +838,16 @@ function openSummaryModal(userId) {
             
             for(let j = 1; j < headers.length; j++) {
                 const label = headers[j];
-                const checked = (row[j] === 'Y');
+                const cellStr = String(row[j]);
+                const checked = cellStr.startsWith('Y');
                 if(checked) checkedCount++;
                 
                 if (checked) {
-                    badgesHtml += `<span class="kid-badge kid-badge-yes"><i class="fas fa-check mr-1"></i> ${escHtml(label)}</span>`;
+                    let valStr = '';
+                    if (cellStr.includes(':')) {
+                        valStr = ' <span class="badge badge-light ml-1 text-dark">' + cellStr.split(':')[1] + '</span>';
+                    }
+                    badgesHtml += `<span class="kid-badge kid-badge-yes"><i class="fas fa-check mr-1"></i> ${escHtml(label)}${valStr}</span>`;
                 } else {
                     badgesHtml += `<span class="kid-badge kid-badge-no"><i class="fas fa-times mr-1"></i> ${escHtml(label)}</span>`;
                 }
