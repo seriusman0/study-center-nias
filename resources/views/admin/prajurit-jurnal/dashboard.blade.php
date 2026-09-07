@@ -130,65 +130,86 @@
     <div class="card-header">
         <h3 class="card-title">Prajurit</h3>
         <div class="card-tools d-flex align-items-center">
-            <form method="GET" class="form-inline">
+            <form method="GET" class="form-inline mr-2">
                 <input type="text" name="q" value="{{ request('q') }}" class="form-control form-control-sm mr-2" placeholder="Cari nama">
                 <button class="btn btn-sm btn-outline-primary">Filter</button>
             </form>
+            
             <button type="button" class="btn btn-sm btn-warning ml-2" id="btnOpenScanner">
                 <i class="fas fa-qrcode mr-1"></i> Scan QR Prajurit
             </button>
+            
+            <button type="button" class="btn btn-sm btn-success ml-2" onclick="
+                if(document.querySelectorAll('.user-checkbox:checked').length === 0) {
+                    alert('Pilih setidaknya satu prajurit untuk dicetak!');
+                } else {
+                    document.getElementById('bulk-qr-form').submit();
+                }
+            ">
+                <i class="fas fa-print mr-1"></i> Cetak QR Massal
+            </button>
         </div>
     </div>
-    <div class="card-body p-0">
-        <table class="table table-sm table-hover mb-0">
-            <thead class="thead-light">
-                <tr>
-                    <th>Nama</th>
-                    <th>Kelas</th>
-                    <th class="text-center">7 Hari<br><small class="text-muted">Centang</small></th>
-                    <th>Terakhir Aktif</th>
-                    <th class="text-center">Hari Ini</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($users as $user)
-                <tr>
-                    <td>
-                        <strong>{{ $user->name }}</strong><br>
-                        <small class="text-muted">{{ '@' . $user->username }}</small>
-                    </td>
-                    <td>{{ $user->studentProfile?->grade_class ?? '—' }}</td>
-                    <td class="text-center">
-                        @php $cnt = $checkCounts[$user->id] ?? 0; @endphp
-                        <span class="badge badge-{{ $cnt >= 10 ? 'success' : ($cnt >= 5 ? 'warning' : 'secondary') }}">{{ $cnt }}</span>
-                    </td>
-                    <td>
-                        @php $last = $lastEntryDates[$user->id] ?? null; @endphp
-                        {{ $last ? \Carbon\Carbon::parse($last)->locale('id')->isoFormat('D MMM Y') : '—' }}
-                    </td>
-                    <td class="text-center">
-                        @if(isset($lastEntryDates[$user->id]) && $lastEntryDates[$user->id] === $today)
-                            <span class="badge badge-success"><i class="fas fa-check"></i></span>
-                        @else
-                            <span class="text-muted">—</span>
-                        @endif
-                    </td>
-                    <td>
-                        <a href="{{ route('admin.jurnal-prajurit.show', $user) }}" class="btn btn-xs btn-info">
-                            <i class="fas fa-chart-bar"></i> Laporan
-                        </a>
-                        <a href="{{ route('admin.jurnal-prajurit.export', $user) }}" class="btn btn-xs btn-success">
-                            <i class="fas fa-download"></i> CSV
-                        </a>
-                    </td>
-                </tr>
-                @empty
-                <tr><td colspan="6" class="text-center text-muted py-3">Tidak ada pengguna Remaja Beasiswa.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+    
+    <form id="bulk-qr-form" action="{{ route('admin.jurnal-prajurit.bulk-qr') }}" method="POST" target="_blank">
+        @csrf
+        <div class="card-body p-0">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th class="text-center" style="width:40px;">
+                            <input type="checkbox" id="checkAllUsers" onclick="document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = this.checked)">
+                        </th>
+                        <th>Nama</th>
+                        <th>Kelas</th>
+                        <th class="text-center">7 Hari<br><small class="text-muted">Centang</small></th>
+                        <th>Terakhir Aktif</th>
+                        <th class="text-center">Hari Ini</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($users as $user)
+                    <tr style="cursor:pointer;" class="kid-row" data-user-id="{{ $user->id }}" onclick="openSummaryModal({{ $user->id }})">
+                        <td class="text-center" onclick="event.stopPropagation();">
+                            <input type="checkbox" name="user_ids[]" value="{{ $user->id }}" class="user-checkbox">
+                        </td>
+                        <td>
+                            <strong>{{ $user->name }}</strong><br>
+                            <small class="text-muted">{{ '@' . $user->username }}</small>
+                        </td>
+                        <td>{{ $user->studentProfile?->grade_class ?? '—' }}</td>
+                        <td class="text-center">
+                            @php $cnt = $checkCounts[$user->id] ?? 0; @endphp
+                            <span class="badge badge-{{ $cnt >= 10 ? 'success' : ($cnt >= 5 ? 'warning' : 'secondary') }}">{{ $cnt }}</span>
+                        </td>
+                        <td>
+                            @php $last = $lastEntryDates[$user->id] ?? null; @endphp
+                            {{ $last ? \Carbon\Carbon::parse($last)->locale('id')->isoFormat('D MMM Y') : '—' }}
+                        </td>
+                        <td class="text-center">
+                            @if(isset($lastEntryDates[$user->id]) && $lastEntryDates[$user->id] === $today)
+                                <span class="badge badge-success"><i class="fas fa-check"></i></span>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
+                        <td onclick="event.stopPropagation();">
+                            <a href="{{ route('admin.jurnal-prajurit.show', $user) }}" class="btn btn-xs btn-info">
+                                <i class="fas fa-chart-bar"></i> Laporan
+                            </a>
+                            <a href="{{ route('admin.jurnal-prajurit.export', $user) }}" class="btn btn-xs btn-success">
+                                <i class="fas fa-download"></i> CSV
+                            </a>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="7" class="text-center text-muted py-3">Tidak ada pengguna Prajurit.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </form>
     @if($users->hasPages())
     <div class="card-footer">{{ $users->withQueryString()->links() }}</div>
     @endif
@@ -424,7 +445,7 @@ function openJurnalModal(data) {
     
     document.getElementById('jurnalAvatarCol').innerHTML = `
         <div class="text-center mt-2">
-            <img src="${avatarUrl}" class="rounded-circle border border-3 border-primary shadow-sm" style="width: 130px; height: 130px; object-fit: cover;" alt="Foto Profil">
+            <img src="${avatarUrl}" class="rounded shadow-sm" style="width: 130px; height: 130px; object-fit: cover; border-radius: 20px !important; border: 4px solid #fff;" alt="Foto Profil">
         </div>
     `;
 
@@ -542,6 +563,223 @@ function autoSaveJurnal() {
 
 function escHtml(str) {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+<style>
+    .kid-summary-modal .modal-content {
+        border-radius: 25px;
+        border: none;
+        overflow: hidden;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        background: #fdfbfb;
+    }
+    .kid-summary-header {
+        background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+        color: #fff;
+        border-bottom: none;
+        padding: 25px 30px;
+        position: relative;
+    }
+    .kid-summary-header::after {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        left: 0;
+        right: 0;
+        height: 30px;
+        background: #fdfbfb;
+        border-radius: 50% 50% 0 0;
+    }
+    .kid-summary-title {
+        font-weight: 900;
+        font-size: 1.8rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        z-index: 1;
+        position: relative;
+    }
+    .kid-timeline {
+        position: relative;
+        padding: 20px 0;
+        margin-left: 20px;
+    }
+    .kid-timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 20px;
+        width: 4px;
+        background: #e0eaf5;
+        border-radius: 2px;
+    }
+    .kid-timeline-item {
+        position: relative;
+        margin-bottom: 25px;
+        padding-left: 50px;
+    }
+    .kid-timeline-icon {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #fff;
+        border: 4px solid #8fd3f4;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #8fd3f4;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        z-index: 1;
+    }
+    .kid-timeline-content {
+        background: #fff;
+        border-radius: 15px;
+        padding: 15px 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: 2px solid transparent;
+        transition: all 0.3s;
+    }
+    .kid-timeline-content:hover {
+        border-color: #84fab0;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    .kid-timeline-date {
+        font-weight: 800;
+        color: #555;
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+    }
+    .kid-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+    .kid-badge-yes { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .kid-badge-no { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; text-decoration: line-through; opacity: 0.7;}
+    
+    @keyframes rowHover {
+        0% { background: #fff; }
+        100% { background: #f0fdf4; }
+    }
+    .kid-row:hover {
+        animation: rowHover 0.3s forwards;
+    }
+</style>
+
+<div class="modal fade" id="summaryModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content kid-summary-modal">
+            <div class="modal-header kid-summary-header d-flex flex-column align-items-center">
+                <div style="position:relative; width: 100%; text-align: center;">
+                    <div style="font-size: 4rem; margin-bottom: -10px;">🚀</div>
+                    <h5 class="modal-title kid-summary-title" id="summaryModalTitle">
+                        Jurnal Petualangan
+                    </h5>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" style="position: absolute; top: 15px; right: 20px; font-size: 2rem; opacity: 1;">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4" style="max-height: 60vh; overflow-y: auto;">
+                <div class="text-center mb-4" id="summaryUserInfo">
+                    <!-- User info -->
+                </div>
+                <div class="kid-timeline" id="summaryTimeline">
+                    <!-- Timeline items injected via JS -->
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center border-0 pb-4">
+                <button type="button" class="btn btn-lg px-5" data-dismiss="modal" style="border-radius: 30px; background: #8fd3f4; color: #fff; font-weight: bold; box-shadow: 0 4px 15px rgba(143,211,244,0.4);">
+                    Tutup Petualangan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openSummaryModal(userId) {
+    const url = `/admin/jurnal-prajurit/summary/${userId}`;
+    
+    document.getElementById('summaryUserInfo').innerHTML = '<div class="spinner-border text-info" role="status"></div><p class="mt-2 text-muted">Memuat data petualangan...</p>';
+    document.getElementById('summaryTimeline').innerHTML = '';
+    
+    $('#summaryModal').modal('show');
+    
+    fetch(url, {
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        let avatarUrl = data.user.avatar || 'https://ui-avatars.com/api/?name='+encodeURIComponent(data.user.name)+'&size=150&background=8fd3f4&color=fff';
+        
+        let userInfoHtml = `
+            <img src="${avatarUrl}" class="rounded-circle shadow" style="width:100px; height:100px; object-fit:cover; border: 4px solid #84fab0;" alt="Foto Profil">
+            <h4 class="mt-3 font-weight-bold" style="color: #333;">${escHtml(data.user.name)}</h4>
+            <span class="badge badge-primary" style="font-size:1rem; border-radius:15px; padding: 5px 15px;">Kelas: ${escHtml(data.user.kelas || '—')}</span>
+        `;
+        document.getElementById('summaryUserInfo').innerHTML = userInfoHtml;
+        
+        const matrix = data.matrix;
+        const headers = matrix.headers; // ["Tanggal", "PL", "PB", ...]
+        const rows = matrix.rows.slice().reverse(); // Reverse to show latest first
+        
+        let timelineHtml = '';
+        
+        rows.forEach((row, i) => {
+            const dateStr = row[0]; // YYYY-MM-DD
+            const d = new Date(dateStr);
+            const formattedDate = d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            
+            let badgesHtml = '';
+            let checkedCount = 0;
+            let totalItems = headers.length - 1;
+            
+            for(let j = 1; j < headers.length; j++) {
+                const label = headers[j];
+                const checked = (row[j] === 'Y');
+                if(checked) checkedCount++;
+                
+                if (checked) {
+                    badgesHtml += `<span class="kid-badge kid-badge-yes"><i class="fas fa-check mr-1"></i> ${escHtml(label)}</span>`;
+                } else {
+                    badgesHtml += `<span class="kid-badge kid-badge-no"><i class="fas fa-times mr-1"></i> ${escHtml(label)}</span>`;
+                }
+            }
+            
+            let iconStr = checkedCount === totalItems ? '🌟' : (checkedCount > 0 ? '👍' : '💤');
+            
+            timelineHtml += `
+                <div class="kid-timeline-item">
+                    <div class="kid-timeline-icon">${iconStr}</div>
+                    <div class="kid-timeline-content">
+                        <div class="kid-timeline-date">${formattedDate}</div>
+                        <div>${badgesHtml}</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        if (timelineHtml === '') {
+            timelineHtml = '<div class="text-center text-muted">Belum ada petualangan dicatat.</div>';
+        }
+        
+        document.getElementById('summaryTimeline').innerHTML = timelineHtml;
+    })
+    .catch(err => {
+        document.getElementById('summaryUserInfo').innerHTML = '<div class="text-danger"><i class="fas fa-exclamation-triangle"></i> Gagal memuat data.</div>';
+    });
 }
 </script>
 @endpush
