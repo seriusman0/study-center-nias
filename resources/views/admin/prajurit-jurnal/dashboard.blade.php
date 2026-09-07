@@ -227,6 +227,10 @@
                 </button>
             </div>
             <div class="modal-body">
+                <div class="form-group mb-2" id="cameraSelectGroup" style="display:none;">
+                    <label for="cameraSelect" class="small font-weight-bold">Pilih Kamera:</label>
+                    <select id="cameraSelect" class="form-control form-control-sm"></select>
+                </div>
                 <div id="qr-reader" style="width:100%"></div>
                 <div id="scan-status" class="mt-2 text-center text-muted small"></div>
             </div>
@@ -282,10 +286,7 @@
                 <div id="jurnalItemsList" class="mx-auto" style="max-width: 600px;"></div>
                 <div id="jurnalSaveStatus" class="mt-3 text-center" style="font-size:1.1rem; font-weight:bold;"></div>
             </div>
-            <div class="modal-footer border-0 justify-content-between pb-4">
-                <button type="button" class="btn btn-outline-danger font-weight-bold" id="btnResetJurnal">
-                    <i class="fas fa-trash-alt mr-1"></i> Reset Jurnal
-                </button>
+            <div class="modal-footer border-0 justify-content-center pb-4">
                 <button type="button" class="btn kid-btn-save" id="btnSaveJurnal">
                     <i class="fas fa-times-circle mr-2"></i> Tutup
                 </button>
@@ -335,30 +336,77 @@ function playSound(type) {
     } catch(e) {}
 }
 
+function startScanner(cameraIdOrConfig) {
+    if (html5Qrcode) {
+        html5Qrcode.stop().then(() => {
+            html5Qrcode.clear();
+            initScanner(cameraIdOrConfig);
+        }).catch(() => {
+            initScanner(cameraIdOrConfig);
+        });
+    } else {
+        initScanner(cameraIdOrConfig);
+    }
+}
+
+function initScanner(cameraIdOrConfig) {
+    html5Qrcode = new Html5Qrcode("qr-reader");
+    html5Qrcode.start(
+        cameraIdOrConfig,
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        onScanSuccess,
+        (errorMessage) => { /* ignore */ }
+    ).then(() => {
+        document.getElementById('scan-status').innerHTML = 'Arahkan QR Code Prajurit ke kamera.';
+    }).catch(err => {
+        document.getElementById('scan-status').innerHTML = '<span class="text-danger">Gagal memulai kamera: ' + err + '</span>';
+    });
+}
+
+document.getElementById('cameraSelect').addEventListener('change', function() {
+    let val = this.value;
+    if (val === 'environment' || val === 'user') {
+        startScanner({ facingMode: val });
+    } else {
+        startScanner(val); // By device ID
+    }
+});
+
 document.getElementById('btnOpenScanner').addEventListener('click', () => {
     $('#scannerModal').modal('show');
     document.getElementById('scan-status').innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin mr-1"></i>Meminta akses kamera...</span>';
     
-    // Request permission synchronously inside the click event to avoid NotAllowedError on mobile browsers
     Html5Qrcode.getCameras().then(devices => {
-        // Wait briefly for modal transition to complete so dimensions are available
+        let select = document.getElementById('cameraSelect');
+        select.innerHTML = '';
+        if (devices && devices.length > 0) {
+            devices.forEach((device, index) => {
+                let option = document.createElement('option');
+                option.value = device.id;
+                option.text = device.label || `Kamera ${index + 1}`;
+                select.appendChild(option);
+            });
+            // Auto select back camera if possible, otherwise first camera
+            let backCam = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('belakang'));
+            if (backCam) {
+                select.value = backCam.id;
+            }
+        } else {
+            select.innerHTML = `
+                <option value="environment">Kamera Belakang (Default)</option>
+                <option value="user">Kamera Depan</option>
+            `;
+        }
+        document.getElementById('cameraSelectGroup').style.display = 'block';
+
         setTimeout(() => {
-            if (!$('#scannerModal').hasClass('show')) return; // Check if user closed modal while granting permission
+            if (!$('#scannerModal').hasClass('show')) return;
             
-            if (devices && devices.length) {
-                html5Qrcode = new Html5Qrcode("qr-reader");
-                html5Qrcode.start(
-                    { facingMode: "environment" },
-                    { fps: 10, qrbox: { width: 250, height: 250 } },
-                    onScanSuccess,
-                    (errorMessage) => { /* ignore */ }
-                ).then(() => {
-                    document.getElementById('scan-status').innerHTML = 'Arahkan QR Code Prajurit ke kamera.';
-                }).catch(err => {
-                    document.getElementById('scan-status').innerHTML = '<span class="text-danger">Gagal memulai kamera: ' + err + '</span>';
-                });
+            let val = select.value;
+            if (val === 'environment' || val === 'user') {
+                startScanner({ facingMode: val });
             } else {
-                document.getElementById('scan-status').innerHTML = '<span class="text-danger">Kamera tidak ditemukan pada perangkat ini.</span>';
+                startScanner(val);
             }
         }, 400); 
     }).catch(err => {
@@ -528,35 +576,6 @@ function openJurnalModal(data) {
         $('.kid-modal-content').addClass('kid-bounce');
     }
 }
-
-document.getElementById('btnResetJurnal').addEventListener('click', () => {
-    if(!confirm('Anda yakin ingin mereset jurnal hari ini untuk prajurit ini?')) return;
-    
-    document.getElementById('jurnalSaveStatus').innerHTML =
-        '<span class="text-info"><i class="fas fa-spinner fa-spin mr-1"></i>Mereset...</span>';
-
-    fetch('/admin/jurnal-prajurit/reset', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': CSRF,
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({ user_id: currentUser.id }),
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.status === 'reset') {
-            document.getElementById('jurnalSaveStatus').innerHTML =
-                '<span class="text-success"><i class="fas fa-check mr-1"></i>Jurnal direset</span>';
-            setTimeout(() => { location.reload(); }, 500);
-        }
-    })
-    .catch(() => {
-        document.getElementById('jurnalSaveStatus').innerHTML =
-            '<span class="text-danger">Gagal mereset.</span>';
-    });
-});
 
 document.getElementById('btnSaveJurnal').addEventListener('click', () => {
     $('#jurnalModal').modal('hide');
