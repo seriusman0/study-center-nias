@@ -88,6 +88,17 @@ trait HasJurnalDailyActions
 
         $streak = $this->calcStreak($user->id, $today);
 
+        if (property_exists($this, 'role') && $this->role === 'prajurit') {
+            $prajuritAnchor = \Carbon\Carbon::parse('2026-09-06')->startOfDay();
+            $diff = $prajuritAnchor->diffInDays($date->copy()->startOfDay(), false);
+            $dayNo = (($diff) % 366) + 1;
+            if ($dayNo < 1) $dayNo += 366;
+            $bibleItem = CollegeBibleItem::forDayNo($dayNo, 4);
+        } else {
+            $dayNo = $config->dayNoFor($date);
+            $bibleItem = CollegeBibleItem::forDayNo($dayNo);
+        }
+
         return view($this->viewName, [
             'date'           => $date,
             'today'          => $today,
@@ -95,7 +106,7 @@ trait HasJurnalDailyActions
             'formOpen'       => $formOpen,
             'config'         => $config,
             'dayNo'          => $dayNo,
-            'bibleItem'      => CollegeBibleItem::forDayNo($dayNo),
+            'bibleItem'      => $bibleItem,
             'weekKey'        => $weekKey,
             'verseRef'       => $verseRef,
             'verseChecked'   => $entry?->verse_checked ?? false,
@@ -166,6 +177,17 @@ trait HasJurnalDailyActions
         $studyLogs  = $this->loadStudyLogs($targetUser->id, $date, $itemIds);
         $studyState = $this->buildStudyState($studyLogs);
 
+        if (property_exists($this, 'role') && $this->role === 'prajurit') {
+            $prajuritAnchor = \Carbon\Carbon::parse('2026-09-06')->startOfDay();
+            $diff = $prajuritAnchor->diffInDays($date->copy()->startOfDay(), false);
+            $dayNo = (($diff) % 366) + 1;
+            if ($dayNo < 1) $dayNo += 366;
+            $bibleItem = CollegeBibleItem::forDayNo($dayNo, 4);
+        } else {
+            $dayNo = $config->dayNoFor($date);
+            $bibleItem = CollegeBibleItem::forDayNo($dayNo);
+        }
+
         return view($this->viewName, [
             'date'           => $date,
             'today'          => $today,
@@ -173,7 +195,7 @@ trait HasJurnalDailyActions
             'formOpen'       => false,
             'config'         => $config,
             'dayNo'          => $dayNo,
-            'bibleItem'      => CollegeBibleItem::forDayNo($dayNo),
+            'bibleItem'      => $bibleItem,
             'weekKey'        => $weekKey,
             'verseRef'       => $verseRef,
             'verseChecked'   => $entry?->verse_checked ?? false,
@@ -328,7 +350,7 @@ trait HasJurnalDailyActions
         $user = $request->user();
 
         $request->validate([
-            'foto' => 'required|file|mimes:jpeg,jpg,png,webp|max:4096',
+            'foto' => 'required|file|mimes:jpeg,jpg,png,webp|max:10240',
             'date' => 'nullable|date',
         ]);
 

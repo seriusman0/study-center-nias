@@ -27,8 +27,14 @@ class PrajuritJurnalAdminController extends Controller
     public function dashboard(Request $request)
     {
         $config       = CollegeConfig::current();
-        $dayNo        = $config->todayDayNo();
-        $bible        = CollegeBibleItem::forDayNo($dayNo);
+        
+        $prajuritAnchor = \Carbon\Carbon::parse('2026-09-06')->startOfDay();
+        $now = JurnalWeek::today()->startOfDay();
+        $diff = $prajuritAnchor->diffInDays($now, false);
+        $dayNo = (($diff) % 366) + 1;
+        if ($dayNo < 1) $dayNo += 366;
+        
+        $bible = CollegeBibleItem::forDayNo($dayNo, 4);
         $today        = JurnalWeek::today()->toDateString();
         $sevenDaysAgo = JurnalWeek::today()->subDays(6)->toDateString();
         $roleId       = Role::where('name', 'prajurit')->value('id');
@@ -72,10 +78,52 @@ class PrajuritJurnalAdminController extends Controller
             ->groupBy('student_id')
             ->pluck('last_date', 'student_id');
 
+        // New statistics
+        $mabId = \App\Models\JurnalLifeItem::where('label', 'like', '%Membaca Alkitab Bersama-sama%')->value('id');
+        $masId = \App\Models\JurnalLifeItem::where('label', 'like', '%Membaca Alkitab di Sekolah%')->value('id');
+        $hafalanId = \App\Models\JurnalLifeItem::where(function($q) {
+            $q->where('label', 'like', '%Ayat Hafalan%')
+              ->orWhere('label', 'like', '%Hafal Ayat%');
+        })->value('id');
+
+        $countMabToday = $mabId ? JurnalLifeCheck::where('life_item_id', $mabId)->whereDate('tanggal', $today)->where('checked', true)->count() : 0;
+        $countMasToday = $masId ? JurnalLifeCheck::where('life_item_id', $masId)->whereDate('tanggal', $today)->where('checked', true)->count() : 0;
+
+        $topMab = $mabId ? JurnalLifeCheck::where('life_item_id', $mabId)
+            ->where('checked', true)
+            ->selectRaw('student_id, COUNT(*) as score')
+            ->groupBy('student_id')
+            ->orderByDesc('score')
+            ->with('student')
+            ->first() : null;
+
+        $topMas = $masId ? JurnalLifeCheck::where('life_item_id', $masId)
+            ->where('checked', true)
+            ->selectRaw('student_id, COUNT(*) as score')
+            ->groupBy('student_id')
+            ->orderByDesc('score')
+            ->with('student')
+            ->first() : null;
+
+        $topHafalan = null;
+        if ($hafalanId) {
+            $hafalanItem = \App\Models\JurnalLifeItem::find($hafalanId);
+            $isNumber = $hafalanItem->response_type == 'number';
+            $topHafalan = JurnalLifeCheck::where('life_item_id', $hafalanId)
+                ->when(!$isNumber, fn($q) => $q->where('checked', true))
+                ->selectRaw($isNumber ? 'student_id, SUM(value) as score' : 'student_id, COUNT(*) as score')
+                ->groupBy('student_id')
+                ->orderByDesc('score')
+                ->with('student')
+                ->first();
+        }
+
         return view('admin.prajurit-jurnal.dashboard', compact(
             'config', 'dayNo', 'bible', 'today',
             'users', 'activeToday', 'totalUsers',
-            'checkCounts', 'lastEntryDates'
+            'checkCounts', 'lastEntryDates',
+            'countMabToday', 'countMasToday',
+            'topMab', 'topMas', 'topHafalan'
         ));
     }
 
@@ -122,12 +170,14 @@ class PrajuritJurnalAdminController extends Controller
         return response()->json([
             'status'   => 'found',
             'prajurit' => [
-                'id'    => $prajurit->id,
-                'name'  => $prajurit->name,
-                'kelas' => $prajurit->studentProfile?->grade_class,
+                'id'     => $prajurit->id,
+                'name'   => $prajurit->name,
+                'kelas'  => $prajurit->studentProfile?->grade_class,
+                'avatar' => $prajurit->avatar,
             ],
-            'today'      => $today,
-            'items'      => $items->map(fn($i) => [
+            'today'           => $today,
+            'today_formatted' => \Carbon\Carbon::parse($today)->locale('id')->isoFormat('dddd, D MMMM YYYY'),
+            'items'           => $items->map(fn($i) => [
                 'id'            => $i->id,
                 'label'         => $i->label,
                 'response_type' => $i->response_type,
