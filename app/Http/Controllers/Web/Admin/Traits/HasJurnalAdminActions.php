@@ -156,7 +156,16 @@ trait HasJurnalAdminActions
             ->get()
             ->groupBy(fn($c) => $c->tanggal->toDateString());
 
-        $headers = ['Tanggal', 'PL', 'PB'];
+        $showPlPb = true;
+        if (property_exists($this, 'role') && $this->role === 'prajurit') {
+            $showPlPb = false;
+        }
+
+        $headers = ['Tanggal'];
+        if ($showPlPb) {
+            $headers[] = 'PL';
+            $headers[] = 'PB';
+        }
         foreach ($items as $it) {
             $headers[] = $it->label;
         }
@@ -167,7 +176,11 @@ trait HasJurnalAdminActions
             $entry      = $entries->get($key);
             $checkedIds = ($checks->get($key) ?? collect())->pluck('life_item_id')->all();
 
-            $row = [$key, $entry?->pl_checked ? 'Y' : '-', $entry?->pb_checked ? 'Y' : '-'];
+            $row = [$key];
+            if ($showPlPb) {
+                $row[] = $entry?->pl_checked ? 'Y' : '-';
+                $row[] = $entry?->pb_checked ? 'Y' : '-';
+            }
             foreach ($items as $it) {
                 $row[] = in_array($it->id, $checkedIds) ? 'Y' : '-';
             }
