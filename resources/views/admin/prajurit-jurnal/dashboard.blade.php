@@ -217,13 +217,11 @@
     .kid-modal-content { border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
     .kid-modal-header { background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%); color: #333; border-bottom: none; padding: 20px 25px; }
     .kid-modal-title { font-weight: 800; font-size: 1.5rem; letter-spacing: 1px; }
-    .kid-avatar-container { width: 100%; padding-top: 100%; position: relative; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 4px solid #fff; }
-    .kid-avatar { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-    .kid-check-item { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 12px; border: 2px solid #e9ecef; transition: all 0.2s; cursor: pointer; }
+    .kid-check-item { background: #f8f9fa; border-radius: 12px; padding: 15px; border: 2px solid #e9ecef; transition: all 0.2s; cursor: pointer; }
     .kid-check-item:hover { border-color: #a3bffa; background: #f1f5f9; transform: translateY(-2px); }
     .kid-check-item input[type="checkbox"] { transform: scale(1.5); margin-right: 15px; cursor: pointer; }
     .kid-check-label { font-size: 1.1rem; font-weight: 600; color: #495057; margin: 0; cursor: pointer; user-select: none; }
-    .kid-number-input { font-size: 1.2rem; padding: 10px 15px; border-radius: 12px; border: 2px solid #e9ecef; width: 100%; text-align: center; font-weight: bold; }
+    .kid-number-input { font-size: 1.2rem; border-radius: 12px; border: 2px solid #e9ecef; font-weight: bold; }
     .kid-number-input:focus { border-color: #FF9A9E; box-shadow: 0 0 0 3px rgba(255, 154, 158, 0.3); outline: none; }
     .kid-btn-save { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border: none; color: #fff; font-weight: bold; font-size: 1.2rem; padding: 12px 30px; border-radius: 50px; box-shadow: 0 4px 15px rgba(67, 233, 123, 0.4); transition: all 0.3s; }
     .kid-btn-save:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(67, 233, 123, 0.6); color: #fff; }
@@ -425,21 +423,21 @@ function openJurnalModal(data) {
     let avatarUrl = data.prajurit.avatar || 'https://ui-avatars.com/api/?name='+encodeURIComponent(data.prajurit.name)+'&size=300&background=FF9A9E&color=fff';
     
     document.getElementById('jurnalAvatarCol').innerHTML = `
-        <div class="kid-avatar-container text-center mb-3">
-            <img src="${avatarUrl}" class="kid-avatar rounded-circle border border-3 border-primary" style="width: 100px; height: 100px; object-fit: cover;" alt="Foto Profil">
+        <div class="text-center mt-2">
+            <img src="${avatarUrl}" class="rounded-circle border border-3 border-primary shadow-sm" style="width: 130px; height: 130px; object-fit: cover;" alt="Foto Profil">
         </div>
     `;
 
+    let kelasHtml = data.prajurit.kelas ? `Kelas: <strong>${escHtml(data.prajurit.kelas)}</strong> <span class="mx-2">|</span>` : `<span class="text-black-50">Kelas: Belum diatur</span> <span class="mx-2">|</span>`;
     document.getElementById('jurnalPrajuritInfo').innerHTML =
-        `Kelas: <strong>${escHtml(data.prajurit.kelas || '—')}</strong> &nbsp;|&nbsp; 
-         Tanggal: <strong>${data.today_formatted || data.today}</strong>`;
+        `${kelasHtml} Tanggal: <strong>${data.today_formatted || data.today}</strong>`;
 
     let html = '';
     data.items.forEach(item => {
         const checked = data.checkedIds.includes(item.id);
         if (item.response_type === 'boolean') {
             html += `
-            <label class="kid-check-item d-flex align-items-center" for="item_${item.id}">
+            <label class="kid-check-item d-flex align-items-center mb-3" for="item_${item.id}">
                 <input type="checkbox" class="jurnal-check"
                     id="item_${item.id}" data-item-id="${item.id}" data-type="boolean"
                     ${checked ? 'checked' : ''}>
@@ -448,11 +446,11 @@ function openJurnalModal(data) {
         } else {
             const val = data.numberValues[item.id] ?? '';
             html += `
-            <div class="kid-check-item text-center">
-                <label for="item_num_${item.id}" class="kid-check-label mb-2 d-block">${escHtml(item.label)}</label>
-                <input type="number" min="0" class="kid-number-input jurnal-number"
+            <div class="kid-check-item d-flex align-items-center justify-content-between mb-3">
+                <label for="item_num_${item.id}" class="kid-check-label m-0">${escHtml(item.label)}</label>
+                <input type="number" min="0" class="kid-number-input jurnal-number m-0 text-center"
                     id="item_num_${item.id}" data-item-id="${item.id}" data-type="number"
-                    value="${val}" placeholder="0">
+                    value="${val}" placeholder="0" style="width: 80px; padding: 5px 10px;">
             </div>`;
         }
     });
