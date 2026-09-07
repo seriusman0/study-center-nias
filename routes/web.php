@@ -405,8 +405,11 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-prajurit'
     Route::get('/laporan',             [PrajuritJurnalAdminController::class, 'index'])->name('laporan');
     Route::get('/laporan/{user}',      [PrajuritJurnalAdminController::class, 'show'])->name('show');
     Route::get('/laporan/{user}/export', [PrajuritJurnalAdminController::class, 'export'])->name('export');
+    Route::get('/summary/{user}',      [PrajuritJurnalAdminController::class, 'summary'])->name('summary');
     Route::post('/scan',               [PrajuritJurnalAdminController::class, 'scanJurnal'])->name('scan');
     Route::post('/save',               [PrajuritJurnalAdminController::class, 'saveJurnal'])->name('save');
+    Route::post('/reset',              [PrajuritJurnalAdminController::class, 'resetJurnal'])->name('reset');
+    Route::post('/qr-massal',          [PrajuritJurnalAdminController::class, 'bulkQrPrint'])->name('bulk-qr');
 });
 
 Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin/jurnal-hub')->name('admin.jurnal-hub.')->group(function () {

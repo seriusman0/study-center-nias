@@ -122,9 +122,11 @@ class User extends Authenticatable
         $raw = $this->getRawOriginal('avatar');
 
         if ($raw) {
-            return filter_var($raw, FILTER_VALIDATE_URL)
-                ? $raw
-                : asset('storage/' . $raw);
+            if (filter_var($raw, FILTER_VALIDATE_URL)) {
+                return $raw;
+            }
+            $cleanPath = preg_replace('#^/?storage/#', '', ltrim($raw, '/'));
+            return asset('storage/' . $cleanPath);
         }
 
         $photo = $this->relationLoaded('studentProfile')

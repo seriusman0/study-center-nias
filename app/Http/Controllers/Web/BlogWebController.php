@@ -54,7 +54,7 @@ class BlogWebController extends Controller
             'title'     => 'required|string|max:255',
             'content'   => 'required|string',
             'cabang_id' => 'required|exists:cabangs,id',
-            'image'     => 'nullable|image|max:2048',
+            'image'     => 'nullable|image|max:10240',
         ]);
 
         $data = [
@@ -106,7 +106,7 @@ class BlogWebController extends Controller
             'title'     => 'required|string|max:255',
             'content'   => 'required|string',
             'cabang_id' => 'required|exists:cabangs,id',
-            'image'     => 'nullable|image|max:2048',
+            'image'     => 'nullable|image|max:10240',
         ]);
 
         $data = [
@@ -148,7 +148,7 @@ class BlogWebController extends Controller
     public function uploadImage(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
+            'image' => 'required|image|mimes:jpeg,jpg,png,gif,webp|max:10240',
         ]);
 
         $path = $request->file('image')->store('blogs/inline', 'public');

@@ -235,7 +235,7 @@ class JurnalApiController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'foto'  => 'required|file|mimes:jpeg,jpg,png,webp|max:4096',
+            'foto'  => 'required|file|mimes:jpeg,jpg,png,webp|max:10240',
             'date'  => 'nullable|date',
         ]);
 

@@ -47,7 +47,7 @@ class ScholarshipJournalController extends Controller
             'service_hours' => 'nullable|integer|min:0',
             'personal_reflection' => 'nullable|string|max:3000',
             'next_month_goals' => 'nullable|string|max:2000',
-            'attachments.*' => 'nullable|file|max:5120|mimes:pdf,jpg,jpeg,png,docx',
+            'attachments.*' => 'nullable|file|max:10240|mimes:pdf,jpg,jpeg,png,docx',
             'attachment_types.*' => 'nullable|in:transkrip_khs,sertifikat,foto_kegiatan,lainnya',
         ]);
 
@@ -115,7 +115,7 @@ class ScholarshipJournalController extends Controller
             'service_hours' => 'nullable|integer|min:0',
             'personal_reflection' => 'nullable|string|max:3000',
             'next_month_goals' => 'nullable|string|max:2000',
-            'attachments.*' => 'nullable|file|max:5120|mimes:pdf,jpg,jpeg,png,docx',
+            'attachments.*' => 'nullable|file|max:10240|mimes:pdf,jpg,jpeg,png,docx',
             'attachment_types.*' => 'nullable|in:transkrip_khs,sertifikat,foto_kegiatan,lainnya',
         ]);
 

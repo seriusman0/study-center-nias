@@ -58,7 +58,7 @@ class BlogController extends Controller
             'cabang_id' => ['required', 'exists:cabangs,id'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:50'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
         ]);
 
         $slug = Str::slug($validated['title']);
@@ -107,7 +107,7 @@ class BlogController extends Controller
             'cabang_id' => ['sometimes', 'exists:cabangs,id'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:50'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
         ]);
 
         if (isset($validated['content'])) {
@@ -144,7 +144,7 @@ class BlogController extends Controller
     public function uploadImage(Request $request): JsonResponse
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,jpg,png,webp|max:5120',
+            'image' => 'required|image|mimes:jpeg,jpg,png,webp|max:10240',
         ]);
 
         $path = $request->file('image')->store('blogs/inline', 'public');

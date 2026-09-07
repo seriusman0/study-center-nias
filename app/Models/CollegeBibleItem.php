@@ -20,6 +20,11 @@ class CollegeBibleItem extends Model
         $query = self::where('day_no', $dayNo);
         if ($scheduleId) {
             $query->where('schedule_id', $scheduleId);
+        } else {
+            $config = CollegeConfig::current();
+            if ($config->active_schedule_id) {
+                $query->where('schedule_id', $config->active_schedule_id);
+            }
         }
         return $query->first();
     }

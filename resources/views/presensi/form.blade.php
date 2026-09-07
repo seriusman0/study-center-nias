@@ -85,7 +85,7 @@
                            value="{{ old('jam_selesai', $presensi ? substr($presensi->jam_selesai, 0, 5) : '') }}" required>
                 </div>
                 <div class="form-group col-md-5">
-                    <label>Foto Kegiatan <span class="text-muted small">(opsional, maks 4MB)</span></label>
+                    <label>Foto Kegiatan <span class="text-muted small">(opsional, maks 10MB)</span></label>
                     <input type="file" name="foto" accept="image/*" class="form-control-file">
                     @if($presensi?->foto)
                     <img src="{{ asset('storage/' . $presensi->foto) }}" class="mt-2 rounded" style="max-height:80px">

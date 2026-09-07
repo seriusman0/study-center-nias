@@ -81,7 +81,7 @@
                                    accept="image/png,image/jpeg,image/svg+xml">
                             <label class="custom-file-label" for="logoInput">Pilih file logo</label>
                         </div>
-                        <small class="text-muted">PNG/JPG/SVG, maks 2MB. Biarkan kosong untuk pakai logo default.</small>
+                        <small class="text-muted">PNG/JPG/SVG, maks 10MB. Biarkan kosong untuk pakai logo default.</small>
                         @error('logo')<small class="text-danger">{{ $message }}</small>@enderror
                     </div>
                 </div>

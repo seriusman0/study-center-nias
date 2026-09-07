@@ -209,7 +209,7 @@ class AdminController extends Controller
         $user->roles()->sync($ids);
 
         // Auto-setup jurnal items jika role jurnal-aware
-        $journalRoles = ['student', 'scholarship_teenager', 'college'];
+        $journalRoles = ['student', 'scholarship_teenager', 'college', 'prajurit'];
         $newJournalRole = collect($names)->first(fn($n) => in_array($n, $journalRoles));
         if ($newJournalRole) {
             app(JurnalSetupService::class)->setupForRole($user, $newJournalRole);
@@ -285,7 +285,7 @@ class AdminController extends Controller
             'name'      => 'required|string|max:255',
             'email'     => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user?->id)],
             'password'  => 'nullable|string|min:5',
-            'avatar'    => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'avatar'    => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
             'cabang_id' => 'nullable|exists:cabangs,id',
             'role_names'   => 'nullable|array',
             'role_names.*' => 'exists:roles,name',
@@ -299,7 +299,7 @@ class AdminController extends Controller
     private function validateProfileData(Request $request, array $roleNames): array
     {
         $rules = [];
-        if (in_array('student', $roleNames) || in_array('scholarship_teenager', $roleNames)) {
+        if (in_array('student', $roleNames) || in_array('scholarship_teenager', $roleNames) || in_array('prajurit', $roleNames)) {
             $rules += [
                 'student.student_number' => 'nullable|string|max:50',
                 'student.birth_date'     => 'nullable|date',
@@ -335,9 +335,10 @@ class AdminController extends Controller
 
     private function syncProfiles(User $user, array $roleNames, array $data): void
     {
-        if ((in_array('student', $roleNames) || in_array('scholarship_teenager', $roleNames)) && isset($data['student'])) {
+        $hasStudentProfile = in_array('student', $roleNames) || in_array('scholarship_teenager', $roleNames) || in_array('prajurit', $roleNames);
+        if ($hasStudentProfile && isset($data['student'])) {
             StudentProfile::updateOrCreate(['user_id' => $user->id], $data['student']);
-        } elseif (! in_array('student', $roleNames) && ! in_array('scholarship_teenager', $roleNames)) {
+        } elseif (!$hasStudentProfile) {
             $user->studentProfile()?->delete();
         }
 

@@ -149,7 +149,7 @@ class PresensiController extends Controller
             'jam_mulai'        => 'required|date_format:H:i',
             'jam_selesai'      => 'required|date_format:H:i|after:jam_mulai',
             'materi'           => 'required|string|max:5000',
-            'foto'             => 'nullable|image|max:4096',
+            'foto'             => 'nullable|image|max:10240',
             'student_ids'      => 'required|array|min:1',
             'student_ids.*'    => 'integer|exists:users,id',
             'student_status'   => 'nullable|array',

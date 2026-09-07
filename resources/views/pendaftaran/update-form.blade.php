@@ -181,7 +181,7 @@
                         Foto
                     </label>
                     <p class="text-xs text-gray-500 mb-2">Foto terbaru dengan latar belakang bersih atau polos. Foto ini akan digunakan untuk sertifikat.<br>
-                        <span class="font-semibold text-orange-600">Maks. 2 MB</span> &middot; JPG, PNG, WEBP &mdash; Jika foto terlalu besar, kompres dulu di <a href="https://squoosh.app" target="_blank" class="underline text-sc-teal-600">squoosh.app</a>
+                        <span class="font-semibold text-orange-600">Maks. 10 MB</span> &middot; JPG, PNG, WEBP &mdash; Jika foto terlalu besar, kompres dulu di <a href="https://squoosh.app" target="_blank" class="underline text-sc-teal-600">squoosh.app</a>
                     </p>
                     @if($profile->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($profile->photo))
                     <div class="flex items-center gap-4 mb-3 p-3 bg-green-50 border border-green-200 rounded-xl">
@@ -199,7 +199,7 @@
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                     <p id="photo-size-error" class="text-red-500 text-xs mt-1 hidden">
-                        Ukuran foto terlalu besar (maks. 2 MB). Kompres dulu di <a href="https://squoosh.app" target="_blank" class="underline">squoosh.app</a>, lalu pilih ulang.
+                        Ukuran foto terlalu besar (maks. 10 MB). Kompres dulu di <a href="https://squoosh.app" target="_blank" class="underline">squoosh.app</a>, lalu pilih ulang.
                     </p>
                 </div>
 
@@ -274,7 +274,7 @@
     if (photoInput) {
         photoInput.addEventListener('change', function() {
             var file = this.files[0];
-            if (file && file.size > 2 * 1024 * 1024) {
+            if (file && file.size > 10 * 1024 * 1024) {
                 if (photoSizeError) photoSizeError.classList.remove('hidden');
                 this.value = '';
             } else {

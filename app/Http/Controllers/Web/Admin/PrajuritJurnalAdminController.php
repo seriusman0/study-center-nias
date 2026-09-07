@@ -167,6 +167,27 @@ class PrajuritJurnalAdminController extends Controller
             ->get()
             ->pluck('value', 'life_item_id');
 
+        $mabId = JurnalLifeItem::where('label', 'like', '%Membaca Alkitab Bersama-sama%')->value('id');
+        $masId = JurnalLifeItem::where('label', 'like', '%Membaca Alkitab di Sekolah%')->value('id');
+        $hafalanId = JurnalLifeItem::where(function($q) {
+            $q->where('label', 'like', '%Ayat Hafalan%')
+              ->orWhere('label', 'like', '%Hafal Ayat%');
+        })->value('id');
+
+        $scoreMab = $mabId ? JurnalLifeCheck::where('student_id', $prajurit->id)->where('life_item_id', $mabId)->where('checked', true)->count() : 0;
+        $scoreMas = $masId ? JurnalLifeCheck::where('student_id', $prajurit->id)->where('life_item_id', $masId)->where('checked', true)->count() : 0;
+        
+        $scoreHafalan = 0;
+        if ($hafalanId) {
+            $hafalanItem = JurnalLifeItem::find($hafalanId);
+            $isNumber = $hafalanItem->response_type == 'number';
+            if ($isNumber) {
+                $scoreHafalan = JurnalLifeCheck::where('student_id', $prajurit->id)->where('life_item_id', $hafalanId)->sum('value');
+            } else {
+                $scoreHafalan = JurnalLifeCheck::where('student_id', $prajurit->id)->where('life_item_id', $hafalanId)->where('checked', true)->count();
+            }
+        }
+
         return response()->json([
             'status'   => 'found',
             'prajurit' => [
@@ -174,6 +195,11 @@ class PrajuritJurnalAdminController extends Controller
                 'name'   => $prajurit->name,
                 'kelas'  => $prajurit->studentProfile?->grade_class,
                 'avatar' => $prajurit->avatar,
+                'scores' => [
+                    'mab' => $scoreMab,
+                    'mas' => $scoreMas,
+                    'hafalan' => $scoreHafalan,
+                ]
             ],
             'today'           => $today,
             'today_formatted' => \Carbon\Carbon::parse($today)->locale('id')->isoFormat('dddd, D MMMM YYYY'),
@@ -236,5 +262,65 @@ class PrajuritJurnalAdminController extends Controller
         );
 
         return response()->json(['status' => 'saved']);
+    }
+
+    /**
+     * AJAX: Reset semua jurnal untuk prajurit ini.
+     */
+    public function resetJurnal(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+        ]);
+
+        $roleId = Role::where('name', 'prajurit')->value('id');
+        $prajurit = User::where('id', $request->user_id)
+            ->whereHas('roles', fn($r) => $r->where('roles.id', $roleId))
+            ->firstOrFail();
+
+        // Hapus semua check dan entry untuk prajurit ini
+        JurnalLifeCheck::where('student_id', $prajurit->id)->delete();
+        JurnalEntry::where('student_id', $prajurit->id)->delete();
+
+        return response()->json(['status' => 'reset']);
+    }
+
+    public function summary(Request $request, User $user)
+    {
+        abort_unless($user->hasRole($this->role), 404);
+
+        $today = JurnalWeek::today();
+        $from = $today->copy()->subDays(6);
+        $to = $today->copy();
+
+        $matrix = $this->buildMatrix($user, $from, $to);
+
+        return response()->json([
+            'user' => [
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+                'kelas' => $user->studentProfile?->grade_class,
+            ],
+            'matrix' => $matrix,
+        ]);
+    }
+
+    public function bulkQrPrint(Request $request)
+    {
+        $request->validate([
+            'user_ids'   => 'required|array',
+            'user_ids.*' => 'integer|exists:users,id'
+        ]);
+
+        $users = User::whereIn('id', $request->user_ids)
+            ->where('is_active', true)
+            ->whereHas('roles', fn($r) => $r->where('name', 'prajurit'))
+            ->get();
+
+        if ($users->isEmpty()) {
+            return back()->with('error', 'Tidak ada prajurit yang dipilih atau valid.');
+        }
+
+        return view('admin.prajurit-jurnal.bulk_qr_print', compact('users'));
     }
 }

@@ -197,7 +197,7 @@ function syncProfileSections() {
     var checked = Array.prototype.map.call(
         document.querySelectorAll('.role-toggle:checked'), function(el){ return el.value; }
     );
-    if (checked.indexOf('scholarship_teenager') !== -1 && checked.indexOf('student') === -1) {
+    if ((checked.indexOf('scholarship_teenager') !== -1 || checked.indexOf('prajurit') !== -1) && checked.indexOf('student') === -1) {
         checked.push('student');
     }
     document.querySelectorAll('.profile-section').forEach(function(sec){

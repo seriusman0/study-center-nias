@@ -35,7 +35,7 @@ class CertificateTemplateApiController extends Controller
             'orientation'  => 'required|in:portrait,landscape',
             'paper_size'   => 'required|in:a4',
             'is_active'    => 'boolean',
-            'logo'         => 'nullable|image|mimes:png,jpg,jpeg,svg|max:2048',
+            'logo'         => 'nullable|image|mimes:png,jpg,jpeg,svg|max:10240',
         ]);
 
         $validated['html_content'] = $this->service->sanitizeTemplate($validated['html_content']);
@@ -64,7 +64,7 @@ class CertificateTemplateApiController extends Controller
             'orientation'  => 'required|in:portrait,landscape',
             'paper_size'   => 'required|in:a4',
             'is_active'    => 'boolean',
-            'logo'         => 'nullable|image|mimes:png,jpg,jpeg,svg|max:2048',
+            'logo'         => 'nullable|image|mimes:png,jpg,jpeg,svg|max:10240',
         ]);
 
         $validated['html_content'] = $this->service->sanitizeTemplate($validated['html_content']);

@@ -1,0 +1,27 @@
+--- app/Http/Controllers/Web/Admin/PrajuritJurnalAdminController.php
++++ app/Http/Controllers/Web/Admin/PrajuritJurnalAdminController.php
+@@ -237,5 +237,23 @@
+ 
+         return response()->json(['status' => 'saved']);
+     }
++
++    public function summary(Request $request, User $user)
++    {
++        abort_unless($user->hasRole($this->role), 404);
++
++        $today = JurnalWeek::today();
++        $from = $today->copy()->subDays(6);
++        $to = $today->copy();
++
++        $matrix = $this->buildMatrix($user, $from, $to);
++
++        return response()->json([
++            'user' => [
++                'name' => $user->name,
++                'avatar' => $user->avatar,
++                'kelas' => $user->studentProfile?->grade_class,
++            ],
++            'matrix' => $matrix,
++        ]);
++    }
+ }

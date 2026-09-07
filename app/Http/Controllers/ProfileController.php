@@ -38,7 +38,7 @@ class ProfileController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'bio' => ['nullable', 'string', 'max:500'],
             'cabang_id' => ['nullable', 'exists:cabangs,id'],
-            'avatar' => ['nullable', 'image', 'max:2048'],
+            'avatar' => ['nullable', 'image', 'max:10240'],
             'profile_public' => ['sometimes', 'boolean'],
             'cv_enabled' => ['sometimes', 'boolean'],
             'social_links' => ['nullable', 'array'],

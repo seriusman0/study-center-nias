@@ -156,7 +156,7 @@
 
                 <div x-data="{ files: [] }">
                     <label class="block text-xs font-semibold text-sc-ink-600 mb-1">Upload Lampiran Bukti</label>
-                    <p class="text-xs text-sc-ink-400 mb-2">PDF, JPG, PNG, DOCX — maks 5MB per file</p>
+                    <p class="text-xs text-sc-ink-400 mb-2">PDF, JPG, PNG, DOCX — maks 10MB per file</p>
                     <input type="file" name="attachments[]" multiple accept=".pdf,.jpg,.jpeg,.png,.docx"
                            class="w-full text-sm text-sc-ink-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-sc-teal-50 file:text-sc-teal-700 hover:file:bg-sc-teal-100"
                            @change="files = Array.from($event.target.files)">

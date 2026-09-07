@@ -440,7 +440,7 @@ $kitabList = [
         <p x-show="!readOnly && !current && !preview" class="text-xs text-sc-ink-400 mt-2" style="display:none">Belum ada foto.</p>
         <p x-show="readOnly && !current" class="text-xs text-sc-ink-400 mt-2" style="display:none">Tidak ada foto.</p>
         <p x-show="error" x-text="error" class="text-xs text-red-500 mt-2" style="display:none"></p>
-        <p x-show="!readOnly" class="text-xs text-sc-ink-400 mt-2" style="display:none">Format: JPG, PNG, WebP. Maks. 4 MB.</p>
+        <p x-show="!readOnly" class="text-xs text-sc-ink-400 mt-2" style="display:none">Format: JPG, PNG, WebP. Maks. 10 MB.</p>
     </div>
 
     <div x-show="msg" x-transition class="fixed bottom-4 right-4 bg-sc-ink-900 text-white text-sm px-4 py-2 rounded-lg shadow-sc-3"
@@ -598,8 +598,8 @@ $kitabList = [
                     this.error = 'Format tidak didukung. Gunakan JPG, PNG, atau WebP.';
                     return;
                 }
-                if (f.size > 4 * 1024 * 1024) {
-                    this.error = 'Ukuran file melebihi 4 MB.';
+                if (f.size > 10 * 1024 * 1024) {
+                    this.error = 'Ukuran file melebihi 10 MB.';
                     return;
                 }
                 this.error = '';

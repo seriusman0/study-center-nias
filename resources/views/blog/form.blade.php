@@ -63,7 +63,7 @@
         </div>
 
         <div>
-            <label class="block text-sm font-medium mb-1">Gambar Sampul <span class="text-gray-400 font-normal">(maks. 2MB)</span></label>
+            <label class="block text-sm font-medium mb-1">Gambar Sampul <span class="text-gray-400 font-normal">(maks. 10MB)</span></label>
             <input type="file" name="image" accept="image/*" class="text-sm">
             @if(isset($blog) && $blog->image)
             <img src="{{ asset('storage/'.$blog->image) }}" class="mt-2 h-24 rounded-lg object-cover" alt="">
@@ -148,8 +148,8 @@
                         input.onchange = async () => {
                             const file = input.files[0];
                             if (!file) return;
-                            if (file.size > 5 * 1024 * 1024) {
-                                alert('Ukuran gambar maksimal 5MB.');
+                            if (file.size > 10 * 1024 * 1024) {
+                                alert('Ukuran gambar maksimal 10MB.');
                                 return;
                             }
                             const range = quill.getSelection(true);

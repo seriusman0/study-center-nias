@@ -268,22 +268,26 @@
                 </button>
             </div>
             <div class="modal-body p-4" id="jurnalModalBody">
-                <div class="row">
-                    <div class="col-md-4 text-center mb-4 mb-md-0" id="jurnalAvatarCol">
-                        <!-- Avatar -->
-                    </div>
-                    <div class="col-md-8">
-                        <div class="bg-light rounded p-3 mb-3 text-center" id="jurnalPrajuritInfo" style="font-size:1.1rem;">
-                            <!-- Info -->
-                        </div>
-                        <div id="jurnalItemsList"></div>
-                        <div id="jurnalSaveStatus" class="mt-3 text-center" style="font-size:1.1rem; font-weight:bold;"></div>
-                    </div>
+                <div class="text-center mb-4" id="jurnalAvatarCol">
+                    <!-- Avatar -->
                 </div>
+                <div class="bg-light rounded p-3 mb-4 text-center" id="jurnalPrajuritInfo" style="font-size:1.1rem;">
+                    <!-- Info -->
+                </div>
+                
+                <div id="jurnalScores" class="row text-center mb-4">
+                    <!-- Scores -->
+                </div>
+
+                <div id="jurnalItemsList" class="mx-auto" style="max-width: 600px;"></div>
+                <div id="jurnalSaveStatus" class="mt-3 text-center" style="font-size:1.1rem; font-weight:bold;"></div>
             </div>
-            <div class="modal-footer border-0 justify-content-center pb-4">
+            <div class="modal-footer border-0 justify-content-between pb-4">
+                <button type="button" class="btn btn-outline-danger font-weight-bold" id="btnResetJurnal">
+                    <i class="fas fa-trash-alt mr-1"></i> Reset Jurnal
+                </button>
                 <button type="button" class="btn kid-btn-save" id="btnSaveJurnal">
-                    <i class="fas fa-check-circle mr-2"></i> Simpan Jurnal
+                    <i class="fas fa-times-circle mr-2"></i> Tutup
                 </button>
             </div>
         </div>
@@ -444,14 +448,37 @@ function openJurnalModal(data) {
     let avatarUrl = data.prajurit.avatar || 'https://ui-avatars.com/api/?name='+encodeURIComponent(data.prajurit.name)+'&size=300&background=FF9A9E&color=fff';
     
     document.getElementById('jurnalAvatarCol').innerHTML = `
-        <div class="text-center mt-2">
-            <img src="${avatarUrl}" class="rounded shadow-sm" style="width: 130px; height: 130px; object-fit: cover; border-radius: 20px !important; border: 4px solid #fff;" alt="Foto Profil">
-        </div>
+        <img src="${avatarUrl}" class="rounded shadow-sm" style="width: 140px; height: 140px; object-fit: cover; border-radius: 20px !important; border: 4px solid #fff;" alt="Foto Profil">
     `;
 
     let kelasHtml = data.prajurit.kelas ? `Kelas: <strong>${escHtml(data.prajurit.kelas)}</strong> <span class="mx-2">|</span>` : `<span class="text-black-50">Kelas: Belum diatur</span> <span class="mx-2">|</span>`;
     document.getElementById('jurnalPrajuritInfo').innerHTML =
         `${kelasHtml} Tanggal: <strong>${data.today_formatted || data.today}</strong>`;
+
+    let scoresHtml = '';
+    if (data.prajurit.scores) {
+        scoresHtml = `
+            <div class="col-4">
+                <div class="p-2 border rounded shadow-sm bg-white">
+                    <div class="small text-muted font-weight-bold">MAB</div>
+                    <div class="h4 mb-0 text-primary">${data.prajurit.scores.mab || 0}</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="p-2 border rounded shadow-sm bg-white">
+                    <div class="small text-muted font-weight-bold">MAS</div>
+                    <div class="h4 mb-0 text-success">${data.prajurit.scores.mas || 0}</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="p-2 border rounded shadow-sm bg-white">
+                    <div class="small text-muted font-weight-bold">Hafalan</div>
+                    <div class="h4 mb-0 text-warning">${data.prajurit.scores.hafalan || 0}</div>
+                </div>
+            </div>
+        `;
+    }
+    document.getElementById('jurnalScores').innerHTML = scoresHtml;
 
     let html = '';
     data.items.forEach(item => {
@@ -501,6 +528,35 @@ function openJurnalModal(data) {
         $('.kid-modal-content').addClass('kid-bounce');
     }
 }
+
+document.getElementById('btnResetJurnal').addEventListener('click', () => {
+    if(!confirm('Anda yakin ingin mereset jurnal hari ini untuk prajurit ini?')) return;
+    
+    document.getElementById('jurnalSaveStatus').innerHTML =
+        '<span class="text-info"><i class="fas fa-spinner fa-spin mr-1"></i>Mereset...</span>';
+
+    fetch('/admin/jurnal-prajurit/reset', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': CSRF,
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ user_id: currentUser.id }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'reset') {
+            document.getElementById('jurnalSaveStatus').innerHTML =
+                '<span class="text-success"><i class="fas fa-check mr-1"></i>Jurnal direset</span>';
+            setTimeout(() => { location.reload(); }, 500);
+        }
+    })
+    .catch(() => {
+        document.getElementById('jurnalSaveStatus').innerHTML =
+            '<span class="text-danger">Gagal mereset.</span>';
+    });
+});
 
 document.getElementById('btnSaveJurnal').addEventListener('click', () => {
     $('#jurnalModal').modal('hide');

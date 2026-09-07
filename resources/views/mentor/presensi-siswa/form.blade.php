@@ -84,7 +84,7 @@
 
             {{-- Foto --}}
             <div>
-                <label class="block text-sm font-semibold text-sc-ink-700 mb-1.5">Foto Kegiatan <span class="text-xs font-normal text-sc-ink-400">(opsional, maks 4MB)</span></label>
+                <label class="block text-sm font-semibold text-sc-ink-700 mb-1.5">Foto Kegiatan <span class="text-xs font-normal text-sc-ink-400">(opsional, maks 10MB)</span></label>
                 <input type="file" name="foto" accept="image/*"
                        class="w-full text-sm text-sc-ink-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-sc-teal-50 file:text-sc-teal-700 file:font-medium hover:file:bg-sc-teal-100">
                 @if($presensi?->foto)

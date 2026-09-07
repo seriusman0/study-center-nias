@@ -59,7 +59,7 @@ class PendaftaranController extends Controller
             'address'        => 'required|string|max:500',
             'guardian_phone' => ['required', 'string', 'max:13', 'regex:/^[0-9]{7,13}$/'],
             'note'           => 'nullable|string|max:1000',
-            'photo'          => $request->hasFile('photo') ? 'image|mimes:jpg,jpeg,png,webp|max:2048' : 'nullable',
+            'photo'          => $request->hasFile('photo') ? 'image|mimes:jpg,jpeg,png,webp|max:10240' : 'nullable',
             'mata_pelajaran'   => 'required|array|min:1',
             'mata_pelajaran.*' => 'string|max:100',
         ], [
@@ -292,7 +292,7 @@ class PendaftaranController extends Controller
             'address'        => 'required|string|max:500',
             'guardian_phone' => ['required', 'string', 'max:13', 'regex:/^[0-9]{7,13}$/'],
             'note'           => 'nullable|string|max:1000',
-            'photo'          => $request->hasFile('photo') ? 'image|mimes:jpg,jpeg,png,webp|max:2048' : 'nullable',
+            'photo'          => $request->hasFile('photo') ? 'image|mimes:jpg,jpeg,png,webp|max:10240' : 'nullable',
         ], [
             'name.required'           => 'Nama lengkap wajib diisi.',
             'name.max'                => 'Nama lengkap maksimal 100 karakter.',
