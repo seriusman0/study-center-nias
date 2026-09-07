@@ -308,30 +308,43 @@ let currentUser = null;
 let currentItems = [];
 let currentDate = null;
 
+let audioCtx = null;
+function initAudio() {
+    if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+            audioCtx = new AudioContext();
+        }
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
 function playSound(type) {
     try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
-        const gainNode = ctx.createGain();
+        if (!audioCtx) initAudio();
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
         osc.connect(gainNode);
-        gainNode.connect(ctx.destination);
+        gainNode.connect(audioCtx.destination);
         if (type === 'success') {
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(800, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
-            gainNode.gain.setValueAtTime(0.5, ctx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-            osc.start(ctx.currentTime);
-            osc.stop(ctx.currentTime + 0.2);
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.2);
         } else {
             osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(300, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.3);
-            gainNode.gain.setValueAtTime(0.5, ctx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-            osc.start(ctx.currentTime);
-            osc.stop(ctx.currentTime + 0.3);
+            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.3);
         }
     } catch(e) {}
 }
@@ -373,6 +386,7 @@ document.getElementById('cameraSelect').addEventListener('change', function() {
 });
 
 document.getElementById('btnOpenScanner').addEventListener('click', () => {
+    initAudio();
     $('#scannerModal').modal('show');
     document.getElementById('scan-status').innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin mr-1"></i>Meminta akses kamera...</span>';
     
@@ -541,12 +555,13 @@ function openJurnalModal(data) {
             </label>`;
         } else {
             const val = data.numberValues[item.id] ?? '';
+            const displayVal = (val === 0 || val === '0') ? '' : val;
             html += `
             <div class="kid-check-item d-flex align-items-center justify-content-between mb-3">
                 <label for="item_num_${item.id}" class="kid-check-label m-0">${escHtml(item.label)}</label>
                 <input type="number" min="0" class="kid-number-input jurnal-number m-0 text-center"
                     id="item_num_${item.id}" data-item-id="${item.id}" data-type="number"
-                    value="${val}" placeholder="0" style="width: 80px; padding: 5px 10px;">
+                    value="${displayVal}" placeholder="" style="width: 80px; padding: 5px 10px;">
             </div>`;
         }
     });
