@@ -1,0 +1,259 @@
+
+const PUBLIC_SCAN_URL  = "http://localhost:8888/public-jurnal/scan";
+const PUBLIC_SAVE_URL  = "http://localhost:8888/public-jurnal/save";
+const CSRF      = "z1aN7BG8K4u6yrh7iZ6yjiJS53o9UhHrqdaVOF2E";
+
+let html5Qrcode = null;
+let scanning    = false;
+let currentUser = null;
+let currentItems = [];
+let currentDate = null;
+
+function playSound(type) {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        if (type === 'success') {
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.2);
+        } else {
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.2);
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.3);
+        }
+    } catch(e) {}
+}
+
+function escHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function startScanner(cameraIdOrConfig) {
+    if (html5Qrcode) {
+        html5Qrcode.stop().then(() => {
+            html5Qrcode.clear();
+            initScanner(cameraIdOrConfig);
+        }).catch(() => {
+            initScanner(cameraIdOrConfig);
+        });
+    } else {
+        initScanner(cameraIdOrConfig);
+    }
+}
+
+function initScanner(cameraIdOrConfig, isFallback = false) {
+    html5Qrcode = new Html5Qrcode("qr-reader");
+    html5Qrcode.start(
+        cameraIdOrConfig,
+        {
+            fps: 10,
+            qrbox: function(viewfinderWidth, viewfinderHeight) {
+                let minEdgePercentage = 0.7;
+                let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+                let qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+                return { width: qrboxSize, height: qrboxSize };
+            }
+        },
+        onScanSuccess,
+        (errorMessage) => { /* ignore */ }
+    ).then(() => {
+        let msg = document.getElementById('scan-status');
+        if(msg) msg.innerHTML = 'Arahkan QR Code ke kamera.';
+    }).catch(err => {
+        if (!isFallback && err.toString().includes('OverconstrainedError')) {
+            if (html5Qrcode) {
+                html5Qrcode.clear();
+            }
+            let select = document.getElementById('cameraSelect');
+            if (select) select.value = 'user';
+            initScanner({ facingMode: "user" }, true);
+        } else {
+            let msg = document.getElementById('scan-status');
+            if(msg) msg.innerHTML = '<span class="text-danger text-red-500">Gagal memulai kamera: ' + err + '</span>';
+        }
+    });
+}
+
+function openPublicScanner() {
+    document.getElementById('publicScannerModal').classList.remove('hidden');
+    document.getElementById('scan-status').innerHTML = '<span class="text-blue-500">Meminta akses kamera...</span>';
+    
+    Html5Qrcode.getCameras().then(devices => {
+        let select = document.getElementById('cameraSelect');
+        select.innerHTML = '';
+        if (devices && devices.length > 0) {
+            let backCam = devices.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('belakang'));
+            let defaultId = backCam ? backCam.id : devices[0].id;
+            
+            devices.forEach(cam => {
+                let opt = document.createElement('option');
+                opt.value = cam.id;
+                opt.text = cam.label || 'Kamera ' + cam.id;
+                select.appendChild(opt);
+            });
+            
+            select.value = defaultId;
+
+            setTimeout(() => {
+                if (document.getElementById('publicScannerModal').classList.contains('hidden')) return;
+                startScanner(defaultId);
+            }, 400); 
+        } else {
+            select.innerHTML = '<option value="environment">Kamera Belakang</option><option value="user">Kamera Depan</option>';
+            setTimeout(() => {
+                if (document.getElementById('publicScannerModal').classList.contains('hidden')) return;
+                startScanner({ facingMode: "environment" });
+            }, 400); 
+        }
+    }).catch(err => {
+        document.getElementById('scan-status').innerHTML = '<span class="text-red-500">Izin kamera ditolak/gagal. Pastikan browser mengizinkan akses kamera. (' + err + ')</span>';
+    });
+}
+
+document.getElementById('cameraSelect').addEventListener('change', function() {
+    let val = this.value;
+    if (val === 'environment' || val === 'user') {
+        startScanner({ facingMode: val });
+    } else {
+        startScanner(val);
+    }
+});
+
+function resetScannerUI() {
+    document.getElementById('scannerResultContainer').classList.add('hidden');
+    document.getElementById('scannerCameraSection').classList.remove('hidden');
+    document.getElementById('scan-status').innerHTML = '<span class="text-gray-600">Arahkan QR Code ke kamera.</span>';
+    if(html5Qrcode && html5Qrcode.getState() !== 2) { // 2 = SCANNING
+        let select = document.getElementById('cameraSelect');
+        if(select && select.value) {
+            startScanner(select.value);
+        }
+    }
+}
+
+function closePublicScanner() {
+    document.getElementById('publicScannerModal').classList.add('hidden');
+    if (html5Qrcode) {
+        try {
+            html5Qrcode.stop().then(() => {
+                html5Qrcode.clear();
+                html5Qrcode = null;
+            }).catch(() => { html5Qrcode = null; });
+        } catch(e) {}
+    }
+    document.getElementById('scannerResultContent').classList.add('hidden');
+        document.getElementById('scannerCameraSection').classList.add('hidden');
+    document.getElementById('scannerResultContainer').classList.remove('hidden');
+        document.getElementById('scannerCameraSection').classList.add('hidden');
+    document.getElementById('scannerResultContainer').classList.remove('hidden');
+
+    document.getElementById('jurnalModalTitleName').innerHTML = escHtml(data.user.name);
+    let avatarUrl = data.user.avatar || 'https://ui-avatars.com/api/?name='+encodeURIComponent(data.user.name)+'&size=150&background=0F766E&color=fff';
+    
+    document.getElementById('jurnalAvatarCol').innerHTML = `<img src="${avatarUrl}" class="rounded-full shadow-sm object-cover border-4 border-sc-teal-200" style="width: 70px; height: 70px;" alt="Foto Profil">`;
+
+    let kelasHtml = data.user.kelas ? `Kelas/Info: <strong>${escHtml(data.user.kelas)}</strong> <span class="mx-2 text-gray-300">|</span>` : ``;
+    document.getElementById('jurnalPrajuritInfo').innerHTML = `${kelasHtml} Tanggal: <strong>${data.today_formatted || data.today}</strong>`;
+
+    const container = document.getElementById('jurnalChecklistContainer');
+    container.innerHTML = '';
+
+    let checkedIds = data.checkedIds || [];
+    let numberValues = data.numberValues || {};
+
+    data.items.forEach(item => {
+        let isChecked = checkedIds.includes(item.id);
+        
+        let card = document.createElement('div');
+        card.className = "flex items-center justify-between p-3 bg-white border border-gray-200 rounded-xl hover:shadow-sm transition cursor-pointer group";
+        
+        let valInput = '';
+        if (item.response_type === 'number') {
+            let val = numberValues[item.id] || 0;
+            valInput = `
+                <div class="ml-3 flex items-center gap-2" onclick="event.stopPropagation()">
+                    <input type="number" min="0" class="jurnal-val-input border border-gray-300 rounded px-2 py-1 w-20 text-center text-sm" data-id="${item.id}" value="${val}" onchange="autoSavePublicJurnal()">
+                </div>
+            `;
+        }
+
+        card.innerHTML = `
+            <div class="flex items-center gap-3 flex-grow" onclick="togglePublicCheck(${item.id})">
+                <div class="relative flex items-center justify-center w-6 h-6 rounded-md border-2 transition-colors ${isChecked ? 'bg-sc-teal-500 border-sc-teal-500' : 'bg-white border-gray-300 group-hover:border-sc-teal-400'}" id="chkbox-bg-${item.id}">
+                    <svg class="${isChecked ? 'opacity-100' : 'opacity-0'} text-white transition-opacity w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div>
+                    <span class="text-sm font-medium text-gray-800">${escHtml(item.label)}</span>
+                    <span class="text-xs px-2 py-0.5 ml-2 bg-gray-100 text-gray-600 rounded-full">${escHtml(item.kategori)}</span>
+                </div>
+                <input type="checkbox" class="jurnal-item-check hidden" data-id="${item.id}" ${isChecked ? 'checked' : ''}>
+            </div>
+            ${valInput}
+        `;
+        container.appendChild(card);
+    });
+}
+
+function togglePublicCheck(id) {
+    let cb = document.querySelector('.jurnal-item-check[data-id="'+id+'"]');
+    if (!cb) return;
+    cb.checked = !cb.checked;
+    
+    let bg = document.getElementById('chkbox-bg-'+id);
+    let svg = bg.querySelector('svg');
+    
+    if (cb.checked) {
+        bg.classList.remove('bg-white', 'border-gray-300');
+        bg.classList.add('bg-sc-teal-500', 'border-sc-teal-500');
+        svg.classList.remove('opacity-0');
+        svg.classList.add('opacity-100');
+    } else {
+        bg.classList.remove('bg-sc-teal-500', 'border-sc-teal-500');
+        bg.classList.add('bg-white', 'border-gray-300');
+        svg.classList.remove('opacity-100');
+        svg.classList.add('opacity-0');
+    }
+    
+    autoSavePublicJurnal();
+}
+
+function autoSavePublicJurnal() {
+    if (!currentUser || !currentDate) return;
+    
+    let checks = [];
+    document.querySelectorAll('.jurnal-item-check').forEach(cb => {
+        let id = parseInt(cb.getAttribute('data-id'));
+        let valInput = document.querySelector('.jurnal-val-input[data-id="'+id+'"]');
+        let val = valInput ? parseFloat(valInput.value) || 0 : null;
+        
+        checks.push({
+            item_id: id,
+            checked: cb.checked,
+            value: val
+        });
+    });
+
+    fetch(PUBLIC_SAVE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+        body: JSON.stringify({ user_id: currentUser.id, tanggal: currentDate, checks: checks })
+    }).catch(()=>{});
+}

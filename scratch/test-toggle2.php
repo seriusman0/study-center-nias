@@ -1,27 +1,25 @@
 <?php
-require __DIR__.'/../vendor/autoload.php';
-$app = require_once __DIR__.'/../bootstrap/app.php';
+require __DIR__ . '/../vendor/autoload.php';
+$app = require_once __DIR__ . '/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-$role = App\Models\Role::where('name', 'prajurit')->first();
-$user = $role->users()->first();
-if (!$user) die("No prajurit found\n");
+$user = \App\Models\User::where('username', 'yoziaepalmangulo')->first();
 
-echo "User: " . $user->username . "\n";
-
-$req = Illuminate\Http\Request::create('/jurnal-prajurit/toggle', 'POST', [
+$request = \Illuminate\Http\Request::create('/jurnal-prajurit/toggle', 'POST', [
     'type' => 'life',
     'item_id' => 1,
-    'date' => \Carbon\Carbon::now('Asia/Jakarta')->toDateString(),
-    'checked' => true
+    'checked' => true,
+    'date' => date('Y-m-d')
 ]);
-$req->setUserResolver(fn() => $user);
+$request->headers->set('Accept', 'application/json');
+$request->setUserResolver(function() use ($user) { return $user; });
 
-$controller = app(App\Http\Controllers\Web\Prajurit\PrajuritJurnalController::class);
+$controller = new \App\Http\Controllers\Web\Prajurit\PrajuritJurnalController();
 try {
-    $res = $controller->toggle($req);
-    echo $res->getContent() . "\n";
+    $response = $controller->toggle($request);
+    echo "Status: " . $response->getStatusCode() . "\n";
+    echo "Content: " . $response->getContent() . "\n";
 } catch (\Exception $e) {
-    echo "ERROR: " . $e->getMessage() . "\n";
+    echo "Exception: " . $e->getMessage() . "\n";
 }

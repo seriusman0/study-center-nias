@@ -25,7 +25,7 @@ class JurnalBulkController extends Controller
         $defaultItems = JurnalLifeItem::where('is_default', true)
             ->where('is_active', true)
             ->whereNull('student_id')
-            ->whereIn('kategori', ['kerohanian', 'pendidikan', 'karakter'])
+            ->whereIn('kategori', ['kerohanian', 'pendidikan', 'karakter', 'pembacaan', 'sidang', 'rohani', 'prajurit'])
             ->orderBy('kategori')
             ->orderBy('label')
             ->get();

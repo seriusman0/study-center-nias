@@ -3,6 +3,102 @@
 
 @section('content')
 
+
+{{-- SCAN QR PRAJURIT BUTTON --}}
+<div class="mb-4 text-center">
+    <button type="button" class="btn btn-warning btn-lg px-5 py-3 font-weight-bold" id="btnOpenScanner" style="font-size: 1.5rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(255,193,7,0.4);">
+        <i class="fas fa-qrcode mr-2"></i> SCAN QR PRAJURIT
+    </button>
+</div>
+
+{{-- User table --}}
+<div class="card" id="users-table">
+    <div class="card-header">
+        <h3 class="card-title">Prajurit</h3>
+        <div class="card-tools d-flex align-items-center">
+            <form method="GET" class="form-inline mr-2">
+                <input type="text" name="q" value="{{ request('q') }}" class="form-control form-control-sm mr-2" placeholder="Cari nama">
+                <button class="btn btn-sm btn-outline-primary">Filter</button>
+            </form>
+            
+            <button type="button" class="btn btn-sm btn-success ml-2" onclick="
+                if(document.querySelectorAll('.user-checkbox:checked').length === 0) {
+                    alert('Pilih setidaknya satu prajurit untuk dicetak!');
+                } else {
+                    document.getElementById('bulk-qr-form').submit();
+                }
+            ">
+                <i class="fas fa-print mr-1"></i> Cetak QR Massal
+            </button>
+        </div>
+    </div>
+    
+    <form id="bulk-qr-form" action="{{ route('admin.jurnal-prajurit.bulk-qr') }}" method="POST" target="_blank">
+        @csrf
+        <div class="card-body p-0">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th class="text-center" style="width:40px;">
+                            <input type="checkbox" id="checkAllUsers" onclick="document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = this.checked)">
+                        </th>
+                        <th>Nama</th>
+                        <th>Kelas</th>
+                        <th class="text-center">7 Hari<br><small class="text-muted">Centang</small></th>
+                        <th>Terakhir Aktif</th>
+                        <th class="text-center">Hari Ini</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($users as $user)
+                    <tr style="cursor:pointer;" class="kid-row" data-user-id="{{ $user->id }}" onclick="openSummaryModal({{ $user->id }})">
+                        <td class="text-center" onclick="event.stopPropagation();">
+                            <input type="checkbox" name="user_ids[]" value="{{ $user->id }}" class="user-checkbox">
+                        </td>
+                        <td>
+                            <strong>{{ $user->name }}</strong><br>
+                            <small class="text-muted">{{ '@' . $user->username }}</small>
+                        </td>
+                        <td>{{ $user->studentProfile?->grade_class ?? '—' }}</td>
+                        <td class="text-center">
+                            @php $cnt = $checkCounts[$user->id] ?? 0; @endphp
+                            <span class="badge badge-{{ $cnt >= 10 ? 'success' : ($cnt >= 5 ? 'warning' : 'secondary') }}">{{ $cnt }}</span>
+                        </td>
+                        <td>
+                            @php $last = $lastEntryDates[$user->id] ?? null; @endphp
+                            {{ $last ? \Carbon\Carbon::parse($last)->locale('id')->isoFormat('D MMM Y') : '—' }}
+                        </td>
+                        <td class="text-center">
+                            @if(isset($lastEntryDates[$user->id]) && $lastEntryDates[$user->id] === $today)
+                                <span class="badge badge-success"><i class="fas fa-check"></i></span>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
+                        <td onclick="event.stopPropagation();">
+                            <a href="{{ route('admin.jurnal-prajurit.show', $user) }}" class="btn btn-xs btn-info">
+                                <i class="fas fa-chart-bar"></i> Laporan
+                            </a>
+                            <a href="{{ route('admin.jurnal-prajurit.export', $user) }}" class="btn btn-xs btn-success">
+                                <i class="fas fa-download"></i> CSV
+                            </a>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="7" class="text-center text-muted py-3">Tidak ada pengguna Prajurit.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </form>
+    @if($users->hasPages())
+    <div class="card-footer">{{ $users->withQueryString()->links() }}</div>
+    @endif
+</div>
+
+<hr class="my-5">
+
 {{-- Top: Today's bible info + form window --}}
 <div class="row mb-3">
     <div class="col-md-8">
@@ -125,114 +221,52 @@
     </div>
 </div>
 
-{{-- User table --}}
-<div class="card" id="users-table">
-    <div class="card-header">
-        <h3 class="card-title">Prajurit</h3>
-        <div class="card-tools d-flex align-items-center">
-            <form method="GET" class="form-inline mr-2">
-                <input type="text" name="q" value="{{ request('q') }}" class="form-control form-control-sm mr-2" placeholder="Cari nama">
-                <button class="btn btn-sm btn-outline-primary">Filter</button>
-            </form>
-            
-            <button type="button" class="btn btn-sm btn-warning ml-2" id="btnOpenScanner">
-                <i class="fas fa-qrcode mr-1"></i> Scan QR Prajurit
-            </button>
-            
-            <button type="button" class="btn btn-sm btn-success ml-2" onclick="
-                if(document.querySelectorAll('.user-checkbox:checked').length === 0) {
-                    alert('Pilih setidaknya satu prajurit untuk dicetak!');
-                } else {
-                    document.getElementById('bulk-qr-form').submit();
-                }
-            ">
-                <i class="fas fa-print mr-1"></i> Cetak QR Massal
-            </button>
-        </div>
-    </div>
-    
-    <form id="bulk-qr-form" action="{{ route('admin.jurnal-prajurit.bulk-qr') }}" method="POST" target="_blank">
-        @csrf
-        <div class="card-body p-0">
-            <table class="table table-sm table-hover mb-0">
-                <thead class="thead-light">
-                    <tr>
-                        <th class="text-center" style="width:40px;">
-                            <input type="checkbox" id="checkAllUsers" onclick="document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = this.checked)">
-                        </th>
-                        <th>Nama</th>
-                        <th>Kelas</th>
-                        <th class="text-center">7 Hari<br><small class="text-muted">Centang</small></th>
-                        <th>Terakhir Aktif</th>
-                        <th class="text-center">Hari Ini</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($users as $user)
-                    <tr style="cursor:pointer;" class="kid-row" data-user-id="{{ $user->id }}" onclick="openSummaryModal({{ $user->id }})">
-                        <td class="text-center" onclick="event.stopPropagation();">
-                            <input type="checkbox" name="user_ids[]" value="{{ $user->id }}" class="user-checkbox">
-                        </td>
-                        <td>
-                            <strong>{{ $user->name }}</strong><br>
-                            <small class="text-muted">{{ '@' . $user->username }}</small>
-                        </td>
-                        <td>{{ $user->studentProfile?->grade_class ?? '—' }}</td>
-                        <td class="text-center">
-                            @php $cnt = $checkCounts[$user->id] ?? 0; @endphp
-                            <span class="badge badge-{{ $cnt >= 10 ? 'success' : ($cnt >= 5 ? 'warning' : 'secondary') }}">{{ $cnt }}</span>
-                        </td>
-                        <td>
-                            @php $last = $lastEntryDates[$user->id] ?? null; @endphp
-                            {{ $last ? \Carbon\Carbon::parse($last)->locale('id')->isoFormat('D MMM Y') : '—' }}
-                        </td>
-                        <td class="text-center">
-                            @if(isset($lastEntryDates[$user->id]) && $lastEntryDates[$user->id] === $today)
-                                <span class="badge badge-success"><i class="fas fa-check"></i></span>
-                            @else
-                                <span class="text-muted">—</span>
-                            @endif
-                        </td>
-                        <td onclick="event.stopPropagation();">
-                            <a href="{{ route('admin.jurnal-prajurit.show', $user) }}" class="btn btn-xs btn-info">
-                                <i class="fas fa-chart-bar"></i> Laporan
-                            </a>
-                            <a href="{{ route('admin.jurnal-prajurit.export', $user) }}" class="btn btn-xs btn-success">
-                                <i class="fas fa-download"></i> CSV
-                            </a>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="7" class="text-center text-muted py-3">Tidak ada pengguna Prajurit.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </form>
-    @if($users->hasPages())
-    <div class="card-footer">{{ $users->withQueryString()->links() }}</div>
-    @endif
-</div>
-{{-- ═══════ MODAL: QR SCANNER ═══════ --}}
+{{-- ═══════ MODAL: QR SCANNER & JURNAL ═══════ --}}
 <div class="modal fade" id="scannerModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-warning">
-                <h5 class="modal-title">
-                    <i class="fas fa-qrcode mr-1"></i> Scan QR Prajurit
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content kid-modal-content">
+            <div class="modal-header kid-modal-header d-flex align-items-center">
+                <h5 class="modal-title kid-modal-title">
+                    <i class="fas fa-qrcode mr-2"></i> Scanner & Jurnal Prajurit
                 </h5>
-                <button type="button" class="close" data-dismiss="modal">
+                <button type="button" class="close" data-dismiss="modal" style="font-size: 2rem; color: #333;">
                     <span>&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <div class="form-group mb-2" id="cameraSelectGroup" style="display:none;">
-                    <label for="cameraSelect" class="small font-weight-bold">Pilih Kamera:</label>
-                    <select id="cameraSelect" class="form-control form-control-sm"></select>
+            <div class="modal-body p-0">
+                <div class="row m-0">
+                    <div class="col-md-5 p-4 bg-white border-right">
+                        <div class="form-group mb-2" id="cameraSelectGroup" style="display:none;">
+                            <label for="cameraSelect" class="small font-weight-bold">Pilih Kamera:</label>
+                            <select id="cameraSelect" class="form-control form-control-sm"></select>
+                        </div>
+                        <div id="qr-reader" style="width:100%; max-width: 320px; margin: 0 auto; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1);"></div>
+                        <div id="scan-status" class="mt-3 text-center text-muted font-weight-bold">Arahkan QR Code Prajurit ke kamera.</div>
+                    </div>
+                    <div class="col-md-7 p-3 bg-light" id="scannerResultContainer">
+                        <div class="text-center text-muted d-flex flex-column align-items-center justify-content-center h-100" id="scannerResultPlaceholder" style="min-height: 250px;">
+                            <i class="fas fa-qrcode fa-5x mb-3" style="color: #dee2e6;"></i>
+                            <h5>Menunggu Hasil Scan...</h5>
+                            <p class="small">Scan QR Prajurit untuk mulai mengisi jurnal.</p>
+                        </div>
+                        
+                        <div id="scannerResultContent" style="display:none;">
+                            <div class="d-flex align-items-center mb-4 bg-white p-3 rounded shadow-sm">
+                                <div id="jurnalAvatarCol" class="mr-3"></div>
+                                <div>
+                                    <h4 class="font-weight-bold mb-1" id="jurnalModalTitleName" style="color: #333;"></h4>
+                                    <div id="jurnalPrajuritInfo" class="text-muted small"></div>
+                                </div>
+                            </div>
+                            
+                            <div id="jurnalScores" class="row text-center mb-4"></div>
+                            
+                            <div id="jurnalItemsList" class="mx-auto bg-white p-4 rounded shadow-sm"></div>
+                            
+                            <div id="jurnalSaveStatus" class="mt-3 text-center" style="font-size:1.1rem; font-weight:bold;"></div>
+                        </div>
+                    </div>
                 </div>
-                <div id="qr-reader" style="width:100%"></div>
-                <div id="scan-status" class="mt-2 text-center text-muted small"></div>
             </div>
         </div>
     </div>
@@ -241,59 +275,20 @@
 <style>
     .kid-modal-content { border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
     .kid-modal-header { background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%); color: #333; border-bottom: none; padding: 20px 25px; }
-    .kid-modal-title { font-weight: 800; font-size: 1.5rem; letter-spacing: 1px; }
+    .kid-modal-title { font-weight: 800; font-size: 1.5rem; letter-spacing: 1px; margin: 0; }
     .kid-check-item { background: #f8f9fa; border-radius: 12px; padding: 15px; border: 2px solid #e9ecef; transition: all 0.2s; cursor: pointer; }
     .kid-check-item:hover { border-color: #a3bffa; background: #f1f5f9; transform: translateY(-2px); }
     .kid-check-item input[type="checkbox"] { transform: scale(1.5); margin-right: 15px; cursor: pointer; }
     .kid-check-label { font-size: 1.1rem; font-weight: 600; color: #495057; margin: 0; cursor: pointer; user-select: none; }
     .kid-number-input { font-size: 1.2rem; border-radius: 12px; border: 2px solid #e9ecef; font-weight: bold; }
     .kid-number-input:focus { border-color: #FF9A9E; box-shadow: 0 0 0 3px rgba(255, 154, 158, 0.3); outline: none; }
-    .kid-btn-save { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border: none; color: #fff; font-weight: bold; font-size: 1.2rem; padding: 12px 30px; border-radius: 50px; box-shadow: 0 4px 15px rgba(67, 233, 123, 0.4); transition: all 0.3s; }
-    .kid-btn-save:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(67, 233, 123, 0.6); color: #fff; }
     
     @keyframes kidBounceIn {
-        0% { transform: scale(0.8); opacity: 0; }
-        60% { transform: scale(1.05); opacity: 1; }
+        0% { transform: scale(0.95); opacity: 0; }
         100% { transform: scale(1); opacity: 1; }
     }
-    .kid-bounce { animation: kidBounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+    .kid-bounce { animation: kidBounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
 </style>
-
-{{-- ═══════ MODAL: JURNAL PRAJURIT ═══════ --}}
-<div class="modal fade" id="jurnalModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content kid-modal-content">
-            <div class="modal-header kid-modal-header d-flex align-items-center">
-                <h5 class="modal-title kid-modal-title" id="jurnalModalTitle">
-                    <i class="fas fa-star text-warning mr-2"></i> Jurnal Prajurit
-                </h5>
-                <button type="button" class="close" data-dismiss="modal" style="font-size: 2rem; color: #333;">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body p-4" id="jurnalModalBody">
-                <div class="text-center mb-4" id="jurnalAvatarCol">
-                    <!-- Avatar -->
-                </div>
-                <div class="bg-light rounded p-3 mb-4 text-center" id="jurnalPrajuritInfo" style="font-size:1.1rem;">
-                    <!-- Info -->
-                </div>
-                
-                <div id="jurnalScores" class="row text-center mb-4">
-                    <!-- Scores -->
-                </div>
-
-                <div id="jurnalItemsList" class="mx-auto" style="max-width: 600px;"></div>
-                <div id="jurnalSaveStatus" class="mt-3 text-center" style="font-size:1.1rem; font-weight:bold;"></div>
-            </div>
-            <div class="modal-footer border-0 justify-content-center pb-4">
-                <button type="button" class="btn kid-btn-save" id="btnSaveJurnal">
-                    <i class="fas fa-times-circle mr-2"></i> Tutup
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
 @push('scripts')
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -350,29 +345,61 @@ function playSound(type) {
 }
 
 function startScanner(cameraIdOrConfig) {
-    if (html5Qrcode) {
-        html5Qrcode.stop().then(() => {
-            html5Qrcode.clear();
+    try {
+        if (html5Qrcode) {
+            let state = 0;
+            try { state = html5Qrcode.getState(); } catch(e) {}
+            
+            if (state === 2) { // SCANNING
+                html5Qrcode.stop().then(() => {
+                    try { html5Qrcode.clear(); } catch(e) {}
+                    initScanner(cameraIdOrConfig);
+                }).catch(() => {
+                    initScanner(cameraIdOrConfig);
+                });
+            } else {
+                try { html5Qrcode.clear(); } catch(e) {}
+                initScanner(cameraIdOrConfig);
+            }
+        } else {
             initScanner(cameraIdOrConfig);
-        }).catch(() => {
-            initScanner(cameraIdOrConfig);
-        });
-    } else {
+        }
+    } catch(e) {
         initScanner(cameraIdOrConfig);
     }
 }
 
-function initScanner(cameraIdOrConfig) {
+function initScanner(cameraIdOrConfig, isFallback = false) {
     html5Qrcode = new Html5Qrcode("qr-reader");
     html5Qrcode.start(
         cameraIdOrConfig,
-        { fps: 10, qrbox: { width: 250, height: 250 } },
+        {
+            fps: 10,
+            qrbox: function(viewfinderWidth, viewfinderHeight) {
+                let minEdgePercentage = 0.7;
+                let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+                let qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+                return { width: qrboxSize, height: qrboxSize };
+            },
+            aspectRatio: 1.0
+        },
         onScanSuccess,
         (errorMessage) => { /* ignore */ }
     ).then(() => {
-        document.getElementById('scan-status').innerHTML = 'Arahkan QR Code Prajurit ke kamera.';
+        let msg = document.getElementById('scan-status');
+        if(msg) msg.innerHTML = 'Arahkan QR Code ke kamera.';
     }).catch(err => {
-        document.getElementById('scan-status').innerHTML = '<span class="text-danger">Gagal memulai kamera: ' + err + '</span>';
+        if (!isFallback && err.toString().includes('OverconstrainedError')) {
+            if (html5Qrcode) {
+                try { html5Qrcode.clear(); } catch(e) {}
+            }
+            let select = document.getElementById('cameraSelect');
+            if (select) select.value = 'user';
+            initScanner({ facingMode: "user" }, true);
+        } else {
+            let msg = document.getElementById('scan-status');
+            if(msg) msg.innerHTML = '<span class="text-danger text-red-500">Gagal memulai kamera: ' + err + '</span>';
+        }
     });
 }
 
@@ -442,14 +469,17 @@ $('#scannerModal').on('hide.bs.modal', function () {
             html5Qrcode = null;
         }
     }
-});
-
-let shouldReloadOnClose = false;
-$('#jurnalModal').on('hide.bs.modal', function () {
     if (shouldReloadOnClose) {
         location.reload();
     }
+    
+    // Reset view
+    document.getElementById('scannerResultContent').style.display = 'none';
+    document.getElementById('scannerResultPlaceholder').classList.remove('d-none');
+    document.getElementById('scannerResultPlaceholder').classList.add('d-flex');
 });
+
+let shouldReloadOnClose = false;
 
 function onScanSuccess(decodedText) {
     if (scanning) return;
@@ -490,10 +520,15 @@ function onScanSuccess(decodedText) {
         currentUser  = data.prajurit;
         currentItems = data.items;
         currentDate  = data.today;
+        
+        document.getElementById('scan-status').innerHTML =
+            '<span class="text-success"><i class="fas fa-check mr-1"></i>Berhasil discan! Lanjut scan QR lain jika perlu.</span>';
 
-        $('#scannerModal').modal('hide');
-        setTimeout(() => openJurnalModal(data), 500); // Wait for modal animation
-        scanning = false;
+        // Render data di kolom kanan tanpa menutup scanner
+        openJurnalModal(data);
+        
+        // Timeout sebelum mengizinkan scan baru (mencegah double scan cepat)
+        setTimeout(() => { scanning = false; }, 1500);
     })
     .catch(() => {
         playSound('error');
@@ -504,13 +539,21 @@ function onScanSuccess(decodedText) {
 }
 
 function openJurnalModal(data) {
-    document.getElementById('jurnalModalTitle').innerHTML =
-        `<i class="fas fa-star text-warning mr-2"></i> Halo, ${escHtml(data.prajurit.name)}!`;
+    document.getElementById('scannerResultPlaceholder').classList.remove('d-flex');
+    document.getElementById('scannerResultPlaceholder').classList.add('d-none');
+    
+    const contentDiv = document.getElementById('scannerResultContent');
+    contentDiv.style.display = 'block';
+    contentDiv.classList.remove('kid-bounce');
+    void contentDiv.offsetWidth; // trigger reflow
+    contentDiv.classList.add('kid-bounce');
+
+    document.getElementById('jurnalModalTitleName').innerHTML = escHtml(data.prajurit.name);
         
-    let avatarUrl = data.prajurit.avatar || 'https://ui-avatars.com/api/?name='+encodeURIComponent(data.prajurit.name)+'&size=300&background=FF9A9E&color=fff';
+    let avatarUrl = data.prajurit.avatar || 'https://ui-avatars.com/api/?name='+encodeURIComponent(data.prajurit.name)+'&size=150&background=FF9A9E&color=fff';
     
     document.getElementById('jurnalAvatarCol').innerHTML = `
-        <img src="${avatarUrl}" class="rounded shadow-sm" style="width: 140px; height: 140px; object-fit: cover; border-radius: 20px !important; border: 4px solid #fff;" alt="Foto Profil">
+        <img src="${avatarUrl}" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover; border: 3px solid #FF9A9E;" alt="Foto Profil">
     `;
 
     let kelasHtml = data.prajurit.kelas ? `Kelas: <strong>${escHtml(data.prajurit.kelas)}</strong> <span class="mx-2">|</span>` : `<span class="text-black-50">Kelas: Belum diatur</span> <span class="mx-2">|</span>`;
@@ -581,20 +624,7 @@ function openJurnalModal(data) {
             debounceTimer = setTimeout(() => autoSaveJurnal(), 500);
         });
     });
-
-    shouldReloadOnClose = false;
-    $('#jurnalModal').modal('show');
-    $('.kid-modal-content').removeClass('kid-bounce');
-    // Trigger reflow to restart animation
-    if(document.querySelector('.kid-modal-content')) {
-        void document.querySelector('.kid-modal-content').offsetWidth;
-        $('.kid-modal-content').addClass('kid-bounce');
-    }
 }
-
-document.getElementById('btnSaveJurnal').addEventListener('click', () => {
-    $('#jurnalModal').modal('hide');
-});
 
 function autoSaveJurnal() {
     const checks = [];
@@ -878,4 +908,14 @@ function openSummaryModal(userId) {
 }
 </script>
 @endpush
+@if(request()->query('scan') == '1')
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(function() {
+            var btn = document.getElementById('btnOpenScanner');
+            if (btn) btn.click();
+        }, 500);
+    });
+</script>
+@endif
 @endsection

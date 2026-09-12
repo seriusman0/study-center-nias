@@ -220,13 +220,23 @@ class JurnalApiController extends Controller
             'verse_checked' => $verseChecked,
             'show_verse' => $showVerse,
             'foto_belajar_url' => $entry?->foto_belajar ? asset('storage/' . $entry->foto_belajar) : null,
-            'life_items' => $items->map(fn($it) => [
-                'id'            => $it->id,
-                'kategori'      => $it->kategori,
-                'label'         => $it->label,
-                'response_type' => $it->response_type,
-                'checked'       => in_array($it->id, $checkedIds),
-            ])->values(),
+            'life_items' => $items->map(function($it) use ($checkedIds) {
+                $kategoriMap = [
+                    'pembacaan' => 'kerohanian',
+                    'sidang'    => 'kerohanian',
+                    'rohani'    => 'kerohanian',
+                    'prajurit'  => 'karakter',
+                ];
+                $kategori = array_key_exists($it->kategori, $kategoriMap) ? $kategoriMap[$it->kategori] : $it->kategori;
+
+                return [
+                    'id'            => $it->id,
+                    'kategori'      => $kategori,
+                    'label'         => $it->label,
+                    'response_type' => $it->response_type,
+                    'checked'       => in_array($it->id, $checkedIds),
+                ];
+            })->values(),
         ];
     }
 

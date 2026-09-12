@@ -83,7 +83,7 @@
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script>
 (function() {
-    const searchUrl = @json(route('mentor-presensi.kelas.search'));
+    const searchUrl = @json(route('mentor-presensi.kelas.search', [], false));
     const initial = @json($presensi?->kelas ? ['id' => $presensi->kelas->id, 'nama' => $presensi->kelas->nama, 'label' => $presensi->kelas->nama] : null);
 
     const ts = new TomSelect('#kelasPicker', {
@@ -96,7 +96,12 @@
         load: function(query, callback) {
             const params = new URLSearchParams();
             if (query) params.set('q', query);
-            fetch(searchUrl + '?' + params.toString())
+            fetch(searchUrl + '?' + params.toString(), {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
                 .then(r => r.json())
                 .then(json => callback(json.data || []))
                 .catch(() => callback([]));

@@ -53,6 +53,11 @@
         <span>Jurnal Siswa</span>
         <small>Laporan</small>
     </a>
+        <a href="{{ route('admin.jurnal-prajurit.index', ['scan' => 1]) }}" class="sc-card" style="border: 2px solid #f59f00;">
+        <i class="fas fa-qrcode" style="color:#f59f00"></i>
+        <span>Scan Prajurit</span>
+        <small>Buka Scanner QR</small>
+    </a>
     <a href="{{ route('admin.jurnal-college.index') }}" class="sc-card">
         <i class="fas fa-university" style="color:#2f9e44"></i>
         <span>Jurnal College</span>

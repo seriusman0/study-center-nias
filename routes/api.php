@@ -282,3 +282,14 @@ Route::middleware(['auth:sanctum', 'role:scholarship_teenager'])->group(function
         Route::delete('/foto',  [\App\Http\Controllers\Api\ScholarshipTeenager\ScholarshipTeenagerJurnalApiController::class, 'deleteFoto']);
     });
 });
+
+// ── Prajurit: jurnal harian ───────────────────────────────────
+Route::middleware(['auth:sanctum', 'role:prajurit'])->group(function () {
+    Route::prefix('prajurit-jurnal')->group(function () {
+        Route::get('/today',    [\App\Http\Controllers\Api\Prajurit\PrajuritJurnalApiController::class, 'today']);
+        Route::post('/check',   [\App\Http\Controllers\Api\Prajurit\PrajuritJurnalApiController::class, 'check']);
+        Route::get('/history',  [\App\Http\Controllers\Api\Prajurit\PrajuritJurnalApiController::class, 'history']);
+        Route::post('/foto',    [\App\Http\Controllers\Api\Prajurit\PrajuritJurnalApiController::class, 'uploadFoto']);
+        Route::delete('/foto',  [\App\Http\Controllers\Api\Prajurit\PrajuritJurnalApiController::class, 'deleteFoto']);
+    });
+});

@@ -48,6 +48,9 @@
     <a href="{{ route('admin.users.create') }}" class="btn btn-sm btn-primary">
         <i class="fas fa-plus"></i> Tambah
     </a>
+    <a href="{{ route('admin.users.qr-download-all') }}" class="btn btn-sm btn-danger" target="_blank">
+        <i class="fas fa-file-pdf"></i> Download Semua QR (PDF)
+    </a>
     @endif
 </form>
 

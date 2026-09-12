@@ -25,7 +25,7 @@ class JurnalLifeItemController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'kategori' => 'required|in:kerohanian,pendidikan,karakter',
+            'kategori' => 'required|in:kerohanian,pendidikan,karakter,pembacaan,sidang,rohani,prajurit',
             'label'    => 'required|string|max:150',
         ]);
         $data['student_id'] = null;
@@ -39,7 +39,7 @@ class JurnalLifeItemController extends Controller
     public function update(Request $request, JurnalLifeItem $item)
     {
         $data = $request->validate([
-            'kategori'  => 'required|in:kerohanian,pendidikan,karakter',
+            'kategori'  => 'required|in:kerohanian,pendidikan,karakter,pembacaan,sidang,rohani,prajurit',
             'label'     => 'required|string|max:150',
             'is_active' => 'nullable|boolean',
         ]);
@@ -113,7 +113,7 @@ class JurnalLifeItemController extends Controller
             'template_ids'      => 'nullable|array',
             'template_ids.*'    => 'integer|exists:jurnal_life_items,id',
             'custom'            => 'nullable|array',
-            'custom.*.kategori' => 'nullable|in:kerohanian,pendidikan,karakter',
+            'custom.*.kategori' => 'nullable|in:kerohanian,pendidikan,karakter,pembacaan,sidang,rohani,prajurit',
             'custom.*.label'    => 'nullable|string|max:150',
         ]);
 

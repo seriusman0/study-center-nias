@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdminController extends Controller
 {
@@ -159,6 +160,44 @@ class AdminController extends Controller
     {
         $user->load('roles');
         return view('admin.users_qr_print', compact('user'));
+    }
+
+    public function printQrCabang(Request $request)
+    {
+        $request->validate([
+            'cabang_id' => 'required|exists:cabangs,id'
+        ]);
+
+        $cabang = Cabang::findOrFail($request->cabang_id);
+        
+        // Get all users in this cabang, eager load roles
+        $users = User::where('cabang_id', $cabang->id)
+                    ->where('is_active', true)
+                    ->with('roles')
+                    ->orderBy('name')
+                    ->get();
+                    
+        return view('admin.users_qr_print_cabang', compact('cabang', 'users'));
+    }
+
+    public function downloadAllQrPdf()
+    {
+        // Get all active users grouped by cabang
+        // Using with('cabang') to get the branch name easily
+        $usersByCabang = User::where('is_active', true)
+            ->with(['roles', 'cabang'])
+            ->orderBy('cabang_id')
+            ->orderBy('name')
+            ->get()
+            ->groupBy(function($user) {
+                return $user->cabang ? $user->cabang->nama : 'Tanpa Cabang';
+            });
+
+        // Set paper size, maybe A4, orientation could be portrait
+        $pdf = Pdf::loadView('admin.users_qr_pdf', compact('usersByCabang'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->download('Semua_QR_Cabang.pdf');
     }
 
     public function updateUser(Request $request, User $user)

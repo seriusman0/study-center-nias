@@ -26,6 +26,24 @@ class PrajuritJurnalAdminController extends Controller
     protected string $userVar         = 'targetUser';
     protected string $profileRelation = 'studentProfile';
 
+    public function index(Request $request)
+    {
+        $roleId = Role::where('name', 'prajurit')->value('id');
+
+        $usersQ = User::where('is_active', true)
+            ->whereHas('roles', fn($r) => $r->where('roles.id', $roleId))
+            ->with('studentProfile')
+            ->orderBy('name');
+
+        if ($request->filled('q')) {
+            $term = '%' . $request->q . '%';
+            $usersQ->where(fn($w) => $w->where('name', 'like', $term)->orWhere('username', 'like', $term));
+        }
+
+        $users = $usersQ->paginate(20)->withQueryString();
+
+        return view('admin.prajurit-jurnal.index', compact('users'));
+    }
     public function dashboard(Request $request)
     {
         $config       = CollegeConfig::current();

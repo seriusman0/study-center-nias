@@ -40,10 +40,10 @@ $kitabList = [
             pl: {{ $entry?->pl_checked ? 'true' : 'false' }},
             pb: {{ $entry?->pb_checked ? 'true' : 'false' }},
             verse_check: {{ $verseChecked ? 'true' : 'false' }},
-            life: {{ json_encode($checkedItemIds) }}.map(Number),
-            study: @json($studyState)
+            life: Object.values({{ json_encode($checkedItemIds) }} || {}).map(Number),
+            study: {{ json_encode($studyState) }}
         },
-        lifeValues: @json($checkedValues ?? new stdClass())
+        lifeValues: {{ json_encode($checkedValues ?? new stdClass()) }}
      })">
 
     {{-- Read-only banner --}}
@@ -112,7 +112,7 @@ $kitabList = [
     @endif
 
     {{-- Section 1: Pembacaan Alkitab --}}
-    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ $isReadOnly ? 'pointer-events-none' : '' }}" :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'">
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ $isReadOnly ? 'pointer-events-none' : '' }}" :class="!formOpen && '{{ $isToday ? 'opacity-60' : '' }}'">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
             @php $secNo = 1; @endphp
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">{{ $secNo++ }}</span>
@@ -183,7 +183,7 @@ $kitabList = [
     @if($showVerse ?? true)
     {{-- Hafal Ayat --}}
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ $isReadOnly ? 'pointer-events-none' : '' }}"
-         :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'"
+         :class="!formOpen && '{{ $isToday ? 'opacity-60' : '' }}'"
          x-data="{{ $jsFnPrefix }}HafalAyat({{ $jsFnPrefix }}Page_cfg)">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">{{ $secNo++ }}</span>
@@ -240,7 +240,7 @@ $kitabList = [
     {{-- Section 3: Sidang-Sidang Gereja --}}
     @if(isset($lifeItems['sidang']) && $lifeItems['sidang']->isNotEmpty())
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ $isReadOnly ? 'pointer-events-none' : '' }}"
-         :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'">
+         :class="!formOpen && '{{ $isToday ? 'opacity-60' : '' }}'">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">{{ $secNo++ }}</span>
             Sidang-Sidang Gereja
@@ -278,7 +278,7 @@ $kitabList = [
     {{-- Section 4: Rohani & Pelayanan --}}
     @if(isset($lifeItems['rohani']) && $lifeItems['rohani']->isNotEmpty())
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ $isReadOnly ? 'pointer-events-none' : '' }}"
-         :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'">
+         :class="!formOpen && '{{ $isToday ? 'opacity-60' : '' }}'">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">{{ $secNo++ }}</span>
             Rohani & Pelayanan
@@ -365,7 +365,7 @@ $kitabList = [
     {{-- Section Prajurit --}}
     @if(isset($lifeItems['prajurit']) && $lifeItems['prajurit']->isNotEmpty())
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ $isReadOnly ? 'pointer-events-none' : '' }}"
-         :class="!formOpen && '{{ $isToday ? 'opacity-60 pointer-events-none' : '' }}'">
+         :class="!formOpen && '{{ $isToday ? 'opacity-60' : '' }}'">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">{{ $secNo++ }}</span>
             Jurnal Prajurit
@@ -462,6 +462,7 @@ $kitabList = [
             formOpen: cfg.formOpen,
             readOnly: cfg.readOnly || false,
             state: cfg.state,
+            lifeValues: cfg.lifeValues || {},
             msg: '',
             showMsg(m) {
                 this.msg = m;
@@ -522,10 +523,6 @@ $kitabList = [
             },
             hasLife(itemId) {
                 return this.state.life.some(x => Number(x) === Number(itemId));
-            },
-            toggleLife(itemId, val) {
-                if (this.hasLife(itemId) === val) return; // Already in target state
-                this.toggle('life', itemId, val === true);
             },
             _snap(type, itemId) {
                 if (type === 'life') return this.hasLife(itemId);

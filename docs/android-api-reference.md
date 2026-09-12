@@ -240,6 +240,24 @@ Endpoint identik dengan `/api/jurnal` (student) tapi pakai prefix berbeda dan me
 
 ---
 
+### 📖 Jurnal — role `prajurit`, prefix `/api/prajurit-jurnal`
+
+API ini melayani fitur jurnal khusus untuk role `prajurit`. Controller `PrajuritJurnalApiController` secara khusus memiliki integrasi terkait `Membaca Alkitab Bersama-sama` dan menggunakan Anchor Day khusus untuk bacaan Alkitab. 
+
+| Method | Endpoint | Deskripsi |
+|---|---|---|
+| GET | `/prajurit-jurnal/today?date=YYYY-MM-DD` | Snapshot hari itu: `bible`, `life_items[]`, `config`, `streak`, `foto_belajar_url`. Menggunakan anchor hari Prajurit untuk `bible`. |
+| POST | `/prajurit-jurnal/check` | Body: `item_type` (pl\|pb\|life\|study), `item_id`, `date`, `checked`, `value`, `jam_mulai`, `jam_selesai`. Logika khusus prajurit: sinkronisasi centang PL/PB dengan life_item "Membaca Alkitab Bersama-sama". |
+| GET | `/prajurit-jurnal/history?from=&to=` | Array per hari: `pl_checked`, `pb_checked`, `life_checked_ids[]`. |
+| POST | `/prajurit-jurnal/foto` | Multipart, `foto` (jpeg/jpg/png/webp, max 4MB), `date` opsional |
+| DELETE | `/prajurit-jurnal/foto` | Hapus foto hari itu |
+
+**Logika khusus Prajurit:**
+- Jika prajurit mencentang bacaan `PL` atau `PB` melalui API `check`, sistem akan otomatis mencentangkan item life "Membaca Alkitab Bersama-sama". Sebaliknya, jika item "Membaca Alkitab Bersama-sama" dicentang, maka otomatis menandai selesai `pl_checked` dan `pb_checked`.
+- Role `prajurit` tidak menampilkan dan menggunakan input hafalan ayat (show_verse = false).
+
+---
+
 ### 📖 Jurnal — role `college`, prefix `/api/college-jurnal`
 
 Mirip student jurnal tapi: (1) **tidak ada verse**, (2) ada **form-window enforcement**, (3) `response_type: time_range` pakai endpoint `item_type: study` (bukan `life`), (4) ada `study_logs` di response.

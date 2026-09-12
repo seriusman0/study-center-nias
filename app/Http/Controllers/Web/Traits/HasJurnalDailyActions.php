@@ -263,10 +263,12 @@ trait HasJurnalDailyActions
                     $mabId = \App\Models\JurnalLifeItem::where('label', 'like', '%Membaca Alkitab Bersama-sama%')->value('id');
                     if ($mabId) {
                         if ($entry->pl_checked || $entry->pb_checked) {
-                            DB::table('jurnal_life_checks')->updateOrInsert(
-                                ['student_id' => $user->id, 'life_item_id' => $mabId, 'tanggal' => $date->toDateString()],
-                                ['checked' => true, 'updated_at' => now(), 'created_at' => DB::raw('COALESCE(created_at, NOW())')]
-                            );
+                            $matchMab = ['student_id' => $user->id, 'life_item_id' => $mabId, 'tanggal' => $date->toDateString()];
+                            if (DB::table('jurnal_life_checks')->where($matchMab)->exists()) {
+                                DB::table('jurnal_life_checks')->where($matchMab)->update(['checked' => true, 'updated_at' => now()]);
+                            } else {
+                                DB::table('jurnal_life_checks')->insert(array_merge($matchMab, ['checked' => true, 'updated_at' => now(), 'created_at' => now()]));
+                            }
                         } else {
                             DB::table('jurnal_life_checks')
                                 ->where('student_id', $user->id)
@@ -316,21 +318,26 @@ trait HasJurnalDailyActions
                 $isChecked = false;
                 
                 if (isset($data['checked']) && (bool) $data['checked']) {
+                    $match = ['student_id' => $user->id, 'life_item_id' => $itemId, 'tanggal' => $date->toDateString()];
                     $isChecked = true;
-                    $updateData = ['checked' => true, 'updated_at' => now(), 'created_at' => DB::raw('COALESCE(created_at, NOW())')];
+                    $updateData = ['checked' => true, 'updated_at' => now()];
                     if (isset($data['value'])) {
                         $updateData['value'] = $data['value'];
                     }
-                    DB::table('jurnal_life_checks')->updateOrInsert(
-                        ['student_id' => $user->id, 'life_item_id' => $itemId, 'tanggal' => $date->toDateString()],
-                        $updateData
-                    );
+                    if (DB::table('jurnal_life_checks')->where($match)->exists()) {
+                        DB::table('jurnal_life_checks')->where($match)->update($updateData);
+                    } else {
+                        DB::table('jurnal_life_checks')->insert(array_merge($match, $updateData, ['created_at' => now()]));
+                    }
                 } else if (isset($data['value'])) {
                      $isChecked = true;
-                     DB::table('jurnal_life_checks')->updateOrInsert(
-                        ['student_id' => $user->id, 'life_item_id' => $itemId, 'tanggal' => $date->toDateString()],
-                        ['checked' => true, 'value' => $data['value'], 'updated_at' => now(), 'created_at' => DB::raw('COALESCE(created_at, NOW())')]
-                    );
+                     $match = ['student_id' => $user->id, 'life_item_id' => $itemId, 'tanggal' => $date->toDateString()];
+                     $updateData = ['checked' => true, 'value' => $data['value'], 'updated_at' => now()];
+                     if (DB::table('jurnal_life_checks')->where($match)->exists()) {
+                         DB::table('jurnal_life_checks')->where($match)->update($updateData);
+                     } else {
+                         DB::table('jurnal_life_checks')->insert(array_merge($match, $updateData, ['created_at' => now()]));
+                     }
                 } else {
                     JurnalLifeCheck::where('student_id', $user->id)
                         ->where('life_item_id', $itemId)

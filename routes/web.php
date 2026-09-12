@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Web\PublicJurnalController;
 use App\Http\Controllers\Web\HomeController;
 use App\Http\Controllers\Web\BlogWebController;
 use App\Http\Controllers\Web\CabangWebController;
@@ -37,6 +38,11 @@ use App\Http\Controllers\Web\AnnouncementDismissController;
 
 // Public pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Public Jurnal API for Scanner
+Route::post('/public-jurnal/scan', [PublicJurnalController::class, 'scan'])->name('public-jurnal.scan');
+Route::post('/public-jurnal/save', [PublicJurnalController::class, 'save'])->name('public-jurnal.save');
+
 Route::get('/blog', [BlogWebController::class, 'index'])->name('blog.index');
 Route::get('/cabang', [CabangWebController::class, 'index'])->name('cabang.index');
 Route::get('/cabang/{slug}', [CabangWebController::class, 'show'])->name('cabang.show');
@@ -134,6 +140,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/users/create', [AdminController::class, 'createUser'])->name('users.create');
     Route::post('/users', [AdminController::class, 'storeUser'])->name('users.store');
     Route::get('/users/{user}/edit', [AdminController::class, 'editUser'])->name('users.edit');
+    Route::get('/users/qr-print-cabang', [AdminController::class, 'printQrCabang'])->name('users.qr-print-cabang');
+    Route::get('/users/qr-download-all', [AdminController::class, 'downloadAllQrPdf'])->name('users.qr-download-all');
     Route::get('/users/{user}/qr-print', [AdminController::class, 'printQr'])->name('users.qr-print');
     Route::put('/users/{user}', [AdminController::class, 'updateUser'])->name('users.update');
     Route::post('/users/{user}/role', [AdminController::class, 'updateRole'])->name('users.role');
@@ -432,7 +440,7 @@ Route::delete('/hapus-akun', [DataDeletionController::class, 'destroy'])->middle
 // ── Android APK download (non-Play-Store distribution) ──────────────────
 Route::view('/download-android', 'download-android')->name('download.android');
 Route::get('/download/apk', function () {
-    $path = public_path('downloads/study-center-nias-v3.3.0.apk');
+    $path = public_path('downloads/study-center-nias-v3.4.0.apk');
     abort_unless(file_exists($path), 404);
-    return response()->download($path, 'study-center-nias-v3.3.0.apk');
+    return response()->download($path, 'study-center-nias-v3.4.0.apk');
 })->name('download.apk');

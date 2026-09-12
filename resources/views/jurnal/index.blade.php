@@ -179,7 +179,15 @@ $kitabList = [
                 'kerohanian' => 'Kerohanian',
                 'pendidikan' => 'Pendidikan',
                 'karakter'   => 'Karakter',
+                'pembacaan'  => 'Pembacaan',
+                'sidang'     => 'Sidang',
+                'rohani'     => 'Rohani',
+                'prajurit'   => 'Prajurit',
             ];
+            
+            if (auth()->user()->hasRole('student')) {
+                unset($kategoriList['pembacaan'], $kategoriList['sidang'], $kategoriList['rohani'], $kategoriList['prajurit']);
+            }
         @endphp
 
         @foreach($kategoriList as $kKey => $kLabel)

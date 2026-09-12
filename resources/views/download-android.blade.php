@@ -35,14 +35,14 @@
             </div>
         </div>
 
-        <span class="version-badge">Versi 3.3.0</span>
+        <span class="version-badge">Versi 3.4.0</span>
 
         <div>
             <a class="download-btn" href="/download/apk" download>
-                ⬇ Download APK (59 MB)
+                ⬇ Download APK (65 MB)
             </a>
         </div>
-        <p class="meta">Terakhir diperbarui: 5 September 2026 &middot; Android 7.0 (Nougat) ke atas</p>
+        <p class="meta">Terakhir diperbarui: 11 September 2026 &middot; Android 7.0 (Nougat) ke atas</p>
 
         <div class="note">
             <strong>Belum tersedia di Google Play Store.</strong> Untuk saat ini, instal
@@ -54,7 +54,7 @@
         <h2>Cara Instalasi</h2>
         <ol>
             <li>Ketuk tombol <strong>Download APK</strong> di atas menggunakan browser HP Anda (Chrome, dsb).</li>
-            <li>Setelah unduhan selesai, buka file <code>study-center-nias-v3.3.0.apk</code> dari notifikasi
+            <li>Setelah unduhan selesai, buka file <code>study-center-nias-v3.4.0.apk</code> dari notifikasi
                 unduhan atau folder <em>Downloads</em>.</li>
             <li>Android akan menampilkan peringatan "sumber tidak dikenal" — ini normal untuk aplikasi
                 di luar Play Store. Ketuk <strong>Setelan</strong>, lalu aktifkan

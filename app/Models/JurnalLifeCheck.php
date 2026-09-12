@@ -44,4 +44,14 @@ class JurnalLifeCheck extends Model
     {
         return $q->whereBetween('tanggal', [$from, $to]);
     }
+
+    /**
+     * Set the keys for a save update query.
+     */
+    protected function setKeysForSaveQuery($query)
+    {
+        return $query->where('student_id', $this->student_id)
+                     ->where('life_item_id', $this->life_item_id)
+                     ->where('tanggal', $this->getOriginal('tanggal') ?? $this->tanggal);
+    }
 }
