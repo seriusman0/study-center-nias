@@ -252,9 +252,27 @@ API ini melayani fitur jurnal khusus untuk role `prajurit`. Controller `Prajurit
 | POST | `/prajurit-jurnal/foto` | Multipart, `foto` (jpeg/jpg/png/webp, max 4MB), `date` opsional |
 | DELETE | `/prajurit-jurnal/foto` | Hapus foto hari itu |
 
+**Snapshot response fields prajurit:**
+```json
+{
+  "date": "2026-09-12",
+  "week": { "...": "..." },
+  "config": { "form_open_time": "HH:MM:SS", "form_close_time": "HH:MM:SS", "form_active": true },
+  "bible": { "day_no": 7, "pl_porsi": "...", "pb_porsi": "...", "pl_checked": false, "pb_checked": false },
+  "verse_ref": null,
+  "verse_checked": false,
+  "show_verse": false,
+  "life_items": [{ "id": 50, "kategori": "prajurit", "label": "Membaca Alkitab Bersama-sama", "response_type": "check", "checked": false, "value": null, "jam_mulai": null, "jam_selesai": null, "tipe_study": null }],
+  "foto_belajar_url": null,
+  "streak": 0
+}
+```
+
 **Logika khusus Prajurit:**
-- Jika prajurit mencentang bacaan `PL` atau `PB` melalui API `check`, sistem akan otomatis mencentangkan item life "Membaca Alkitab Bersama-sama". Sebaliknya, jika item "Membaca Alkitab Bersama-sama" dicentang, maka otomatis menandai selesai `pl_checked` dan `pb_checked`.
-- Role `prajurit` tidak menampilkan dan menggunakan input hafalan ayat (show_verse = false).
+- Jika prajurit mencentang bacaan `PL` atau `PB` melalui API `check`, sistem akan otomatis mencentangkan item life "Membaca Alkitab Bersama-sama" (berdasarkan pattern label string `Membaca Alkitab Bersama-sama`). Sebaliknya, jika item "Membaca Alkitab Bersama-sama" dicentang, maka otomatis menandai selesai `pl_checked` dan `pb_checked`.
+- Role `prajurit` tidak menampilkan dan menggunakan input hafalan ayat (`show_verse = false`).
+- Life items prajurit difilter berdasarkan `kategori = 'prajurit'`.
+- Mengikuti batasan form window (`config.form_active`), entry pada hari yang sama hanya bisa dikirimkan saat jam form buka.
 
 ---
 
