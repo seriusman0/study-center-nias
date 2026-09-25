@@ -21,6 +21,8 @@
         "aos": "^2.3.4",
         "chart.js": "^4.4.4",
         "jsdom": "^30.0.1",
-        "puppeteer": "^25.10.0"
+        "laravel-echo": "^2.5.0",
+        "puppeteer": "^25.10.0",
+        "pusher-js": "^8.6.0"
     }
 }

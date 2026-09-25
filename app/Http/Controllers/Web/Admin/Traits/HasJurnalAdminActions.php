@@ -30,9 +30,17 @@ trait HasJurnalAdminActions
         abort_unless($user->hasRole($this->role), 404);
 
         $today = JurnalWeek::today();
-        $from  = $request->filled('from')
-            ? Carbon::parse($request->from, JurnalWeek::TZ)->startOfDay()
-            : $today->copy()->subDays(13);
+
+        if ($request->filled('from')) {
+            $from = Carbon::parse($request->from, JurnalWeek::TZ)->startOfDay();
+        } else {
+            // Default: dari entry pertama agar data lama tidak tersembunyi
+            $firstEntry = JurnalEntry::orderBy('tanggal')->value(\Illuminate\Support\Facades\DB::raw('DATE(tanggal)'));
+            $from = $firstEntry
+                ? Carbon::parse($firstEntry, JurnalWeek::TZ)->startOfDay()
+                : $today->copy()->startOfMonth();
+        }
+
         $to = $request->filled('to')
             ? Carbon::parse($request->to, JurnalWeek::TZ)->startOfDay()
             : $today->copy();
@@ -53,9 +61,14 @@ trait HasJurnalAdminActions
         abort_unless($user->hasRole($this->role), 404);
 
         $today = JurnalWeek::today();
-        $from  = $request->filled('from')
-            ? Carbon::parse($request->from, JurnalWeek::TZ)->startOfDay()
-            : $today->copy()->subDays(29);
+        if ($request->filled('from')) {
+            $from = Carbon::parse($request->from, JurnalWeek::TZ)->startOfDay();
+        } else {
+            $firstEntry = JurnalEntry::orderBy('tanggal')->value(\Illuminate\Support\Facades\DB::raw('DATE(tanggal)'));
+            $from = $firstEntry
+                ? Carbon::parse($firstEntry, JurnalWeek::TZ)->startOfDay()
+                : $today->copy()->startOfMonth();
+        }
         $to = $request->filled('to')
             ? Carbon::parse($request->to, JurnalWeek::TZ)->startOfDay()
             : $today->copy();

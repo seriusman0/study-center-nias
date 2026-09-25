@@ -109,33 +109,38 @@ class PrajuritJurnalAdminController extends Controller
         $countMabToday = $mabId ? JurnalLifeCheck::where('life_item_id', $mabId)->whereDate('tanggal', $today)->where('checked', true)->count() : 0;
         $countMasToday = $masId ? JurnalLifeCheck::where('life_item_id', $masId)->whereDate('tanggal', $today)->where('checked', true)->count() : 0;
 
-        $topMab = $mabId ? JurnalLifeCheck::where('life_item_id', $mabId)
+        $topMabList = $mabId ? JurnalLifeCheck::where('life_item_id', $mabId)
             ->where('checked', true)
             ->selectRaw('student_id, COUNT(*) as score')
             ->groupBy('student_id')
             ->orderByDesc('score')
             ->with('student')
-            ->first() : null;
+            ->get() : collect();
+        $topMab = $topMabList->first();
 
-        $topMas = $masId ? JurnalLifeCheck::where('life_item_id', $masId)
+        $topMasList = $masId ? JurnalLifeCheck::where('life_item_id', $masId)
             ->where('checked', true)
             ->selectRaw('student_id, COUNT(*) as score')
             ->groupBy('student_id')
             ->orderByDesc('score')
             ->with('student')
-            ->first() : null;
+            ->get() : collect();
+        $topMas = $topMasList->first();
 
+        $topHafalanList = collect();
         $topHafalan = null;
         if ($hafalanId) {
             $hafalanItem = \App\Models\JurnalLifeItem::find($hafalanId);
             $isNumber = $hafalanItem->response_type == 'number';
-            $topHafalan = JurnalLifeCheck::where('life_item_id', $hafalanId)
+            $topHafalanList = JurnalLifeCheck::where('life_item_id', $hafalanId)
                 ->when(!$isNumber, fn($q) => $q->where('checked', true))
+                ->when($isNumber, fn($q) => $q->where('value', '>', 0)) // Only include values > 0 if it's a number
                 ->selectRaw($isNumber ? 'student_id, SUM(value) as score' : 'student_id, COUNT(*) as score')
                 ->groupBy('student_id')
                 ->orderByDesc('score')
                 ->with('student')
-                ->first();
+                ->get();
+            $topHafalan = $topHafalanList->first();
         }
 
         return view('admin.prajurit-jurnal.dashboard', compact(
@@ -143,7 +148,8 @@ class PrajuritJurnalAdminController extends Controller
             'users', 'activeToday', 'totalUsers',
             'checkCounts', 'lastEntryDates',
             'countMabToday', 'countMasToday',
-            'topMab', 'topMas', 'topHafalan'
+            'topMab', 'topMas', 'topHafalan',
+            'topMabList', 'topMasList', 'topHafalanList'
         ));
     }
 
@@ -326,7 +332,10 @@ class PrajuritJurnalAdminController extends Controller
         abort_unless($user->hasRole($this->role), 404);
 
         $today = JurnalWeek::today();
-        $from = $today->copy()->subDays(6);
+        $firstEntry = JurnalEntry::orderBy('tanggal')->value(\Illuminate\Support\Facades\DB::raw('DATE(tanggal)'));
+        $from = $firstEntry
+            ? \Carbon\Carbon::parse($firstEntry, JurnalWeek::TZ)->startOfDay()
+            : $today->copy()->startOfMonth();
         $to = $today->copy();
 
         $matrix = $this->buildMatrix($user, $from, $to);

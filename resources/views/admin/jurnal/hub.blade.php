@@ -574,11 +574,11 @@ function jurnalHub() {
         matrixTo: '',
 
         init() {
-            // Set default date range for matrix
-            const today = new Date().toISOString().slice(0, 10);
-            const from  = new Date(Date.now() - 13 * 86400000).toISOString().slice(0, 10);
+            // Set default date range: dari today, backend akan resolve dari entry pertama user
+            const now = new Date();
+            const today = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
             this.matrixTo   = today;
-            this.matrixFrom = from;
+            this.matrixFrom = today; // backend akan fallback ke entry pertama jika from tidak diisi
         },
 
         switchTab(t) {
@@ -657,7 +657,10 @@ function jurnalHub() {
 
         formatDate(d) {
             if (!d) return '—';
-            return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            // Parse tanpa timezone shift
+            const parts = d.split('-');
+            const dt = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            return dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
         },
     };
 }

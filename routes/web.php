@@ -444,3 +444,31 @@ Route::get('/download/apk', function () {
     abort_unless(file_exists($path), 404);
     return response()->download($path, 'study-center-nias-v3.4.0.apk');
 })->name('download.apk');
+
+// ── Chat ─────────────────────────────────────────────────────────────────
+use App\Http\Controllers\Chat\ChatController;
+use App\Http\Controllers\Chat\ConversationController;
+use App\Http\Controllers\Chat\MessageController;
+
+Route::middleware(['auth'])->prefix('chat')->name('chat.')->group(function () {
+    Route::get('/', [ChatController::class, 'index'])->name('index');
+
+    // Conversations
+    Route::get('/conversations/{conversation}/messages',  [ConversationController::class, 'messages'])->name('messages');
+    Route::post('/private/{userId}',                      [ConversationController::class, 'startPrivate'])->name('private');
+    Route::post('/group',                                 [ConversationController::class, 'createGroup'])->name('group.create');
+
+    // Messages
+    Route::post('/conversations/{conversation}/messages', [MessageController::class, 'send'])->name('send');
+    Route::delete('/messages/{message}',                  [MessageController::class, 'destroy'])->name('message.destroy');
+    Route::post('/conversations/{conversation}/read',     [MessageController::class, 'markRead'])->name('read');
+});
+
+// Chat unread count (untuk floating button badge)
+Route::middleware(['auth'])->get('/chat/unread-count', function () {
+    $userId = Auth::id();
+    $count  = \App\Models\Conversation::whereHas(
+        'participants', fn($q) => $q->where('user_id', $userId)
+    )->get()->sum(fn($c) => $c->unreadCount($userId));
+    return response()->json(['count' => $count]);
+})->name('chat.unread-count');

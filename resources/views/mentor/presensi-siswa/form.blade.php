@@ -253,7 +253,7 @@
     });
     if (initialKelasId) tsKelas.addItem(initialKelasId, true);
 
-    const searchUrl = @json(route('presensi.students.search'));
+    const searchUrl = '/presensi/api/students';
     const selectedContainer = document.getElementById('selectedStudents');
     const initial = @json($selectedStudents);
 

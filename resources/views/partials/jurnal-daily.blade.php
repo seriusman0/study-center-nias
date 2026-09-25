@@ -443,6 +443,42 @@ $kitabList = [
         <p x-show="!readOnly" class="text-xs text-sc-ink-400 mt-2" style="display:none">Format: JPG, PNG, WebP. Maks. 10 MB.</p>
     </div>
 
+    {{-- ============================================================ --}}
+    {{-- Tombol Submit — konfirmasi pengisian sudah selesai           --}}
+    {{-- ============================================================ --}}
+    <div x-show="!readOnly && formOpen" style="display:none"
+         class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4">
+        <div class="flex flex-col items-center gap-3 text-center">
+            <svg class="w-10 h-10 text-sc-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+                <p class="text-sm font-semibold text-sc-ink-800">Sudah selesai mengisi jurnal hari ini?</p>
+                <p class="text-xs text-sc-ink-400 mt-0.5">Centangan kamu sudah otomatis tersimpan. Tekan tombol ini untuk mengkonfirmasi pengisian.</p>
+            </div>
+            <button type="button"
+                    @click="submitJurnal()"
+                    :disabled="submitting"
+                    class="w-full max-w-xs py-3 rounded-xl font-bold text-sm transition-all
+                           bg-sc-teal-600 text-white hover:bg-sc-teal-700 active:scale-95
+                           disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                <svg x-show="!submitting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M5 13l4 4L19 7"/>
+                </svg>
+                <svg x-show="submitting" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24" style="display:none">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 110 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"/>
+                </svg>
+                <span x-text="submitting ? 'Menyimpan...' : (submitted ? '✓ Jurnal Tersubmit!' : 'Submit Jurnal Hari Ini')"></span>
+            </button>
+            <p x-show="submitted" class="text-xs text-sc-teal-600 font-semibold" style="display:none">
+                ✓ Jurnal kamu sudah tercatat. Semangat terus!
+            </p>
+        </div>
+    </div>
+
     <div x-show="msg" x-transition class="fixed bottom-4 right-4 bg-sc-ink-900 text-white text-sm px-4 py-2 rounded-lg shadow-sc-3"
          x-text="msg" style="display:none"></div>
 </div>
@@ -464,10 +500,24 @@ $kitabList = [
             state: cfg.state,
             lifeValues: cfg.lifeValues || {},
             msg: '',
+            submitting: false,
+            submitted: false,
             showMsg(m) {
                 this.msg = m;
                 clearTimeout(this._t);
                 this._t = setTimeout(() => this.msg = '', 2200);
+            },
+            async submitJurnal() {
+                if (this.submitting || this.submitted) return;
+                this.submitting = true;
+                // Data sudah autosave via toggle — ini hanya konfirmasi UI untuk user
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 600));
+                    this.submitted = true;
+                    this.showMsg('✓ Jurnal hari ini berhasil disubmit! Semangat terus!');
+                } finally {
+                    this.submitting = false;
+                }
             },
             async toggle(type, itemId, checked) {
                 const prev = this._snap(type, itemId);

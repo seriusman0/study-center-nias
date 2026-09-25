@@ -125,9 +125,16 @@ class CollegeJurnalAdminApiController extends Controller
         abort_unless($user->hasRole('college'), 404);
 
         $today = JurnalWeek::today();
-        $from  = $request->filled('from')
-            ? Carbon::parse($request->from, JurnalWeek::TZ)->startOfDay()
-            : $today->copy()->subDays(13);
+
+        if ($request->filled('from')) {
+            $from = Carbon::parse($request->from, JurnalWeek::TZ)->startOfDay();
+        } else {
+            $firstEntry = \App\Models\JurnalEntry::forStudent($user->id)->orderBy('tanggal')->value(\Illuminate\Support\Facades\DB::raw('DATE(tanggal)'));
+            $from = $firstEntry
+                ? Carbon::parse($firstEntry, JurnalWeek::TZ)->startOfDay()
+                : $today->copy()->startOfMonth();
+        }
+
         $to = $request->filled('to')
             ? Carbon::parse($request->to, JurnalWeek::TZ)->startOfDay()
             : $today->copy();
@@ -148,9 +155,14 @@ class CollegeJurnalAdminApiController extends Controller
         abort_unless($user->hasRole('college'), 404);
 
         $today = JurnalWeek::today();
-        $from  = $request->filled('from')
-            ? Carbon::parse($request->from, JurnalWeek::TZ)->startOfDay()
-            : $today->copy()->subDays(29);
+        if ($request->filled('from')) {
+            $from = Carbon::parse($request->from, JurnalWeek::TZ)->startOfDay();
+        } else {
+            $firstEntry = \App\Models\JurnalEntry::forStudent($user->id)->orderBy('tanggal')->value(\Illuminate\Support\Facades\DB::raw('DATE(tanggal)'));
+            $from = $firstEntry
+                ? Carbon::parse($firstEntry, JurnalWeek::TZ)->startOfDay()
+                : $today->copy()->startOfMonth();
+        }
         $to = $request->filled('to')
             ? Carbon::parse($request->to, JurnalWeek::TZ)->startOfDay()
             : $today->copy();

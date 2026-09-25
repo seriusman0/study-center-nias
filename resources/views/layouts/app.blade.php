@@ -215,6 +215,58 @@
     </nav>
     @endif
 
+    {{-- ── Floating Chat Button (untuk semua user yang login) ── --}}
+    @auth
+    @if(!request()->routeIs('chat.*'))
+    <div x-data="floatingChat()"
+         x-init="init()"
+         style="position:fixed;bottom:calc(env(safe-area-inset-bottom) + 80px);right:1.25rem;z-index:9000">
+
+        {{-- Badge tooltip --}}
+        <a href="{{ route('chat.index') }}"
+           class="flex items-center justify-center w-14 h-14 rounded-full shadow-xl transition-all active:scale-95 hover:scale-105"
+           style="background:linear-gradient(135deg,#128C7E,#075E54)"
+           title="Buka Chat">
+            {{-- Ikon chat --}}
+            <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM7 9h10v2H7V9zm7 5H7v-2h7v2zm3-6H7V6h10v2z"/>
+            </svg>
+            {{-- Unread badge --}}
+            <span id="chat-unread-badge"
+                  class="absolute -top-1 -right-1 min-w-[20px] h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1 shadow"
+                  style="display:none"></span>
+        </a>
+    </div>
+
+    <script>
+    function floatingChat() {
+        return {
+            init() {
+                // Poll unread count setiap 30 detik
+                this.checkUnread();
+                setInterval(() => this.checkUnread(), 30000);
+            },
+            async checkUnread() {
+                try {
+                    const res  = await fetch('/chat/unread-count', { headers: { 'Accept': 'application/json' } });
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    const badge = document.getElementById('chat-unread-badge');
+                    if (!badge) return;
+                    if (data.count > 0) {
+                        badge.textContent = data.count > 99 ? '99+' : data.count;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                } catch (e) { /* silent */ }
+            }
+        };
+    }
+    </script>
+    @endif
+    @endauth
+
     {{-- PWA Service Worker --}}
     <script>
         if ('serviceWorker' in navigator) {

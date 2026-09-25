@@ -18,7 +18,10 @@ class LaporanStudentController extends Controller
     {
         $student = $request->user();
         $today   = JurnalWeek::today();
-        $from    = $today->copy()->subDays(29);
+        $firstEntry = \Illuminate\Support\Facades\DB::table('jurnal_entries')->where('student_id', $student->id)->min(\Illuminate\Support\Facades\DB::raw('DATE(tanggal)'));
+        $from = $firstEntry
+            ? \Carbon\Carbon::parse($firstEntry, JurnalWeek::TZ)->startOfDay()
+            : $today->copy()->startOfMonth();
 
         $matrix = $this->buildMatrix($student, $from, $today);
 
@@ -41,7 +44,10 @@ class LaporanStudentController extends Controller
 
         $from = $request->filled('from')
             ? Carbon::parse($request->from, JurnalWeek::TZ)->startOfDay()
-            : $today->copy()->subDays(13);
+            : Carbon::parse(
+                \Illuminate\Support\Facades\DB::table('jurnal_entries')->where('student_id', $student->id)->min(\Illuminate\Support\Facades\DB::raw('DATE(tanggal)')) ?? $today->copy()->startOfMonth()->toDateString(),
+                JurnalWeek::TZ
+              )->startOfDay();
         $to = $request->filled('to')
             ? Carbon::parse($request->to, JurnalWeek::TZ)->startOfDay()
             : $today->copy();
