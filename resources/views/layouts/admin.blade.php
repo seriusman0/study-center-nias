@@ -224,6 +224,25 @@
 
                     {{-- ── ADMIN ── --}}
                     @if(auth()->user()->isAdmin())
+                    <li class="nav-header">KOMUNIKASI</li>
+                    <li class="nav-item">
+                        <a href="{{ route('chat.index') }}" class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-comments"></i>
+                            <p>
+                                Chat
+                                @php
+                                    $chatUnread = 0;
+                                    try {
+                                        $chatUnread = \App\Models\Conversation::whereHas('participants', fn($q) => $q->where('user_id', auth()->id()))
+                                            ->get()->sum(fn($c) => $c->unreadCount(auth()->id()));
+                                    } catch (\Throwable $e) {}
+                                @endphp
+                                @if($chatUnread > 0)
+                                <span class="badge badge-success right">{{ $chatUnread > 99 ? '99+' : $chatUnread }}</span>
+                                @endif
+                            </p>
+                        </a>
+                    </li>
                     <li class="nav-header">ADMIN</li>
                     <li class="nav-item">
                         <a href="{{ route('admin.announcements.index') }}" class="nav-link {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}">

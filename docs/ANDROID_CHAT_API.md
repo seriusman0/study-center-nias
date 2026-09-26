@@ -1,64 +1,71 @@
-# 📱 Panduan Pengembang Android — Fitur Chat
+# 📱 Panduan Integrasi Chat — Android Developer
 ## Study Center Nias · Dokumen Teknis Lengkap
 
-> **Versi:** 1.0.0 · **Tanggal:** 25 September 2026
+> **Versi:** 2.0.0 · **Tanggal Update:** 25 September 2026
 > **Penulis:** Tim Backend Study Center Nias
-> **File ini adalah sumber tunggal kebenaran (single source of truth) untuk integrasi fitur Chat di Android.**
+> **Status:** ✅ Production-ready — semua endpoint telah diuji dan aktif di server
+>
+> ⚠️ Dokumen ini menggantikan versi 1.0.0 sebelumnya. Ada **perubahan breaking** pada konfigurasi WebSocket.
 
 ---
 
 ## Daftar Isi
 
 1. [Gambaran Arsitektur](#1-gambaran-arsitektur)
-2. [Autentikasi](#2-autentikasi)
-3. [Real-time WebSocket (Reverb)](#3-real-time-websocket-reverb)
-4. [REST API — Chat Endpoints](#4-rest-api--chat-endpoints)
-5. [Format Objek Data](#5-format-objek-data)
-6. [Upload File & Foto](#6-upload-file--foto)
-7. [Alur Lengkap Per Fitur](#7-alur-lengkap-per-fitur)
+2. [Autentikasi (Sanctum)](#2-autentikasi)
+3. [Real-time WebSocket — Laravel Reverb](#3-real-time-websocket)
+4. [REST API — Semua Endpoint Chat](#4-rest-api)
+5. [Format Data (DTO)](#5-format-data-dto)
+6. [Upload Foto & File](#6-upload-foto--file)
+7. [Alur Lengkap Per Fitur](#7-alur-per-fitur)
 8. [Error Handling](#8-error-handling)
-9. [Checklist Integrasi](#9-checklist-integrasi)
-10. [Tips Implementasi Android](#10-tips-implementasi-android)
+9. [Contoh Kode Kotlin Lengkap](#9-contoh-kode-kotlin)
+10. [Checklist Integrasi](#10-checklist-integrasi)
+11. [FAQ & Pitfalls](#11-faq--pitfalls)
 
 ---
 
 ## 1. Gambaran Arsitektur
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  ANDROID APP                                                    │
-│                                                                 │
-│  ┌──────────────┐      REST API       ┌──────────────────────┐ │
-│  │ ChatRepository├───────────────────►│ Laravel API          │ │
-│  │ (Retrofit2)   │◄───────────────────│ /api/chat/*          │ │
-│  └──────┬───────┘                     └──────────────────────┘ │
-│         │                                                       │
-│  ┌──────▼────────┐    WebSocket WSS   ┌──────────────────────┐ │
-│  │ ReverbSocket  ├───────────────────►│ Laravel Reverb       │ │
-│  │ (OkHttp WS)   │◄───────────────────│ ws://domain/app/*    │ │
-│  └───────────────┘                     └──────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
+ANDROID APP
+    │
+    ├── [REST] Retrofit2 ──────► POST/GET/DELETE https://studycenter.../api/chat/*
+    │                                              (Kirim pesan, load history, dll)
+    │
+    └── [WS] Pusher SDK ───────► WSS wss://studycenter.../app/{APP_KEY}
+                                   (Terima pesan real-time, typing indicator)
 ```
 
 **Stack Server:**
-- **Backend:** Laravel 13 (PHP 8.4)
-- **WebSocket:** Laravel Reverb (self-hosted, kompatibel Pusher Protocol)
-- **Auth:** Laravel Sanctum (Bearer Token)
-- **Storage:** Local disk → `/storage/chat/images/`, `/storage/chat/files/`
-- **Database:** MySQL 8
 
-**Base URL Production:**
+| Komponen | Teknologi | Keterangan |
+|---|---|---|
+| Backend | Laravel 13 (PHP 8.4) | REST API + broadcast |
+| WebSocket | Laravel Reverb | Self-hosted, protokol Pusher-compatible |
+| Auth | Laravel Sanctum | Bearer Token |
+| Database | MySQL 8 | conversations, messages |
+| Queue | Database driver | Proses thumbnail async |
+| Storage | Local disk → HTTPS | Foto & file attachment |
+
+**URL Production:**
 ```
-https://studycenter.nanoprojectdevindonesia.com
+Base REST : https://studycenter.nanoprojectdevindonesia.com
+WebSocket : wss://studycenter.nanoprojectdevindonesia.com/app/{APP_KEY}
+```
+
+**WebSocket App Key:**
+```
+APP_KEY = scnias_reverb_key_2026
 ```
 
 ---
 
 ## 2. Autentikasi
 
-Semua endpoint chat memerlukan autentikasi via **Bearer Token** (Laravel Sanctum).
+Semua endpoint chat memerlukan **Bearer Token** dari Laravel Sanctum.
 
-### Login & Dapatkan Token
+### 2.1 Login & Dapat Token
 
 ```http
 POST /api/auth/login
@@ -70,140 +77,130 @@ Content-Type: application/json
 }
 ```
 
-**Response sukses (200):**
+**Response 200:**
 ```json
 {
-  "token": "1|aBcDeFgHiJkLmNoPqRsTuVwXyZ",
+  "token": "1|AbCdEfGhIjKlMnOpQrStUvWxYz",
   "user": {
     "id": 42,
     "name": "Budi Santoso",
     "email": "budi@example.com",
-    "username": "budisantoso",
-    "avatar": null
+    "username": "budisantoso"
   }
 }
 ```
 
-### Gunakan Token di Semua Request
+### 2.2 Gunakan Token
 
+Tambahkan di **setiap** request:
 ```
-Authorization: Bearer 1|aBcDeFgHiJkLmNoPqRsTuVwXyZ
+Authorization: Bearer 1|AbCdEfGhIjKlMnOpQrStUvWxYz
 Accept: application/json
 ```
 
-### Retrofit2 Setup (Kotlin)
+### 2.3 OkHttp Interceptor (Kotlin)
 
 ```kotlin
-// ApiService.kt
-interface ChatApiService {
-    // Conversations
-    @GET("api/chat/conversations")
-    suspend fun getConversations(): Response<ConversationsResponse>
-
-    @GET("api/chat/conversations/{id}/messages")
-    suspend fun getMessages(
-        @Path("id") convId: Long,
-        @Query("page") page: Int = 1
-    ): Response<MessagesResponse>
-
-    @POST("api/chat/private/{userId}")
-    suspend fun startPrivateChat(@Path("userId") userId: Long): Response<StartChatResponse>
-
-    @POST("api/chat/group")
-    @Headers("Content-Type: application/json")
-    suspend fun createGroup(@Body body: CreateGroupRequest): Response<StartChatResponse>
-
-    @Multipart
-    @POST("api/chat/conversations/{id}/messages")
-    suspend fun sendMessage(
-        @Path("id") convId: Long,
-        @Part("type") type: RequestBody,
-        @Part("body") body: RequestBody?,
-        @Part("reply_to_id") replyToId: RequestBody?,
-        @Part attachment: MultipartBody.Part?
-    ): Response<SendMessageResponse>
-
-    @DELETE("api/chat/messages/{id}")
-    suspend fun deleteMessage(@Path("id") msgId: Long): Response<OkResponse>
-
-    @POST("api/chat/conversations/{id}/read")
-    suspend fun markRead(@Path("id") convId: Long): Response<OkResponse>
-
-    @GET("api/chat/unread-count")
-    suspend fun getUnreadCount(): Response<UnreadCountResponse>
+// AuthInterceptor.kt
+class AuthInterceptor(private val tokenProvider: () -> String?) : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val token = tokenProvider() ?: return chain.proceed(chain.request())
+        val request = chain.request().newBuilder()
+            .addHeader("Authorization", "Bearer $token")
+            .addHeader("Accept", "application/json")
+            .build()
+        return chain.proceed(request)
+    }
 }
+
+// Retrofit setup
+val retrofit = Retrofit.Builder()
+    .baseUrl("https://studycenter.nanoprojectdevindonesia.com/")
+    .client(OkHttpClient.Builder()
+        .addInterceptor(AuthInterceptor { sessionManager.getToken() })
+        .build())
+    .addConverterFactory(GsonConverterFactory.create(
+        GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()
+    ))
+    .build()
 ```
 
 ---
 
-## 3. Real-time WebSocket (Reverb)
+## 3. Real-time WebSocket
 
-Gunakan **Pusher Android SDK** karena Reverb 100% kompatibel dengan protokol Pusher.
+Gunakan **Pusher Android SDK** — Laravel Reverb 100% kompatibel dengan protokol Pusher.
 
-### Dependency (build.gradle)
+### 3.1 Dependency
 
 ```gradle
+// build.gradle (app)
 implementation 'com.pusher:pusher-java-client:2.4.4'
-// atau via Maven: com.pusher:pusher-java-client
 ```
 
-### Konfigurasi Koneksi
+### 3.2 Konfigurasi Koneksi
 
 ```kotlin
 // ReverbConfig.kt
 object ReverbConfig {
-    const val APP_KEY    = "scnias_reverb_key_2026"
-    const val HOST       = "studycenter.nanoprojectdevindonesia.com"
-    const val PORT       = 443
-    const val USE_TLS    = true
-    const val AUTH_URL   = "https://studycenter.nanoprojectdevindonesia.com/broadcasting/auth"
+    const val APP_KEY  = "scnias_reverb_key_2026"
+    const val HOST     = "studycenter.nanoprojectdevindonesia.com"
+    const val PORT     = 443
+    const val USE_TLS  = true
+    // Endpoint otorisasi private channel (butuh Bearer token)
+    const val AUTH_URL = "https://studycenter.nanoprojectdevindonesia.com/broadcasting/auth"
 }
 ```
 
-### Setup Pusher Client (Kotlin)
+### 3.3 Setup & Connect
 
 ```kotlin
-// ChatSocket.kt
-class ChatSocket(private val authToken: String) {
+// ChatSocketManager.kt
+class ChatSocketManager(private val authToken: String) {
 
     private var pusher: Pusher? = null
+    private val activeChannels = mutableMapOf<Long, PrivateChannel>()
 
-    fun connect(onConnected: () -> Unit = {}, onError: (String) -> Unit = {}) {
+    fun connect(
+        onConnected: (socketId: String) -> Unit = {},
+        onError: (msg: String) -> Unit = {}
+    ) {
         val options = PusherOptions().apply {
             setHost(ReverbConfig.HOST)
             setWsPort(ReverbConfig.PORT)
             setWssPort(ReverbConfig.PORT)
             isUseTLS = ReverbConfig.USE_TLS
+
+            // Otorisasi private channel via HTTP ke backend
             setChannelAuthorizer { channelName, socketId, callback ->
-                // Otorisasi private channel ke backend
-                val client = OkHttpClient()
-                val body   = FormBody.Builder()
-                    .add("socket_id", socketId)
-                    .add("channel_name", channelName)
-                    .build()
-                val request = Request.Builder()
-                    .url(ReverbConfig.AUTH_URL)
-                    .post(body)
-                    .addHeader("Authorization", "Bearer $authToken")
-                    .addHeader("Accept", "application/json")
-                    .build()
-                try {
-                    val response = client.newCall(request).execute()
-                    if (response.isSuccessful) {
-                        callback.onSuccess(response.body!!.string())
-                    } else {
-                        callback.onFailure(Exception("Auth failed: ${response.code}"))
+                Thread {
+                    try {
+                        val body = FormBody.Builder()
+                            .add("socket_id", socketId)
+                            .add("channel_name", channelName)
+                            .build()
+                        val req = Request.Builder()
+                            .url(ReverbConfig.AUTH_URL)
+                            .post(body)
+                            .addHeader("Authorization", "Bearer $authToken")
+                            .addHeader("Accept", "application/json")
+                            .build()
+                        val resp = OkHttpClient().newCall(req).execute()
+                        if (resp.isSuccessful) callback.onSuccess(resp.body!!.string())
+                        else callback.onFailure(Exception("Auth ${resp.code}"))
+                    } catch (e: Exception) {
+                        callback.onFailure(e)
                     }
-                } catch (e: Exception) {
-                    callback.onFailure(e)
-                }
+                }.start()
             }
         }
 
         pusher = Pusher(ReverbConfig.APP_KEY, options)
         pusher!!.connect(object : ConnectionEventListener {
             override fun onConnectionStateChange(change: ConnectionStateChange) {
-                if (change.currentState == ConnectionState.CONNECTED) onConnected()
+                if (change.currentState == ConnectionState.CONNECTED) {
+                    onConnected(pusher!!.connection.socketId ?: "")
+                }
             }
             override fun onError(msg: String, code: String?, e: Exception?) {
                 onError(msg)
@@ -212,57 +209,74 @@ class ChatSocket(private val authToken: String) {
     }
 
     /**
-     * Subscribe ke channel private conversation
-     * @param convId  ID conversation
-     * @param onMessage  callback saat ada pesan baru
-     * @param onRead     callback saat pesan dibaca orang lain
+     * Subscribe ke private channel conversation.
+     * Panggil ini setiap kali user MEMBUKA conversation.
      */
     fun subscribeConversation(
         convId: Long,
-        onMessage: (MessageDto) -> Unit,
-        onRead: (Int, String) -> Unit = { _, _ -> }
-    ): Channel {
-        val channel = pusher!!.subscribePrivate("private-conversation.$convId")
+        onMessageReceived: (MessageDto) -> Unit,
+        onMessageRead: (userId: Long, readAt: String) -> Unit = { _, _ -> },
+        onTyping: (userId: Long, name: String) -> Unit = { _, _ -> }
+    ) {
+        // Unsubscribe channel lama jika ada
+        activeChannels[convId]?.unsubscribe()
 
-        val gson = com.google.gson.GsonBuilder()
-            .setFieldNamingPolicy(com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-            .create()
+        val channel = pusher!!.subscribePrivate(
+            "private-conversation.$convId",
+            object : PrivateChannelEventListener {
+                override fun onEvent(event: PusherEvent) { /* handled below */ }
+                override fun onSubscriptionSucceeded(channelName: String) {}
+                override fun onAuthenticationFailure(msg: String, e: Exception) {}
+            }
+        )
 
+        // Event: pesan baru masuk
         channel.bind("MessageSent") { event ->
-            val msg = gson.fromJson(event.data, MessageDto::class.java)
-            onMessage(msg)
+            val msg = Gson().fromJson(event.data, MessageDto::class.java)
+            onMessageReceived(msg)
         }
 
+        // Event: pesan sudah dibaca orang lain
         channel.bind("MessageRead") { event ->
-            val data = JSONObject(event.data)
-            onRead(data.getInt("user_id"), data.getString("read_at"))
+            val obj = JSONObject(event.data)
+            onMessageRead(obj.getLong("user_id"), obj.getString("read_at"))
         }
 
-        return channel
+        // Client event: typing indicator (tidak butuh server PHP)
+        channel.bind("client-typing") { event ->
+            val obj = JSONObject(event.data)
+            onTyping(obj.getLong("user_id"), obj.getString("name"))
+        }
+
+        activeChannels[convId] = channel
     }
 
-    /**
-     * Kirim typing indicator (client event — tidak butuh PHP event)
-     */
-    fun sendTyping(channel: Channel, userId: Int, userName: String) {
-        if (channel is PrivateChannel) {
-            val data = JSONObject().apply {
-                put("user_id", userId)
-                put("name", userName)
-            }
-            (channel as PrivateChannel).trigger("client-typing", data.toString())
+    /** Unsubscribe dari channel saat user meninggalkan conversation */
+    fun unsubscribeConversation(convId: Long) {
+        activeChannels[convId]?.unsubscribe()
+        activeChannels.remove(convId)
+    }
+
+    /** Kirim typing indicator (client event — gratis, tidak ke server PHP) */
+    fun sendTyping(convId: Long, userId: Long, userName: String) {
+        val channel = activeChannels[convId] ?: return
+        val data = JSONObject().apply {
+            put("user_id", userId)
+            put("name", userName)
         }
+        channel.trigger("client-typing", data.toString())
     }
 
     fun disconnect() {
+        activeChannels.clear()
         pusher?.disconnect()
     }
 }
 ```
 
-### Event yang Diterima dari Server
+### 3.4 Events dari Server
 
-#### `MessageSent` — Pesan Baru
+#### `MessageSent` — Ada Pesan Baru
 
 ```json
 {
@@ -283,10 +297,7 @@ class ChatSocket(private val authToken: String) {
 }
 ```
 
-> ⚠️ **Event name di client:** `MessageSent` (bukan `.message.sent`).
-> Format Reverb: event name yang kamu bind adalah nama class PHP → `MessageSent`.
-
-#### `MessageRead` — Tanda Dibaca
+#### `MessageRead` — Pesan Sudah Dibaca
 
 ```json
 {
@@ -295,7 +306,7 @@ class ChatSocket(private val authToken: String) {
 }
 ```
 
-#### `client-typing` — Sedang Mengetik (client event)
+#### `client-typing` — Sedang Mengetik
 
 ```json
 {
@@ -304,30 +315,27 @@ class ChatSocket(private val authToken: String) {
 }
 ```
 
-> ⚠️ Client events (`client-*`) hanya dikirim ke anggota lain dalam channel, TIDAK disimpan ke server.
+> ⚠️ **Penting:** `client-typing` adalah **client event** (prefix `client-`). Dikirim langsung antar client via Reverb, **tidak disimpan ke database**, **tidak melalui PHP**. Gunakan `channel.trigger("client-typing", data)` bukan `broadcast()`.
 
 ---
 
-## 4. REST API — Chat Endpoints
+## 4. REST API
 
-**Base:** `https://studycenter.nanoprojectdevindonesia.com`
+**Base URL:** `https://studycenter.nanoprojectdevindonesia.com`
 **Prefix:** `/api/chat`
-**Auth:** `Authorization: Bearer {token}` (semua endpoint)
+**Headers wajib semua request:**
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
 
 ---
 
 ### 4.1 GET `/api/chat/conversations`
 
-Daftar semua conversation user (pribadi & group).
+Ambil semua conversation user (private + group), diurutkan terbaru.
 
-**Request:**
-```http
-GET /api/chat/conversations
-Authorization: Bearer {token}
-Accept: application/json
-```
-
-**Response (200):**
+**Response 200:**
 ```json
 {
   "data": [
@@ -335,7 +343,6 @@ Accept: application/json
       "id": 7,
       "type": "private",
       "name": null,
-      "avatar": null,
       "display_name": "Rina Hutabarat",
       "unread_count": 3,
       "last_message_at": "2026-09-25T10:30:00.000000Z",
@@ -357,27 +364,27 @@ Accept: application/json
       "name": "Tim Alpha",
       "display_name": "Tim Alpha",
       "unread_count": 0,
-      "last_message_at": "2026-09-25T09:00:00.000000Z",
-      "last_message": { ... }
+      "last_message": { "..." : "..." }
     }
   ]
 }
 ```
 
+**Catatan:**
+- `display_name` untuk private = nama lawan bicara. Untuk group = nama group.
+- `unread_count` = jumlah pesan belum dibaca di conversation tersebut.
+
 ---
 
-### 4.2 GET `/api/chat/conversations/{id}/messages`
+### 4.2 GET `/api/chat/conversations/{id}/messages?page=1`
 
-Load pesan dalam conversation (paginated, 40 per halaman, terbaru dulu).
+Load pesan dalam conversation. **Paginated, 40 per halaman, terbaru dulu.**
 
-**Request:**
-```http
-GET /api/chat/conversations/7/messages?page=1
-Authorization: Bearer {token}
-Accept: application/json
-```
+| Parameter | Tipe | Default | Keterangan |
+|---|---|---|---|
+| `page` | integer | 1 | Halaman (1 = paling baru) |
 
-**Response (200):**
+**Response 200:**
 ```json
 {
   "current_page": 1,
@@ -404,50 +411,49 @@ Accept: application/json
     },
     {
       "id": 41,
-      "conversation_id": 7,
-      "user_id": 10,
       "type": "image",
-      "body": null,
-      "attachment_name": "foto_kegiatan.jpg",
+      "body": "Ini fotonya!",
+      "attachment_name": "foto.jpg",
       "attachment_mime": "image/jpeg",
       "attachment_size": 524288,
-      "deleted_at": null,
-      "created_at": "2026-09-25T10:25:00.000000Z",
       "attachment_url": "https://studycenter.nanoprojectdevindonesia.com/storage/chat/images/uuid.jpg",
-      "thumbnail_url": "https://studycenter.nanoprojectdevindonesia.com/storage/chat/thumbs/uuid_thumb.jpg"
+      "thumbnail_url": "https://studycenter.nanoprojectdevindonesia.com/storage/chat/thumbs/uuid_thumb.jpg",
+      "deleted_at": null,
+      "created_at": "2026-09-25T10:25:00.000000Z"
+    },
+    {
+      "id": 40,
+      "type": "text",
+      "body": null,
+      "deleted_at": "2026-09-25T09:00:00.000000Z"
     }
   ],
   "last_page": 5,
   "per_page": 40,
   "total": 187,
-  "prev_page_url": null,
-  "next_page_url": "https://.../api/chat/conversations/7/messages?page=2"
+  "next_page_url": "https://.../api/chat/conversations/7/messages?page=2",
+  "prev_page_url": null
 }
 ```
 
-> **Infinite scroll:** Muat `page=1` pertama (pesan terbaru). Untuk load lebih lama, tambah `page=2`, `page=3`, dst. Tampilkan dalam urutan terbalik di UI.
+**Cara render:**
+1. `page=1` → pesan terbaru → tampilkan dari **bawah** RecyclerView
+2. User scroll ke atas → `page=2`, `page=3` → prepend di atas
+3. Jika `deleted_at != null` → tampilkan *"Pesan dihapus"*, sembunyikan body
+4. `thumbnail_url` bisa `null` saat pertama diterima (thumbnail diproses async). Gunakan `attachment_url` sebagai fallback.
 
 ---
 
 ### 4.3 POST `/api/chat/private/{userId}`
 
-Mulai atau buka kembali private chat dengan user tertentu.
+Mulai atau buka kembali private chat dengan user tertentu. Idempotent — tidak membuat duplikat.
 
-**Request:**
-```http
-POST /api/chat/private/15
-Authorization: Bearer {token}
-Accept: application/json
-```
-
-**Response (200):**
+**Response 200:**
 ```json
 {
   "conversation_id": 7
 }
 ```
-
-> Jika conversation sudah ada, hanya mengembalikan `conversation_id` existing. Tidak membuat duplikat.
 
 ---
 
@@ -455,24 +461,21 @@ Accept: application/json
 
 Buat group chat baru.
 
-**Request:**
-```http
-POST /api/chat/group
-Authorization: Bearer {token}
-Accept: application/json
-Content-Type: application/json
-
+**Request Body (JSON):**
+```json
 {
   "name": "Tim Pengajian",
   "user_ids": [2, 5, 8, 12]
 }
 ```
 
-**Validasi:**
-- `name`: wajib, max 100 karakter
-- `user_ids`: wajib, array, min 1 user, setiap ID harus ada di tabel users
+| Field | Validasi |
+|---|---|
+| `name` | wajib, string, max 100 |
+| `user_ids` | wajib, array, min 1 elemen |
+| `user_ids.*` | harus ID user yang ada di database |
 
-**Response (200):**
+**Response 200:**
 ```json
 {
   "conversation_id": 9
@@ -483,100 +486,92 @@ Content-Type: application/json
 
 ### 4.5 POST `/api/chat/conversations/{id}/messages`
 
-Kirim pesan (teks, gambar, atau file).
+Kirim pesan. **Selalu gunakan `multipart/form-data`** — bahkan untuk teks biasa.
 
-**Request — Teks:**
-```http
+#### Kirim Teks
+
+```
 POST /api/chat/conversations/7/messages
-Authorization: Bearer {token}
-Accept: application/json
 Content-Type: multipart/form-data
 
-type=text
-body=Halo ini pesan teks
-reply_to_id=41   (optional)
+type     = text
+body     = Halo, apa kabar?
+reply_to_id = 41   ← opsional, ID pesan yang dibalas
 ```
 
-**Request — Gambar:**
-```http
+#### Kirim Foto/Gambar
+
+```
 POST /api/chat/conversations/7/messages
-Authorization: Bearer {token}
-Accept: application/json
 Content-Type: multipart/form-data
 
-type=image
-attachment=@/path/to/photo.jpg   (file binary)
-body=Caption foto (opsional)
+type       = image
+attachment = <file binary>
+body       = Caption foto ini   ← opsional
 ```
 
-**Request — File/Dokumen:**
-```http
+#### Kirim File/Dokumen
+
+```
 POST /api/chat/conversations/7/messages
-Authorization: Bearer {token}
-Accept: application/json
 Content-Type: multipart/form-data
 
-type=file
-attachment=@/path/to/document.pdf   (file binary)
+type       = file
+attachment = <file binary>
 ```
 
-**Validasi:**
-- `type`: wajib, salah satu `text | image | file`
-- `body`: wajib jika `type=text`, optional untuk image/file (caption)
-- `attachment`: wajib untuk `type=image` atau `type=file`
-- `attachment` max size: **50 MB**
-- `reply_to_id`: optional, ID pesan yang dibalas
+| Field | Validasi |
+|---|---|
+| `type` | wajib: `text` \| `image` \| `file` |
+| `body` | wajib jika `type=text`; opsional untuk image/file (caption) |
+| `attachment` | wajib untuk type image/file; max **50 MB** |
+| `reply_to_id` | opsional; ID pesan yang dibalas |
 
-**Format yang didukung:**
+**Format file yang didukung:**
 ```
-Gambar: image/jpeg, image/png, image/gif, image/webp
+Gambar : image/jpeg, image/png, image/gif, image/webp, image/heic
 Dokumen: application/pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx
-Arsip: .zip, .rar
-Teks: .txt
-Media: .mp4, .mp3
+Arsip  : .zip, .rar, .7z
+Media  : .mp4, .mp3, .m4a
+Teks   : .txt, .csv
 ```
 
-**Response (201):**
+**Response 201:**
 ```json
 {
   "message": {
     "id": 43,
     "conversation_id": 7,
     "user_id": 10,
-    "type": "text",
-    "body": "Halo ini pesan teks",
-    "attachment_url": null,
+    "type": "image",
+    "body": "Caption foto ini",
+    "attachment_url": "https://studycenter.nanoprojectdevindonesia.com/storage/chat/images/uuid.jpg",
     "thumbnail_url": null,
+    "attachment_name": "foto.jpg",
+    "attachment_mime": "image/jpeg",
+    "attachment_size": 524288,
     "reply_to": null,
+    "deleted_at": null,
     "created_at": "2026-09-25T10:35:00.000000Z",
     "user": { "id": 10, "name": "Budi Santoso" }
   }
 }
 ```
 
-> ⚠️ **Thumbnail gambar:** dibuat secara async oleh queue worker. `thumbnail_url` mungkin `null` saat pertama kali diterima. Setelah beberapa detik, thumbnail sudah tersedia. Tampilkan gambar asli (`attachment_url`) jika thumbnail belum ada.
+> ⚠️ **`thumbnail_url` awalnya null** untuk gambar. Server memproses thumbnail secara async via queue. Setelah beberapa detik tersedia. Selalu gunakan `attachment_url` sebagai fallback jika `thumbnail_url` null.
 
 ---
 
 ### 4.6 DELETE `/api/chat/messages/{id}`
 
-Hapus pesan milik sendiri (soft delete — pesan tetap ada sebagai "pesan dihapus").
+Hapus pesan milik sendiri (soft delete — tetap terlihat sebagai "pesan dihapus").
 
-**Request:**
-```http
-DELETE /api/chat/messages/43
-Authorization: Bearer {token}
-Accept: application/json
-```
-
-**Response (200):**
+**Response 200:**
 ```json
-{
-  "ok": true
-}
+{ "ok": true }
 ```
 
-**Error (403):** jika bukan pemilik pesan.
+**Error 403** jika bukan pemilik pesan.
 
 ---
 
@@ -584,67 +579,48 @@ Accept: application/json
 
 Tandai semua pesan di conversation sebagai sudah dibaca.
 
-**Request:**
-```http
-POST /api/chat/conversations/7/read
-Authorization: Bearer {token}
-Accept: application/json
-```
+**Kapan dipanggil:**
+- Setiap kali user **membuka** conversation
+- Setiap kali menerima pesan baru via WebSocket **saat conversation sedang aktif terbuka**
 
-**Response (200):**
+**Response 200:**
 ```json
-{
-  "ok": true
-}
+{ "ok": true }
 ```
-
-> Panggil ini setiap kali user **membuka** conversation, dan setiap kali **menerima pesan baru** via WebSocket saat conversation sedang terbuka.
 
 ---
 
 ### 4.8 GET `/api/chat/unread-count`
 
-Jumlah total pesan belum dibaca dari semua conversation.
+Total pesan belum dibaca dari semua conversation.
 
-**Request:**
-```http
-GET /api/chat/unread-count
-Authorization: Bearer {token}
-Accept: application/json
-```
-
-**Response (200):**
+**Response 200:**
 ```json
-{
-  "count": 12
-}
+{ "count": 12 }
 ```
 
-> Gunakan ini untuk menampilkan badge di tab/icon Chat di bottom navigation bar Android.
+**Gunakan untuk:** badge di icon Chat di bottom navigation bar.
 
 ---
 
-## 5. Format Objek Data
+## 5. Format Data (DTO)
 
-### ConversationDto
+### Kotlin Data Classes
 
 ```kotlin
+// ── Conversation ──────────────────────────────────────────────────────
 data class ConversationDto(
     val id: Long,
-    val type: String,          // "private" | "group"
+    val type: String,           // "private" | "group"
     val name: String?,
-    val avatar: String?,
-    val displayName: String,   // nama lawan bicara (private) atau nama group
+    val displayName: String,    // nama lawan bicara (private) atau nama grup
     val unreadCount: Int,
     val lastMessageAt: String?,
     val lastMessage: MessageDto?,
     val participants: List<UserDto>
 )
-```
 
-### MessageDto
-
-```kotlin
+// ── Message ───────────────────────────────────────────────────────────
 data class MessageDto(
     val id: Long,
     val conversationId: Long,
@@ -656,9 +632,9 @@ data class MessageDto(
     val attachmentName: String?,
     val attachmentMime: String?,
     val attachmentSize: Long?,
-    val thumbnailUrl: String?,
+    val thumbnailUrl: String?,  // null awalnya, tersedia setelah queue selesai
     val replyTo: ReplyToDto?,
-    val deletedAt: String?,     // null = belum dihapus
+    val deletedAt: String?,     // null = belum dihapus; non-null = tampilkan placeholder
     val createdAt: String,
     val user: UserDto?
 )
@@ -668,21 +644,30 @@ data class ReplyToDto(
     val body: String?,
     val userId: Long
 )
-```
 
-### UserDto
-
-```kotlin
 data class UserDto(
     val id: Long,
-    val name: String,
-    val avatar: String?
+    val name: String
 )
+
+// ── Responses ─────────────────────────────────────────────────────────
+data class ConversationsResponse(val data: List<ConversationDto>)
+data class MessagesResponse(
+    val currentPage: Int,
+    val data: List<MessageDto>,
+    val lastPage: Int,
+    val perPage: Int,
+    val total: Int,
+    val nextPageUrl: String?,
+    val prevPageUrl: String?
+)
+data class StartChatResponse(val conversationId: Long)
+data class SendMessageResponse(val message: MessageDto)
+data class UnreadCountResponse(val count: Int)
+data class OkResponse(val ok: Boolean)
 ```
 
-### Gson field mapping
-
-Field dari server menggunakan `snake_case`. Gunakan GsonBuilder dengan `FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES`:
+### Gson Config
 
 ```kotlin
 val gson = GsonBuilder()
@@ -692,314 +677,462 @@ val gson = GsonBuilder()
 
 ---
 
-## 6. Upload File & Foto
+## 6. Upload Foto & File
 
-### Contoh upload foto (Kotlin + Retrofit2 + OkHttp)
+### Upload Gambar dari Galeri
 
 ```kotlin
-suspend fun sendImageMessage(
+suspend fun uploadImage(
     context: Context,
     convId: Long,
     uri: Uri,
     caption: String? = null,
     replyToId: Long? = null
-): Result<SendMessageResponse> {
-    return withContext(Dispatchers.IO) {
-        try {
-            val inputStream = context.contentResolver.openInputStream(uri)!!
-            val mimeType    = context.contentResolver.getType(uri) ?: "image/jpeg"
-            val ext         = MimeTypeMap.getSingleton()
-                .getExtensionFromMimeType(mimeType) ?: "jpg"
-            val fileName    = "photo_${System.currentTimeMillis()}.$ext"
-            val bytes       = inputStream.readBytes()
+): Result<SendMessageResponse> = withContext(Dispatchers.IO) {
+    runCatching {
+        val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
+        val ext      = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: "jpg"
+        val bytes    = context.contentResolver.openInputStream(uri)!!.readBytes()
+        val fileName = "photo_${System.currentTimeMillis()}.$ext"
 
-            val requestFile   = bytes.toRequestBody(mimeType.toMediaTypeOrNull())
-            val attachmentPart = MultipartBody.Part.createFormData("attachment", fileName, requestFile)
-            val typePart      = "image".toRequestBody("text/plain".toMediaTypeOrNull())
-            val bodyPart      = caption?.toRequestBody("text/plain".toMediaTypeOrNull())
-            val replyPart     = replyToId?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
+        val requestFile   = bytes.toRequestBody(mimeType.toMediaTypeOrNull())
+        val filePart      = MultipartBody.Part.createFormData("attachment", fileName, requestFile)
+        val typePart      = "image".toRequestBody("text/plain".toMediaTypeOrNull())
+        val bodyPart      = caption?.toRequestBody("text/plain".toMediaTypeOrNull())
+        val replyPart     = replyToId?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
 
-            val response = chatApiService.sendMessage(convId, typePart, bodyPart, replyPart, attachmentPart)
-            if (response.isSuccessful) Result.success(response.body()!!)
-            else Result.failure(Exception("Upload gagal: ${response.code()}"))
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        chatApiService.sendMessage(convId, typePart, bodyPart, replyPart, filePart)
+            .let { if (it.isSuccessful) it.body()!! else throw Exception("Upload failed: ${it.code()}") }
     }
 }
 ```
 
-### Batas Upload
+### Retrofit Interface
 
-| Tipe | Batas |
-|---|---|
-| Gambar (image/*) | 50 MB |
-| Dokumen (PDF, Office) | 50 MB |
-| Arsip (ZIP, RAR) | 50 MB |
-| Video (MP4) | 50 MB |
+```kotlin
+interface ChatApiService {
+
+    @GET("api/chat/conversations")
+    suspend fun getConversations(): Response<ConversationsResponse>
+
+    @GET("api/chat/conversations/{id}/messages")
+    suspend fun getMessages(
+        @Path("id") convId: Long,
+        @Query("page") page: Int = 1
+    ): Response<MessagesResponse>
+
+    @POST("api/chat/private/{userId}")
+    suspend fun startPrivateChat(
+        @Path("userId") userId: Long
+    ): Response<StartChatResponse>
+
+    @POST("api/chat/group")
+    @Headers("Content-Type: application/json")
+    suspend fun createGroup(@Body body: CreateGroupRequest): Response<StartChatResponse>
+
+    @Multipart
+    @POST("api/chat/conversations/{id}/messages")
+    suspend fun sendMessage(
+        @Path("id") convId: Long,
+        @Part("type") type: RequestBody,
+        @Part("body") body: RequestBody?,
+        @Part("reply_to_id") replyToId: RequestBody?,
+        @Part attachment: MultipartBody.Part?
+    ): Response<SendMessageResponse>
+
+    @DELETE("api/chat/messages/{id}")
+    suspend fun deleteMessage(@Path("id") id: Long): Response<OkResponse>
+
+    @POST("api/chat/conversations/{id}/read")
+    suspend fun markRead(@Path("id") convId: Long): Response<OkResponse>
+
+    @GET("api/chat/unread-count")
+    suspend fun getUnreadCount(): Response<UnreadCountResponse>
+}
+
+data class CreateGroupRequest(val name: String, @SerializedName("user_ids") val userIds: List<Long>)
+```
 
 ---
 
-## 7. Alur Lengkap Per Fitur
+## 7. Alur Per Fitur
 
-### 7.1 Buka Halaman Chat
+### 7.1 Inisialisasi App (saat login berhasil)
 
 ```
-1. GET /api/chat/conversations         → Tampilkan daftar
-2. Hubungkan WebSocket (Pusher client)
-3. Untuk setiap conv, tampilkan badge jika unread_count > 0
+1. Simpan token dari POST /api/auth/login
+2. Connect WebSocket: ChatSocketManager.connect()
+3. GET /api/chat/unread-count → update badge ikon Chat
+4. Mulai polling unread count setiap 30 detik (WorkManager)
 ```
 
-### 7.2 Buka Conversation
+### 7.2 Buka Halaman Chat (list conversation)
+
+```
+1. GET /api/chat/conversations
+2. Render RecyclerView dengan unread badge per item
+3. Untuk private conv: display_name = nama lawan; untuk group: nama grup
+```
+
+### 7.3 Buka Conversation (chat screen)
 
 ```
 1. GET /api/chat/conversations/{id}/messages?page=1
-   → Tampilkan pesan (urut lama → baru dari bawah)
-2. POST /api/chat/conversations/{id}/read
-   → Tandai semua sudah dibaca
-3. Subscribe WebSocket: "private-conversation.{id}"
-   → Listen event "MessageSent", "MessageRead", "client-typing"
+   → Render dari bawah (stackFromEnd = true di LinearLayoutManager)
+2. POST /api/chat/conversations/{id}/read   ← tandai dibaca
+3. ChatSocketManager.subscribeConversation(convId, ...)
+   → onMessageReceived: append pesan ke RecyclerView + scroll bawah
+   → onTyping: tampilkan "Nama mengetik..." selama ≤ 2.5 detik
 ```
 
-### 7.3 Kirim Pesan Teks
+### 7.4 Kirim Pesan Teks
 
 ```
-1. POST /api/chat/conversations/{id}/messages
-   body: { type: "text", body: "..." }
-2. Tampilkan pesan secara optimistic di UI
-3. Saat response 201 kembali, update ID pesan
-4. User lain menerima via WebSocket event "MessageSent" secara real-time
+1. User ketik di EditText
+2. Setiap keystroke → ChatSocketManager.sendTyping(convId, userId, name)
+3. Klik kirim:
+   a. Tampilkan optimistic bubble (pending state)
+   b. POST multipart: type=text, body=...
+   c. Response 201 → update bubble dengan ID asli
+   d. Response error → hapus bubble, tampilkan toast error
 ```
 
-### 7.4 Kirim Foto
+### 7.5 Kirim Foto
 
 ```
-1. User pilih foto dari galeri (Intent.ACTION_PICK)
-2. Compress gambar jika > 5 MB (opsional, tapi disarankan)
-3. POST /api/chat/conversations/{id}/messages (multipart)
-   form: type=image, attachment=<file>
-4. Tampilkan thumbnail sementara dari file lokal
-5. Update ke thumbnail_url server setelah response 201
-6. thumbnail_url mungkin null awalnya → fallback ke attachment_url
+1. Intent.ACTION_PICK → pilih dari galeri
+2. Compress jika > 2MB (lihat compressImage() di bagian 9)
+3. Tampilkan preview lokal di bubble sementara
+4. POST multipart: type=image, attachment=<file>
+5. Response 201:
+   - attachment_url: URL foto asli (langsung bisa ditampilkan)
+   - thumbnail_url: mungkin null (proses async), gunakan attachment_url dulu
+6. Update bubble dengan URL dari server
 ```
 
-### 7.5 Kirim File/Dokumen
+### 7.6 Kirim File/Dokumen
 
 ```
-1. User pilih file (Intent.ACTION_OPEN_DOCUMENT)
-2. POST /api/chat/conversations/{id}/messages (multipart)
-   form: type=file, attachment=<file>
-3. Tampilkan nama file + ukuran + ikon download
+1. Intent.ACTION_OPEN_DOCUMENT → pilih dokumen
+2. POST multipart: type=file, attachment=<file>
+3. Tampilkan bubble dengan ikon file, nama, dan ukuran
+4. Klik bubble → Intent(ACTION_VIEW) atau download
 ```
 
-### 7.6 Infinite Scroll (Load Pesan Lebih Lama)
+### 7.7 Infinite Scroll (History Pesan)
 
 ```
-1. Halaman 1 = pesan terbaru
-2. Saat user scroll ke atas → GET ...?page=2, page=3, dst
-3. Prepend pesan lebih lama ke atas RecyclerView
-4. Stop jika page >= last_page
+1. Halaman 1 = pesan TERBARU (di bawah)
+2. User scroll ke atas → panggil page=2, page=3, dst.
+3. Prepend ke atas RecyclerView
+4. Stop jika current_page >= last_page
+5. Tampilkan loading indicator di atas saat fetch
 ```
 
-### 7.7 Typing Indicator
+### 7.8 Reply (Balas) Pesan
 
 ```
-1. User mulai ketik → kirim client event "client-typing"
-   via Pusher channel.trigger("client-typing", data)
-2. Tampilkan "Nama sedang mengetik…" selama 2.5 detik
-3. Hilangkan jika tidak ada event baru selama 2.5 detik
-```
-
-### 7.8 Mulai Private Chat dari Profile User
-
-```
-1. POST /api/chat/private/{userId}
-   → Server return { conversation_id: 7 }
-2. Navigasi ke layar chat dengan conversation_id tersebut
-3. Load messages, subscribe WebSocket
+1. Long-press pesan → tampilkan opsi "Balas"
+2. Tampilkan reply preview bar di atas input
+3. Kirim dengan reply_to_id = <id pesan yang dibalas>
+4. Tampilkan quoted preview di dalam bubble
 ```
 
 ### 7.9 Hapus Pesan
 
 ```
-1. User long-press pesan → tampilkan opsi "Hapus"
+1. Long-press pesan milik sendiri → opsi "Hapus"
 2. DELETE /api/chat/messages/{id}
-3. Update UI: ganti teks jadi "🚫 Pesan dihapus"
-   (deleted_at tidak null, body disembunyikan)
+3. Update RecyclerView: ganti body dengan "Pesan dihapus"
+   (deleted_at akan menjadi non-null)
+```
+
+### 7.10 Mulai Chat dari Profil User
+
+```
+1. Dari halaman profil user: klik tombol "Chat"
+2. POST /api/chat/private/{userId}
+3. Navigasi ke chat screen dengan conversation_id yang dikembalikan
 ```
 
 ---
 
 ## 8. Error Handling
 
-### HTTP Status Code
+### HTTP Status Codes
 
 | Code | Arti | Tindakan |
 |---|---|---|
-| `200` | OK | Sukses |
-| `201` | Created | Pesan berhasil dikirim |
-| `302` | Redirect | Token tidak valid → redirect login |
-| `401` | Unauthorized | Token expired → refresh/logout |
-| `403` | Forbidden | Bukan peserta conversation atau bukan pemilik pesan |
-| `404` | Not Found | Conversation/pesan tidak ditemukan |
-| `422` | Validation Error | Input tidak valid |
-| `429` | Rate Limited | Terlalu banyak request |
-| `500` | Server Error | Hubungi tim backend |
+| `200` / `201` | Sukses | Handle response |
+| `401` | Token tidak valid / expired | Redirect ke login |
+| `403` | Akses ditolak (bukan peserta / bukan pemilik pesan) | Tampilkan pesan error |
+| `404` | Conversation / pesan tidak ditemukan | Tampilkan pesan error |
+| `422` | Validasi gagal | Tampilkan field errors |
+| `429` | Rate limited | Retry setelah delay |
+| `500` | Server error | Log + tampilkan pesan generik |
 
-### Format Error Response
+### Format Error 422
 
 ```json
 {
-  "message": "Deskripsi error",
+  "message": "The given data was invalid.",
   "errors": {
-    "body": ["Pesan tidak boleh kosong"],
-    "attachment": ["File terlalu besar, maksimal 50MB"]
+    "body": ["Pesan tidak boleh kosong."],
+    "attachment": ["Ukuran file maksimal 50MB."]
   }
 }
 ```
 
-### Handling di Kotlin
+### Kotlin Error Handler
 
 ```kotlin
-when (response.code()) {
-    200, 201 -> handleSuccess(response.body())
-    401      -> navigateToLogin()
-    403      -> showError("Akses ditolak")
-    422      -> {
-        val errorBody = response.errorBody()?.string()
-        val errors    = Gson().fromJson(errorBody, ApiErrorResponse::class.java)
-        showValidationErrors(errors)
+suspend fun <T> safeApiCall(call: suspend () -> Response<T>): ApiResult<T> {
+    return try {
+        val resp = call()
+        when {
+            resp.isSuccessful -> ApiResult.Success(resp.body()!!)
+            resp.code() == 401 -> ApiResult.Unauthorized
+            resp.code() == 403 -> ApiResult.Forbidden
+            resp.code() == 422 -> {
+                val err = Gson().fromJson(resp.errorBody()?.string(), ApiErrorResponse::class.java)
+                ApiResult.ValidationError(err.errors)
+            }
+            else -> ApiResult.ServerError(resp.code())
+        }
+    } catch (e: IOException) {
+        ApiResult.NetworkError
     }
-    else     -> showError("Terjadi kesalahan (${response.code()})")
+}
+
+sealed class ApiResult<out T> {
+    data class Success<T>(val data: T) : ApiResult<T>()
+    object Unauthorized : ApiResult<Nothing>()
+    object Forbidden : ApiResult<Nothing>()
+    object NetworkError : ApiResult<Nothing>()
+    data class ValidationError(val errors: Map<String, List<String>>) : ApiResult<Nothing>()
+    data class ServerError(val code: Int) : ApiResult<Nothing>()
 }
 ```
 
 ---
 
-## 9. Checklist Integrasi
+## 9. Contoh Kode Kotlin
 
-- [ ] **Auth:** Bearer token dikirim di semua request chat
-- [ ] **Conversation list:** Tampilkan dengan unread badge
-- [ ] **Message list:** Paginated, infinite scroll ke atas untuk history
-- [ ] **Send text:** POST multipart dengan type=text
-- [ ] **Send image:** POST multipart, tampilkan preview lokal dulu
-- [ ] **Send file:** POST multipart, tampilkan nama + ukuran
-- [ ] **Mark read:** Panggil setiap kali conversation dibuka
-- [ ] **WebSocket connect:** Setelah berhasil login
-- [ ] **Subscribe channel:** Saat membuka conversation
-- [ ] **Terima MessageSent:** Append ke RecyclerView jika conversation terbuka
-- [ ] **Typing indicator:** Kirim saat user ketik, tampilkan saat terima
-- [ ] **Delete message:** Soft delete, tampilkan placeholder teks
-- [ ] **Reply:** Kirim reply_to_id, tampilkan quoted message
-- [ ] **Unread badge:** Update via GET /unread-count atau dari WS event
-- [ ] **Disconnect WS:** Saat app background / logout
-- [ ] **Error handling:** Semua HTTP status code ditangani
-
----
-
-## 10. Tips Implementasi Android
-
-### RecyclerView untuk Chat
-
-Gunakan `LinearLayoutManager` dengan `stackFromEnd = true` agar scroll selalu ke bawah:
+### RecyclerView Chat Setup
 
 ```kotlin
+// ChatAdapter.kt (ViewType)
+const val VIEW_TYPE_ME    = 1
+const val VIEW_TYPE_OTHER = 2
+const val VIEW_TYPE_IMAGE = 3
+const val VIEW_TYPE_FILE  = 4
+const val VIEW_TYPE_DEL   = 5
+
+override fun getItemViewType(position: Int): Int {
+    val msg = messages[position]
+    if (msg.deletedAt != null) return VIEW_TYPE_DEL
+    if (msg.userId == currentUserId) return VIEW_TYPE_ME
+    if (msg.type == "image") return VIEW_TYPE_IMAGE
+    if (msg.type == "file") return VIEW_TYPE_FILE
+    return VIEW_TYPE_OTHER
+}
+
+// Layout Manager — pesan terbaru di bawah
 val layoutManager = LinearLayoutManager(context).apply {
     stackFromEnd = true
 }
 recyclerView.layoutManager = layoutManager
-recyclerView.scrollToPosition(adapter.itemCount - 1)
+
+// Auto-scroll ke bawah saat pesan baru masuk
+fun appendMessage(msg: MessageDto) {
+    messages.add(msg)
+    adapter.notifyItemInserted(messages.size - 1)
+    recyclerView.scrollToPosition(messages.size - 1)
+}
 ```
 
-### Image Loading (Glide)
+### Load Gambar dengan Glide
 
 ```kotlin
 Glide.with(context)
     .load(message.thumbnailUrl ?: message.attachmentUrl)
-    .placeholder(R.drawable.ic_image_loading)
+    .placeholder(R.drawable.ic_image_placeholder)
     .error(R.drawable.ic_image_error)
     .centerCrop()
     .into(imageView)
 ```
 
-### Deteksi Jenis File dari MIME
-
-```kotlin
-fun getFileIcon(mime: String?): Int = when {
-    mime == null                       -> R.drawable.ic_file_generic
-    mime.startsWith("image/")          -> R.drawable.ic_file_image
-    mime == "application/pdf"          -> R.drawable.ic_file_pdf
-    mime.contains("word")             -> R.drawable.ic_file_word
-    mime.contains("excel") || mime.contains("sheet") -> R.drawable.ic_file_excel
-    mime.contains("powerpoint") || mime.contains("presentation") -> R.drawable.ic_file_ppt
-    mime.contains("zip") || mime.contains("rar") -> R.drawable.ic_file_zip
-    else                               -> R.drawable.ic_file_generic
-}
-```
-
-### Tanggal Pesan (hindari UTC shift)
+### Format Timestamp (hindari UTC shift)
 
 ```kotlin
 fun formatMessageTime(isoString: String): String {
-    val sdf   = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+    // BENAR: parse sebagai UTC lalu format dengan timezone lokal
+    val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
     sdf.timeZone = TimeZone.getTimeZone("UTC")
-    val date  = sdf.parse(isoString) ?: return ""
-    val local = Calendar.getInstance().apply { time = date }
-    val now   = Calendar.getInstance()
+    val date = sdf.parse(isoString) ?: return ""
+    val now  = Calendar.getInstance()
+    val then = Calendar.getInstance().apply { time = date }
 
-    return if (local.get(Calendar.DATE) == now.get(Calendar.DATE) &&
-               local.get(Calendar.MONTH) == now.get(Calendar.MONTH)) {
+    return if (then.get(Calendar.DATE)    == now.get(Calendar.DATE)   &&
+               then.get(Calendar.MONTH)   == now.get(Calendar.MONTH)  &&
+               then.get(Calendar.YEAR)    == now.get(Calendar.YEAR)) {
+        // Hari ini → tampilkan jam
         SimpleDateFormat("HH:mm", Locale.getDefault()).format(date)
     } else {
+        // Hari lain → tampilkan tanggal
         SimpleDateFormat("dd MMM", Locale("id")).format(date)
     }
 }
+
+// ⚠️ JANGAN gunakan ini (timezone shift bug):
+// val wrongDate = SimpleDateFormat("HH:mm").format(Date(isoString))
 ```
 
 ### Compress Gambar Sebelum Upload
 
 ```kotlin
-fun compressImage(uri: Uri, context: Context, maxSizeKB: Int = 1024): ByteArray {
-    val bitmap = BitmapFactory.decodeStream(context.contentResolver.openInputStream(uri))
-    val stream = ByteArrayOutputStream()
-    var quality = 90
+fun compressImage(context: Context, uri: Uri, maxSizeKB: Int = 1500): ByteArray {
+    val input  = context.contentResolver.openInputStream(uri)!!
+    val bitmap = BitmapFactory.decodeStream(input)
+    val output = ByteArrayOutputStream()
+    var quality = 95
     do {
-        stream.reset()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream)
+        output.reset()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, output)
         quality -= 10
-    } while (stream.size() / 1024 > maxSizeKB && quality > 10)
-    return stream.toByteArray()
+    } while (output.size() / 1024 > maxSizeKB && quality > 20)
+    bitmap.recycle()
+    return output.toByteArray()
 }
 ```
 
-### Battery Optimization — WebSocket Background
+### Typing Indicator dengan Debounce
 
 ```kotlin
-// Di onPause/onStop: pertahankan koneksi WS hanya jika ada unread
-// Di onDestroy: disconnect WS
-// Gunakan WorkManager untuk poll /unread-count setiap 5 menit saat background
+private var typingJob: Job? = null
 
-class ChatSyncWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
-    override suspend fun doWork(): Result {
-        val count = chatRepository.getUnreadCount()
-        if (count > 0) {
-            showNotification("$count pesan belum dibaca")
+editText.addTextChangedListener(object : TextWatcher {
+    override fun afterTextChanged(s: Editable?) {
+        if (s.isNullOrEmpty()) return
+        typingJob?.cancel()
+        typingJob = scope.launch {
+            chatSocketManager.sendTyping(convId, userId, userName)
+            delay(2000) // Tidak kirim lagi selama 2 detik
         }
-        return Result.success()
+    }
+    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+})
+```
+
+### Background Sync Unread Count (WorkManager)
+
+```kotlin
+class ChatUnreadWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
+    override suspend fun doWork(): Result {
+        return try {
+            val resp = chatApiService.getUnreadCount()
+            if (resp.isSuccessful && (resp.body()?.count ?: 0) > 0) {
+                showChatNotification(resp.body()!!.count)
+            }
+            Result.success()
+        } catch (e: Exception) {
+            Result.retry()
+        }
     }
 }
 
-// Schedule di Application.onCreate():
-PeriodicWorkRequestBuilder<ChatSyncWorker>(5, TimeUnit.MINUTES)
-    .build()
-    .also { WorkManager.getInstance(this).enqueueUniquePeriodicWork("chat_sync", ..., it) }
+// Jadwalkan di Application.onCreate() setelah login:
+fun scheduleChatSync() {
+    val work = PeriodicWorkRequestBuilder<ChatUnreadWorker>(30, TimeUnit.MINUTES)
+        .setConstraints(Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build())
+        .build()
+    WorkManager.getInstance(context)
+        .enqueueUniquePeriodicWork("chat_unread_sync", ExistingPeriodicWorkPolicy.KEEP, work)
+}
 ```
 
-### Notifikasi Push (Opsional, Fase 2)
+---
 
-Untuk notifikasi saat app tertutup, integrasikan **Firebase Cloud Messaging (FCM)**:
-- Daftarkan FCM token ke server via endpoint yang perlu ditambahkan: `POST /api/fcm/register`
-- Backend akan kirim FCM notification saat ada pesan baru (belum diimplementasi — scope fase 2)
+## 10. Checklist Integrasi
+
+### Setup Awal
+- [ ] Tambahkan dependency `pusher-java-client:2.4.4` di build.gradle
+- [ ] Setup Retrofit dengan `AuthInterceptor` dan Gson `LOWER_CASE_WITH_UNDERSCORES`
+- [ ] Implement `ChatSocketManager` dengan `channelAuthorizer` ke `/broadcasting/auth`
+- [ ] Setup WorkManager untuk polling unread count
+
+### Halaman Daftar Chat
+- [ ] `GET /api/chat/conversations` → render list
+- [ ] Badge unread per conversation
+- [ ] Tombol "+ Chat" → cari user → `POST /api/chat/private/{userId}`
+- [ ] Tombol "+ Group" → pilih user → `POST /api/chat/group`
+
+### Halaman Chat (Conversation)
+- [ ] `GET /api/chat/conversations/{id}/messages?page=1` → render dari bawah
+- [ ] `POST /api/chat/conversations/{id}/read` saat buka
+- [ ] Subscribe WebSocket channel `private-conversation.{id}`
+- [ ] Terima `MessageSent` → append + scroll bawah + call `/read`
+- [ ] Kirim teks dengan `POST` multipart `type=text`
+- [ ] Kirim foto dengan `type=image` + attachment
+- [ ] Kirim file dengan `type=file` + attachment
+- [ ] Infinite scroll (page++) saat scroll ke atas
+- [ ] Typing indicator: kirim `client-typing` saat ketik, tampilkan saat terima
+- [ ] Reply: simpan `reply_to_id`, tampilkan quoted bubble
+- [ ] Hapus pesan: `DELETE`, update UI dengan placeholder
+- [ ] Unsubscribe WebSocket saat keluar conversation
+
+### Edge Cases
+- [ ] `thumbnail_url` null → fallback ke `attachment_url`
+- [ ] `deleted_at != null` → tampilkan "Pesan dihapus"
+- [ ] Token 401 → redirect ke login
+- [ ] Upload gagal → hapus optimistic bubble + retry option
+- [ ] Offline → disable input, tampilkan banner offline
+
+---
+
+## 11. FAQ & Pitfalls
+
+**Q: WebSocket connect tapi tidak menerima pesan?**
+- Pastikan sudah subscribe channel: `private-conversation.{convId}` (bukan `conversation.{convId}`)
+- Pastikan channel authorizer berhasil → cek response dari `/broadcasting/auth`
+- Event name di bind harus **`MessageSent`** (bukan `.MessageSent` atau `message.sent`)
+
+**Q: `thumbnail_url` selalu null?**
+- Thumbnail diproses async oleh queue worker. Pertama kali kirim foto, `thumbnail_url` = null.
+- Selalu gunakan `attachment_url` sebagai fallback: `thumbnailUrl ?: attachmentUrl`
+- Thumbnail akan tersedia dalam 1-5 detik setelah upload
+
+**Q: Upload 500 error?**
+- Pastikan menggunakan `multipart/form-data`, bukan JSON
+- Pastikan field `type` ada dan nilainya `text`, `image`, atau `file`
+- Untuk teks, `body` wajib ada dan tidak boleh kosong
+
+**Q: Mixed content / gambar tidak muncul di HTTPS?**
+- Semua URL gambar dari server sudah HTTPS: `https://studycenter.nanoprojectdevindonesia.com/storage/...`
+- Jangan hardcode URL dengan HTTP
+
+**Q: Timestamp salah (beda 1 hari)?**
+- Jangan gunakan `new Date("2026-09-25")` (JavaScript) atau `SimpleDateFormat` tanpa timezone — keduanya bisa shift timezone
+- Gunakan contoh `formatMessageTime()` di bagian 9 yang sudah benar
+
+**Q: Bagaimana mendeteksi tipe file dari MIME?**
+```kotlin
+fun getFileIcon(mime: String?): Int = when {
+    mime == null                         -> R.drawable.ic_file_generic
+    mime.startsWith("image/")           -> R.drawable.ic_file_image
+    mime == "application/pdf"           -> R.drawable.ic_file_pdf
+    mime.contains("word")              -> R.drawable.ic_file_doc
+    mime.contains("excel") || mime.contains("spreadsheet") -> R.drawable.ic_file_xls
+    mime.contains("zip") || mime.contains("rar") -> R.drawable.ic_file_zip
+    else                                -> R.drawable.ic_file_generic
+}
+```
+
+**Q: Perlu notifikasi push saat app tertutup?**
+- Belum diimplementasi (scope fase 2). Untuk sementara, gunakan WorkManager polling `/api/chat/unread-count` setiap 15-30 menit dan tampilkan local notification jika ada unread baru.
 
 ---
 
@@ -1007,8 +1140,10 @@ Untuk notifikasi saat app tertutup, integrasikan **Firebase Cloud Messaging (FCM
 
 | Tanggal | Versi | Perubahan |
 |---|---|---|
-| 2026-09-25 | 1.0.0 | Implementasi awal — fitur chat lengkap |
+| 2026-09-25 | **2.0.0** | **Breaking:** WebSocket URL berubah ke `wss://domain.com/app/scnias_reverb_key_2026`. Fix URL gambar ke HTTPS. Tambah fitur search user, group chat, reply, hapus pesan, typing indicator. Retrofit interface lengkap. Contoh kode Kotlin lengkap. |
+| 2026-09-25 | 1.0.0 | Implementasi awal |
 
 ---
 
-*Hubungi tim backend untuk pertanyaan: admin@studycenter.com*
+*Pertanyaan: hubungi tim backend via admin@studycenter.com*
+*Dokumen disimpan di: `/var/www/study-center-nias/docs/ANDROID_CHAT_API.md`*
