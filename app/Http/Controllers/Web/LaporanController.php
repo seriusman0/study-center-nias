@@ -153,6 +153,7 @@ class LaporanController extends Controller
             $lifeQ = \Illuminate\Support\Facades\DB::table('jurnal_life_checks')
                 ->whereIn('student_id', $userIds)
                 ->where('checked', true)
+                ->whereNotIn('life_item_id', [2, 3, 9, 10])
                 ->whereBetween('tanggal', [$sevendaysAgoStr, $todayStr])
                 ->select('student_id', \Illuminate\Support\Facades\DB::raw('COUNT(*) as count'))
                 ->groupBy('student_id')->get()->keyBy('student_id');

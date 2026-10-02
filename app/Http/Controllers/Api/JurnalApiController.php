@@ -192,7 +192,7 @@ class JurnalApiController extends Controller
         // Determine visibility based on roles
         $isCollege = $user->hasRole('college');
         $isScholarshipTeenager = $user->hasRole('scholarship_teenager');
-        $showVerse = !($isCollege || $isScholarshipTeenager);
+        $showVerse = !$isCollege;
         $hiddenLabels = $isScholarshipTeenager ? ['Baca Buku Rohani (1 Bab / 1 Judul per Minggu)'] : [];
 
         $items = JurnalLifeItem::forStudent($user->id)

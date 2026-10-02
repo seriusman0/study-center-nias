@@ -209,6 +209,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/jurnal-photo-scans',                         [\App\Http\Controllers\Api\Admin\JurnalPhotoScanApiController::class, 'index']);
         Route::post('/jurnal-photo-scans',                         [\App\Http\Controllers\Api\Admin\JurnalPhotoScanApiController::class, 'store']);
 
+        // ── Prajurit Offline APK — presensi offline + sync ────────────────
+        Route::prefix('prajurit-offline')->group(function () {
+            Route::get('/bootstrap',      [\App\Http\Controllers\Api\Admin\PrajuritOfflineApiController::class, 'bootstrap']);
+            Route::post('/scan',          [\App\Http\Controllers\Api\Admin\PrajuritOfflineApiController::class, 'scan']);
+            Route::post('/sync',          [\App\Http\Controllers\Api\Admin\PrajuritOfflineApiController::class, 'sync']);
+            Route::get('/today-snapshot', [\App\Http\Controllers\Api\Admin\PrajuritOfflineApiController::class, 'todaySnapshot']);
+            Route::post('/save',          [\App\Http\Controllers\Api\Admin\PrajuritOfflineApiController::class, 'save']);
+            Route::get('/history/{userId}', [\App\Http\Controllers\Api\Admin\PrajuritOfflineApiController::class, 'history']);
+        });
+
         // Cross-role jurnal monitoring (student + college + scholarship_teenager)
         Route::prefix('jurnal-monitor')->group(function () {
             Route::get('summary',                    [\App\Http\Controllers\Api\Admin\JurnalMonitorController::class, 'summary']);
@@ -346,3 +356,7 @@ Route::middleware('auth:sanctum')->prefix('chat')->name('api.chat.')->group(func
         return response()->json(['count' => $count]);
     })->name('unread');
 });
+// ── User Email Collection ──────────────────────────────────────────────
+// ── API endpoint user: check status email & invite ───────────────────────
+Route::middleware('auth:sanctum')->get('/user-email/status', [\App\Http\Controllers\CollectedEmailController::class, 'checkStatus']);
+Route::middleware('auth:sanctum')->post('/user-email/collect', [\App\Http\Controllers\CollectedEmailController::class, 'store']);

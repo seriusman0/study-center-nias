@@ -35,14 +35,14 @@
             </div>
         </div>
 
-        <span class="version-badge">Versi 3.4.0</span>
+        <span class="version-badge">Versi {{ $version }}</span>
 
         <div>
             <a class="download-btn" href="/download/apk" download>
-                ⬇ Download APK (65 MB)
+                ⬇ Download APK ({{ $size }} MB)
             </a>
         </div>
-        <p class="meta">Terakhir diperbarui: 11 September 2026 &middot; Android 7.0 (Nougat) ke atas</p>
+        <p class="meta">Terakhir diperbarui: {{ $date }} &middot; Android 7.0 (Nougat) ke atas</p>
 
         <div class="note">
             <strong>Belum tersedia di Google Play Store.</strong> Untuk saat ini, instal
@@ -51,10 +51,23 @@
             <code>studycenter.nanoprojectdevindonesia.com</code> ini.
         </div>
 
+        @if(!empty($releaseNotes))
+        <div class="release-notes" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px;">
+            {!! $releaseNotes !!}
+        </div>
+        <style>
+            .release-notes h1 { font-size: 1.25rem; margin-top: 0; color: #1e293b; }
+            .release-notes h2 { font-size: 1.1rem; margin-top: 16px; color: #334155; }
+            .release-notes p { margin: 8px 0; }
+            .release-notes ul { margin: 8px 0; padding-left: 20px; }
+            .release-notes li { margin-bottom: 4px; }
+        </style>
+        @endif
+
         <h2>Cara Instalasi</h2>
         <ol>
             <li>Ketuk tombol <strong>Download APK</strong> di atas menggunakan browser HP Anda (Chrome, dsb).</li>
-            <li>Setelah unduhan selesai, buka file <code>study-center-nias-v3.4.0.apk</code> dari notifikasi
+            <li>Setelah unduhan selesai, buka file <code>{{ $filename }}</code> dari notifikasi
                 unduhan atau folder <em>Downloads</em>.</li>
             <li>Android akan menampilkan peringatan "sumber tidak dikenal" — ini normal untuk aplikasi
                 di luar Play Store. Ketuk <strong>Setelan</strong>, lalu aktifkan

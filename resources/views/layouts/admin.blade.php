@@ -121,6 +121,11 @@
                     @if(auth()->user()->hasRole(['admin','mentor']))
                     <li class="nav-header">UMUM</li>
                     <li class="nav-item">
+                        <a href="{{ route('admin.collected-emails.index') }}" class="nav-link {{ request()->routeIs('admin.collected-emails.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-envelope"></i><p>Collected Emails</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-tachometer-alt"></i><p>Dashboard</p>
                         </a>
@@ -268,6 +273,11 @@
                     <li class="nav-item">
                         <a href="{{ route('admin.roles') }}" class="nav-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-tag"></i><p>Role</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.beta-testers.index') }}" class="nav-link {{ request()->routeIs('admin.beta-testers.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-mobile-alt"></i><p>Beta Testers</p>
                         </a>
                     </li>
                     @endif

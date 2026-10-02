@@ -31,6 +31,13 @@
                class="px-6 py-3 bg-sc-orange-500 text-white font-semibold rounded-lg hover:bg-sc-orange-600 transition shadow-sc-2 w-full sm:w-auto text-center">
                 Baca Blog
             </a>
+            <a href="{{ route('download.android') }}"
+               class="px-6 py-3 bg-white/20 border border-white/40 text-white font-semibold rounded-lg hover:bg-white/30 transition shadow-sc-2 w-full sm:w-auto text-center flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download App
+            </a>
             @guest
             <a href="{{ route('register') }}"
                class="px-6 py-3 border border-white/40 text-white rounded-lg hover:bg-white/10 transition font-medium w-full sm:w-auto text-center">
@@ -42,8 +49,63 @@
         
 </section>
 
-{{-- Cabang --}}
+{{-- Aplikasi Mobile & Beta Tester --}}
 <section class="max-w-6xl mx-auto px-4 py-12">
+    @if(session('success'))
+    <div class="bg-green-50 border border-green-200 text-green-800 rounded-xl p-4 mb-8 text-center font-medium">
+        {{ session('success') }}
+    </div>
+    @endif
+    <div class="rounded-2xl p-8 md:p-12 shadow-sm border border-gray-200" style="background: linear-gradient(to bottom right, #f0f9ff, #e0e7ff);">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+            <div>
+                <span class="inline-block text-xs font-bold px-3 py-1 rounded-full mb-4" style="background-color: #bfdbfe; color: #1e3a8a;">BARU!</span>
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Aplikasi Android SCN</h2>
+                <p class="text-gray-700 mb-6 leading-relaxed">
+                    Lebih mudah scan jurnal, cek laporan, dan membaca blog langsung dari HP Anda. 
+                    Unduh aplikasi versi terbarunya sekarang juga.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                    <a href="{{ route('download.android') }}" class="inline-flex items-center justify-center gap-2 font-semibold py-3 px-6 rounded-lg transition-colors shadow-md" style="background-color: #2563eb; color: #ffffff;">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download APK Terkini
+                    </a>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-md relative overflow-hidden">
+                <div class="absolute top-0 right-0 text-[10px] font-bold px-3 py-1 rounded-bl-lg" style="background-color: #facc15; color: #713f12;">BETA PROGRAM</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2 mt-2">Dapatkan Akses Play Store</h3>
+                <p class="text-sm text-gray-600 mb-5">
+                    Aplikasi belum rilis publik. Daftarkan diri Anda sebagai <strong>Beta Tester</strong> untuk mendownload langsung dari Google Play Store secara resmi.
+                </p>
+                
+                <form action="{{ route('beta.register') }}" method="POST" class="space-y-4">
+                    @csrf
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Email (Google Akun)</label>
+                        <input type="email" name="email" maxlength="100" required placeholder="email.anda@gmail.com" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm">
+                        @error('email') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nomor WhatsApp</label>
+                        <input type="text" name="whatsapp" maxlength="20" required placeholder="08123456789" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm">
+                        @error('whatsapp') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+                    <button type="submit" class="w-full font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm shadow-md hover:opacity-90" style="background-color: #2563eb; color: #ffffff;">
+                        Kirim Permintaan Akses
+                    </button>
+                    <p class="text-xs text-center text-gray-400 mt-3">Link Play Store akan dikirimkan ke WhatsApp Anda setelah disetujui.</p>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{-- Cabang --}}
+<section class="max-w-6xl mx-auto px-4 py-8">
     <p class="sc-eyebrow mb-2">EMPAT CABANG</p>
     <h2 class="text-2xl md:text-3xl font-bold text-sc-ink-900 mb-6">Cabang Kami</h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">

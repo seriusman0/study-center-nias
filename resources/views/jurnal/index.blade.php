@@ -74,7 +74,6 @@ $kitabList = [
     </div>
 
     {{-- Pembacaan Alkitab --}}
-    @unless(auth()->user()->hasRole('student'))
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">1</span>
@@ -112,10 +111,8 @@ $kitabList = [
             </div>
         @endif
     </div>
-    @endunless
 
     {{-- Hafal Ayat --}}
-    @unless(auth()->user()->hasRole('student'))
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
          x-data="hafalAyat(jurnalPage_cfg)">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
@@ -165,12 +162,11 @@ $kitabList = [
             <span class="text-sm font-medium">Sudah hafal ayat ini</span>
         </label>
     </div>
-    @endunless
 
     {{-- Jadwal Kehidupan --}}
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
-            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">{{ auth()->user()->hasRole('student') ? '1' : '3' }}</span>
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">3</span>
             Jadwal Kehidupan
         </h2>
 
@@ -198,81 +194,15 @@ $kitabList = [
                 @else
                     <div class="space-y-2">
                         @foreach($lifeItems[$kKey] as $item)
-                            @if(auth()->user()->hasRole('student') && $item->label === 'Baca Alkitab')
-                                <div class="p-3 rounded-lg border border-sc-line">
-                                    <div class="text-sm font-semibold text-sc-ink-700 mb-2">
-                                        Baca Alkitab
-                                        @if($bibleItem)<span class="text-xs font-normal text-sc-ink-500 ml-1">— Hari ke-{{ $dayNo }}</span>@endif
-                                    </div>
-                                    <div class="grid sm:grid-cols-2 gap-2">
-                                        <label class="flex items-start gap-2 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
-                                            <input type="checkbox" class="mt-1 w-5 h-5 accent-sc-teal-600" :checked="state.pl" @change="toggle('pl', null, $event.target.checked)">
-                                            <div>
-                                                <div class="font-semibold text-sm text-sc-ink-900">Perjanjian Lama</div>
-                                                @if($bibleItem)<div class="text-sm text-sc-ink-700">{{ $bibleItem->pl_text ?: '—' }}</div>@endif
-                                            </div>
-                                        </label>
-                                        <label class="flex items-start gap-2 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
-                                            <input type="checkbox" class="mt-1 w-5 h-5 accent-sc-teal-600" :checked="state.pb" @change="toggle('pb', null, $event.target.checked)">
-                                            <div>
-                                                <div class="font-semibold text-sm text-sc-ink-900">Perjanjian Baru</div>
-                                                @if($bibleItem)<div class="text-sm text-sc-ink-700">{{ $bibleItem->pb_text ?: '—' }}</div>@endif
-                                            </div>
-                                        </label>
-                                    </div>
-                                </div>
-                            @elseif(auth()->user()->hasRole('student') && $item->label === 'Hafal Ayat')
-                                <div class="p-3 rounded-lg border border-sc-line" x-data="hafalAyat(jurnalPage_cfg)">
-                                    <div class="text-sm font-semibold text-sc-ink-700 mb-2">Hafal Ayat</div>
-                                    @if($bibleItem)
-                                        <p class="text-xs text-sc-ink-500 mb-2">
-                                            Dari porsi hari ini: <span class="font-medium text-sc-teal-700">{{ implode(' / ', array_filter([$bibleItem->pl_text, $bibleItem->pb_text])) }}</span>
-                                        </p>
-                                    @else
-                                        <p class="text-xs text-sc-ink-500 mb-2">Pilih satu ayat dari porsi bacaan hari ini.</p>
-                                    @endif
-                                    <div class="flex flex-wrap gap-2 items-end">
-                                        <div class="flex flex-col gap-1">
-                                            <label class="text-xs text-sc-ink-500 font-medium">Kitab</label>
-                                            <select x-model="kitab" @change="save()"
-                                                class="border border-sc-line rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
-                                                <option value="">— Pilih kitab —</option>
-                                                @foreach($kitabList as $k)
-                                                    <option value="{{ $k }}">{{ $k }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div class="flex flex-col gap-1">
-                                            <label class="text-xs text-sc-ink-500 font-medium">Pasal</label>
-                                            <input type="number" x-model="pasal" min="1" max="150" placeholder="1" @blur="save()"
-                                                class="border border-sc-line rounded-lg px-3 py-2 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
-                                        </div>
-                                        <div class="flex flex-col gap-1">
-                                            <label class="text-xs text-sc-ink-500 font-medium">Ayat</label>
-                                            <input type="number" x-model="ayat" min="1" max="200" placeholder="1" @blur="save()"
-                                                class="border border-sc-line rounded-lg px-3 py-2 text-sm w-20 focus:outline-none focus:ring-2 focus:ring-sc-teal-400">
-                                        </div>
-                                        <button type="button" x-show="kitab || pasal || ayat" @click="clear()"
-                                            class="px-3 py-2 rounded-lg bg-sc-ink-100 text-sc-ink-500 text-sm hover:bg-sc-ink-200 transition">
-                                            Hapus
-                                        </button>
-                                    </div>
-                                    <p x-show="saved" x-transition class="text-xs text-sc-teal-600 mt-2 font-medium" style="display:none">
-                                        Tersimpan: <span x-text="saved"></span>
-                                    </p>
-                                    <label class="flex items-center gap-3 mt-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
-                                        <input type="checkbox" class="w-5 h-5 accent-sc-teal-600" x-model="state.verse_check" @change="toggle('verse_check', null, state.verse_check)">
-                                        <span class="text-sm font-medium">Sudah hafal ayat ini</span>
-                                    </label>
-                                </div>
-                            @else
-                                <label class="flex items-center gap-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
-                                    <input type="checkbox" class="w-5 h-5 accent-sc-teal-600"
-                                        :checked="state.life.includes({{ $item->id }})"
-                                        @change="toggle('life', {{ $item->id }}, $event.target.checked)">
-                                    <span class="text-sm">{{ $item->label }}</span>
-                                </label>
+                            @if(in_array($item->label, ['Baca Alkitab', 'Hafal Ayat', 'Perjanjian Lama', 'Perjanjian Baru']))
+                                @continue
                             @endif
+                            <label class="flex items-center gap-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                                <input type="checkbox" class="w-5 h-5 accent-sc-teal-600"
+                                    :checked="state.life.includes({{ $item->id }})"
+                                    @change="toggle('life', {{ $item->id }}, $event.target.checked)">
+                                <span class="text-sm">{{ $item->label }}</span>
+                            </label>
                         @endforeach
                     </div>
                 @endif
@@ -285,7 +215,7 @@ $kitabList = [
          x-data="fotoBelajar({ date: '{{ $date->toDateString() }}', csrf: '{{ csrf_token() }}', existing: {{ $entry?->foto_belajar ? json_encode(asset('storage/' . $entry->foto_belajar)) : 'null' }} })">
         <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">
-                {{ auth()->user()->hasRole('student') ? '2' : '4' }}
+                4
             </span>
             Foto Saat Belajar
             <span class="text-xs font-normal text-sc-ink-400 ml-1">(opsional)</span>

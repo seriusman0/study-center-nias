@@ -75,6 +75,7 @@ class LeaderboardController extends Controller
             $lifeQ = DB::table('jurnal_life_checks')
                 ->whereIn('student_id', $userIds)
                 ->where('checked', true)
+                ->whereNotIn('life_item_id', [2, 3, 9, 10])
                 ->select('student_id', DB::raw('COUNT(*) as life_count'))
                 ->groupBy('student_id');
             if ($dateFrom) $lifeQ->where('tanggal', '>=', $dateFrom);

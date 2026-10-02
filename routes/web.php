@@ -137,6 +137,9 @@ Route::middleware(['auth', 'role:admin,mentor'])->prefix('admin')->name('admin.'
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/beta-testers', [\App\Http\Controllers\Web\Admin\BetaTesterController::class, 'index'])->name('beta-testers.index');
+    Route::put('/beta-testers/{tester}', [\App\Http\Controllers\Web\Admin\BetaTesterController::class, 'update'])->name('beta-testers.update');
+    
     Route::get('/users/create', [AdminController::class, 'createUser'])->name('users.create');
     Route::post('/users', [AdminController::class, 'storeUser'])->name('users.store');
     Route::get('/users/{user}/edit', [AdminController::class, 'editUser'])->name('users.edit');
@@ -438,12 +441,75 @@ Route::delete('/hapus-akun', [DataDeletionController::class, 'destroy'])->middle
 
 
 // ── Android APK download (non-Play-Store distribution) ──────────────────
-Route::view('/download-android', 'download-android')->name('download.android');
+Route::get('/download-android', function () {
+    $files = glob(public_path('downloads/sc_student_v*.apk'));
+    usort($files, function($a, $b) {
+        preg_match('/v([\d\.]+)_(\d+)/', basename($a), $matchA);
+        preg_match('/v([\d\.]+)_(\d+)/', basename($b), $matchB);
+        $cmp = version_compare($matchA[1] ?? '0.0.0', $matchB[1] ?? '0.0.0');
+        if ($cmp === 0) {
+            return ($matchA[2] ?? 0) <=> ($matchB[2] ?? 0);
+        }
+        return $cmp;
+    });
+    $latestFile = end($files);
+    
+    $version = 'Unknown';
+    $size = 0;
+    $date = '';
+    $filename = '';
+    $releaseNotes = '';
+    
+    if ($latestFile) {
+        preg_match('/v([\d\.]+)_(\d+)/', basename($latestFile), $matches);
+        $version = ($matches[1] ?? 'Unknown') . ' (Build ' . ($matches[2] ?? '?') . ')';
+        $size = round(filesize($latestFile) / 1024 / 1024, 1);
+        $date = \Carbon\Carbon::createFromTimestamp(filemtime($latestFile))->locale('id')->translatedFormat('d F Y');
+        $filename = basename($latestFile);
+        
+        $notesFile = str_replace('.apk', '_release_notes.txt', $latestFile);
+        if (file_exists($notesFile)) {
+            $releaseNotes = \Illuminate\Support\Str::markdown(file_get_contents($notesFile));
+        }
+    }
+
+    return view('download-android', compact('version', 'size', 'date', 'filename', 'releaseNotes'));
+})->name('download.android');
+
 Route::get('/download/apk', function () {
-    $path = public_path('downloads/study-center-nias-v3.4.0.apk');
-    abort_unless(file_exists($path), 404);
-    return response()->download($path, 'study-center-nias-v3.4.0.apk');
+    $files = glob(public_path('downloads/sc_student_v*.apk'));
+    usort($files, function($a, $b) {
+        preg_match('/v([\d\.]+)_(\d+)/', basename($a), $matchA);
+        preg_match('/v([\d\.]+)_(\d+)/', basename($b), $matchB);
+        $cmp = version_compare($matchA[1] ?? '0.0.0', $matchB[1] ?? '0.0.0');
+        if ($cmp === 0) {
+            return ($matchA[2] ?? 0) <=> ($matchB[2] ?? 0);
+        }
+        return $cmp;
+    });
+    $latestFile = end($files);
+    
+    abort_unless($latestFile && file_exists($latestFile), 404);
+    return response()->download($latestFile, basename($latestFile));
 })->name('download.apk');
+
+Route::post('/beta-tester/register', function(\Illuminate\Http\Request $request) {
+    $request->validate([
+        'email' => 'required|email|max:100',
+        'whatsapp' => ['required', 'string', 'max:20', 'regex:/^[0-9\+\-\s]+$/']
+    ], [
+        'whatsapp.regex' => 'Format nomor WhatsApp tidak valid. Hanya angka dan karakter + yang diizinkan.'
+    ]);
+    
+    // Save to DB using Eloquent (protected against SQL Injection)
+    \App\Models\BetaTester::create([
+        'email' => $request->email,
+        'whatsapp' => $request->whatsapp,
+        'status' => 'pending'
+    ]);
+    
+    return back()->with('success', 'Berhasil! Permintaan akses Anda telah diterima. Tim kami akan segera mengirimkan link Play Store ke nomor WhatsApp Anda ('.htmlspecialchars($request->whatsapp).') setelah disetujui.');
+})->name('beta.register')->middleware('throttle:5,1');
 
 // ── Chat ─────────────────────────────────────────────────────────────────
 use App\Http\Controllers\Chat\ChatController;
@@ -472,3 +538,8 @@ Route::middleware(['auth'])->get('/chat/unread-count', function () {
     )->get()->sum(fn($c) => $c->unreadCount($userId));
     return response()->json(['count' => $count]);
 })->name('chat.unread-count');
+// ── Admin Collected Emails ──────────────────────────────────────────────
+Route::middleware(['auth', 'role:admin'])->prefix('admin/collected-emails')->name('admin.collected-emails.')->group(function () {
+    Route::get('/',                                   [\App\Http\Controllers\CollectedEmailController::class, 'index'])->name('index');
+    Route::post('/{collectedEmail}/toggle-invite',    [\App\Http\Controllers\CollectedEmailController::class, 'toggleInvite'])->name('toggle-invite');
+});
