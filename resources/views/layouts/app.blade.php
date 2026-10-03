@@ -130,7 +130,7 @@
             <p class="text-sc-yellow-300 font-semibold mb-1">Study Center Nias</p>
             <p class="text-xs">Gunungsitoli · Kab. Nias · Kab. Nias Selatan · Kab. Nias Utara</p>
             <p class="mt-4">
-                <a href="{{ route('download.android') }}" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
+                <a href="https://play.google.com/store/apps/details?id=com.studycenter.sc_student" target="_blank" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
                     Download Aplikasi Android
                 </a>
             </p>

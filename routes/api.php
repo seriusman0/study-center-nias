@@ -1,5 +1,11 @@
 <?php
 
+use Illuminate\Support\Facades\Broadcast;
+
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
+
+
+
 use App\Http\Controllers\Admin\CabangController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
@@ -308,6 +314,15 @@ Route::middleware(['auth:sanctum', 'role:prajurit'])->group(function () {
 // Menggunakan controller yang sama dengan web, return JSON
 Route::middleware('auth:sanctum')->prefix('chat')->name('api.chat.')->group(function () {
     // GET conversations list
+    Route::get('/users', function () {
+        $users = \App\Models\User::where('id', '!=', auth()->id())
+            ->where('is_active', true)
+            ->select('id', 'name', 'avatar')
+            ->orderBy('name')
+            ->get();
+        return response()->json(['data' => $users]);
+    })->name('users');
+
     Route::get('/conversations', function () {
         $userId = auth()->id();
         $conversations = \App\Models\Conversation::whereHas(

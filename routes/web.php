@@ -442,55 +442,11 @@ Route::delete('/hapus-akun', [DataDeletionController::class, 'destroy'])->middle
 
 // ── Android APK download (non-Play-Store distribution) ──────────────────
 Route::get('/download-android', function () {
-    $files = glob(public_path('downloads/sc_student_v*.apk'));
-    usort($files, function($a, $b) {
-        preg_match('/v([\d\.]+)_(\d+)/', basename($a), $matchA);
-        preg_match('/v([\d\.]+)_(\d+)/', basename($b), $matchB);
-        $cmp = version_compare($matchA[1] ?? '0.0.0', $matchB[1] ?? '0.0.0');
-        if ($cmp === 0) {
-            return ($matchA[2] ?? 0) <=> ($matchB[2] ?? 0);
-        }
-        return $cmp;
-    });
-    $latestFile = end($files);
-    
-    $version = 'Unknown';
-    $size = 0;
-    $date = '';
-    $filename = '';
-    $releaseNotes = '';
-    
-    if ($latestFile) {
-        preg_match('/v([\d\.]+)_(\d+)/', basename($latestFile), $matches);
-        $version = ($matches[1] ?? 'Unknown') . ' (Build ' . ($matches[2] ?? '?') . ')';
-        $size = round(filesize($latestFile) / 1024 / 1024, 1);
-        $date = \Carbon\Carbon::createFromTimestamp(filemtime($latestFile))->locale('id')->translatedFormat('d F Y');
-        $filename = basename($latestFile);
-        
-        $notesFile = str_replace('.apk', '_release_notes.txt', $latestFile);
-        if (file_exists($notesFile)) {
-            $releaseNotes = \Illuminate\Support\Str::markdown(file_get_contents($notesFile));
-        }
-    }
-
-    return view('download-android', compact('version', 'size', 'date', 'filename', 'releaseNotes'));
+    return redirect('https://play.google.com/store/apps/details?id=com.studycenter.sc_student');
 })->name('download.android');
 
 Route::get('/download/apk', function () {
-    $files = glob(public_path('downloads/sc_student_v*.apk'));
-    usort($files, function($a, $b) {
-        preg_match('/v([\d\.]+)_(\d+)/', basename($a), $matchA);
-        preg_match('/v([\d\.]+)_(\d+)/', basename($b), $matchB);
-        $cmp = version_compare($matchA[1] ?? '0.0.0', $matchB[1] ?? '0.0.0');
-        if ($cmp === 0) {
-            return ($matchA[2] ?? 0) <=> ($matchB[2] ?? 0);
-        }
-        return $cmp;
-    });
-    $latestFile = end($files);
-    
-    abort_unless($latestFile && file_exists($latestFile), 404);
-    return response()->download($latestFile, basename($latestFile));
+    return redirect('https://play.google.com/store/apps/details?id=com.studycenter.sc_student');
 })->name('download.apk');
 
 Route::post('/beta-tester/register', function(\Illuminate\Http\Request $request) {

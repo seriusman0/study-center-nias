@@ -72,7 +72,7 @@ export function chatApp(config) {
                     headers: { 'Accept': 'application/json' },
                 });
                 const data = await res.json();
-                this.messages = (data.data ?? []).reverse();
+                this.messages = (data.data ?? []);
             } catch (e) {
                 console.error('Load messages failed:', e);
             } finally {
@@ -87,8 +87,10 @@ export function chatApp(config) {
             if (window.Echo) {
                 this._echoChannel = window.Echo.private(`conversation.${convId}`)
                     .listen('.MessageSent', (e) => {
-                        if (e.user_id !== this.currentUserId) {
-                            this.messages.push(e);
+                        const exists = this.messages.some(m => m.id === e.id);
+                        const hasOptimistic = this.messages.some(m => m._sending && m.body === e.body);
+                        if (!exists && (e.user_id !== this.currentUserId || !hasOptimistic)) {
+                            this.messages.unshift(e);
                             this.$nextTick(() => this.scrollToBottom());
                             this.markRead(convId);
                         }
@@ -96,7 +98,9 @@ export function chatApp(config) {
                     })
                     .listen('.MessageRead', () => {})
                     .listenForWhisper('typing', (e) => {
-                        if (e.user_id !== this.currentUserId) {
+                        const exists = this.messages.some(m => m.id === e.id);
+                        const hasOptimistic = this.messages.some(m => m._sending && m.body === e.body);
+                        if (!exists && (e.user_id !== this.currentUserId || !hasOptimistic)) {
                             this.isTyping[e.user_id] = e.name;
                         }
                         clearTimeout(this._typingClear);
@@ -144,7 +148,7 @@ export function chatApp(config) {
                 created_at:      new Date().toISOString(),
                 _sending:        true,
             };
-            this.messages.push(tempMsg);
+            this.messages.unshift(tempMsg);
             this.$nextTick(() => this.scrollToBottom());
 
             const savedText = this.inputText;
@@ -338,7 +342,7 @@ export function chatApp(config) {
 
         scrollToBottom() {
             const el = this.$refs.messageList;
-            if (el) el.scrollTop = el.scrollHeight;
+            setTimeout(() => { if (el) { el.scrollTop = 0; } }, 100);
         },
 
         formatTime(iso) {

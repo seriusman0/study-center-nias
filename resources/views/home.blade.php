@@ -31,12 +31,12 @@
                class="px-6 py-3 bg-sc-orange-500 text-white font-semibold rounded-lg hover:bg-sc-orange-600 transition shadow-sc-2 w-full sm:w-auto text-center">
                 Baca Blog
             </a>
-            <a href="{{ route('download.android') }}"
+            <a href="https://play.google.com/store/apps/details?id=com.studycenter.sc_student" target="_blank"
                class="px-6 py-3 bg-white/20 border border-white/40 text-white font-semibold rounded-lg hover:bg-white/30 transition shadow-sc-2 w-full sm:w-auto text-center flex items-center justify-center gap-2">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.523 15.3414C17.523 15.3414 19.349 14.3315 20.4851 13.7088C21.7371 13.0238 21.724 11.238 20.4851 10.5599C19.349 9.9304 17.5161 8.92723 17.5161 8.92723L15.3375 11.2185L17.523 15.3414ZM2.87955 1.54585C2.55132 1.86016 2.3667 2.37328 2.3667 3.01358V21.1578C2.3667 21.8211 2.56947 22.35 2.91583 22.6644L14.2882 12.3551L2.87955 1.54585ZM3.81898 0.651761L14.819 11.0827L16.4957 9.48834C16.4957 9.48834 5.34934 3.32185 4.54228 2.87532C3.73522 2.42879 3.81898 0.651761 3.81898 0.651761ZM14.8136 13.2505L3.9213 23.5135C3.9213 23.5135 3.81222 21.6705 4.58269 21.2393C5.35316 20.808 16.5152 14.6513 16.5152 14.6513L14.8136 13.2505Z" />
                 </svg>
-                Download App
+                Google Play
             </a>
             @guest
             <a href="{{ route('register') }}"
@@ -51,55 +51,20 @@
 
 {{-- Aplikasi Mobile & Beta Tester --}}
 <section class="max-w-6xl mx-auto px-4 py-12">
-    @if(session('success'))
-    <div class="bg-green-50 border border-green-200 text-green-800 rounded-xl p-4 mb-8 text-center font-medium">
-        {{ session('success') }}
-    </div>
-    @endif
-    <div class="rounded-2xl p-8 md:p-12 shadow-sm border border-gray-200" style="background: linear-gradient(to bottom right, #f0f9ff, #e0e7ff);">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-            <div>
-                <span class="inline-block text-xs font-bold px-3 py-1 rounded-full mb-4" style="background-color: #bfdbfe; color: #1e3a8a;">BARU!</span>
-                <h2 class="text-3xl font-bold text-gray-900 mb-4">Aplikasi Android SCN</h2>
-                <p class="text-gray-700 mb-6 leading-relaxed">
-                    Lebih mudah scan jurnal, cek laporan, dan membaca blog langsung dari HP Anda. 
-                    Unduh aplikasi versi terbarunya sekarang juga.
-                </p>
-                <div class="flex flex-col sm:flex-row gap-4 mb-8">
-                    <a href="{{ route('download.android') }}" class="inline-flex items-center justify-center gap-2 font-semibold py-3 px-6 rounded-lg transition-colors shadow-md" style="background-color: #2563eb; color: #ffffff;">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        Download APK Terkini
-                    </a>
-                </div>
-            </div>
-            
-            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-md relative overflow-hidden">
-                <div class="absolute top-0 right-0 text-[10px] font-bold px-3 py-1 rounded-bl-lg" style="background-color: #facc15; color: #713f12;">BETA PROGRAM</div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2 mt-2">Dapatkan Akses Play Store</h3>
-                <p class="text-sm text-gray-600 mb-5">
-                    Aplikasi belum rilis publik. Daftarkan diri Anda sebagai <strong>Beta Tester</strong> untuk mendownload langsung dari Google Play Store secara resmi.
-                </p>
-                
-                <form action="{{ route('beta.register') }}" method="POST" class="space-y-4">
-                    @csrf
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Email (Google Akun)</label>
-                        <input type="email" name="email" maxlength="100" required placeholder="email.anda@gmail.com" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm">
-                        @error('email') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nomor WhatsApp</label>
-                        <input type="text" name="whatsapp" maxlength="20" required placeholder="08123456789" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm">
-                        @error('whatsapp') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                    </div>
-                    <button type="submit" class="w-full font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm shadow-md hover:opacity-90" style="background-color: #2563eb; color: #ffffff;">
-                        Kirim Permintaan Akses
-                    </button>
-                    <p class="text-xs text-center text-gray-400 mt-3">Link Play Store akan dikirimkan ke WhatsApp Anda setelah disetujui.</p>
-                </form>
-            </div>
+    <div class="rounded-2xl p-8 md:p-12 shadow-sm border border-gray-200 text-center" style="background: linear-gradient(to bottom right, #f0f9ff, #e0e7ff);">
+        <span class="inline-block text-xs font-bold px-3 py-1 rounded-full mb-4" style="background-color: #bfdbfe; color: #1e3a8a;">KINI TERSEDIA DI PLAY STORE!</span>
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">Aplikasi Android SCN</h2>
+        <p class="text-gray-700 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Lebih mudah scan jurnal, cek laporan, dan membaca blog langsung dari HP Anda. 
+            Aplikasi resmi Study Center Nias sekarang dapat diunduh langsung melalui Google Play Store.
+        </p>
+        <div class="flex justify-center">
+            <a href="https://play.google.com/store/apps/details?id=com.studycenter.sc_student" target="_blank" class="inline-flex items-center justify-center gap-2 font-semibold py-3 px-8 rounded-lg transition-colors shadow-md hover:shadow-lg" style="background-color: #047857; color: #ffffff;">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.523 15.3414C17.523 15.3414 19.349 14.3315 20.4851 13.7088C21.7371 13.0238 21.724 11.238 20.4851 10.5599C19.349 9.9304 17.5161 8.92723 17.5161 8.92723L15.3375 11.2185L17.523 15.3414ZM2.87955 1.54585C2.55132 1.86016 2.3667 2.37328 2.3667 3.01358V21.1578C2.3667 21.8211 2.56947 22.35 2.91583 22.6644L14.2882 12.3551L2.87955 1.54585ZM3.81898 0.651761L14.819 11.0827L16.4957 9.48834C16.4957 9.48834 5.34934 3.32185 4.54228 2.87532C3.73522 2.42879 3.81898 0.651761 3.81898 0.651761ZM14.8136 13.2505L3.9213 23.5135C3.9213 23.5135 3.81222 21.6705 4.58269 21.2393C5.35316 20.808 16.5152 14.6513 16.5152 14.6513L14.8136 13.2505Z" />
+                </svg>
+                Dapatkan di Google Play
+            </a>
         </div>
     </div>
 </section>

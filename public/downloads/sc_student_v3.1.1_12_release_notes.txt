@@ -1,0 +1,12 @@
+# Release Notes - Study Center Student App (v3.1.1_12)
+
+## 🚀 What's New
+- **User Interface Enhancements**: We have updated the styling and refined the user interface to provide a more intuitive and seamless navigation experience.
+- **Performance Improvements**: Under-the-hood code cleanups and minor structural changes ensure the application runs faster and more efficiently.
+- **Bug Fixes**: Resolved several minor issues and bugs reported in previous versions, improving overall application stability.
+
+## 🔧 Technical Details
+- **Target Audience**: Students of Study Center Nias
+- **Release Date**: September 26, 2026
+
+*Thank you for using our application. We are continuously working to improve your learning experience!*

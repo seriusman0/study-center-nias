@@ -351,7 +351,7 @@ window.__chatInit = {
                 </div>
 
                 {{-- Pesan --}}
-                <div id="msg-area" x-ref="messageList" class="px-3 py-4 space-y-1">
+                <div id="msg-area" x-ref="messageList" class="px-3 py-4  flex flex-col-reverse gap-1">
 
                     {{-- Loading --}}
                     <div x-show="isLoading" class="flex justify-center py-12">
@@ -584,9 +584,7 @@ window.__chatInit = {
                             :disabled="isSending"
                             class="flex-shrink-0 w-10 h-10 mb-0.5 rounded-full text-white
                                    flex items-center justify-center shadow transition
-                                   active:scale-95 disabled:opacity-50"
-                            style="background:#128C7E"
-                            :style="isSending ? '' : 'hover:background:#075E54'">
+                                   active:scale-95 disabled:opacity-50 bg-[#128C7E] hover:bg-[#075E54]">
                         <svg class="w-5 h-5 rotate-45" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
                         </svg>
