@@ -22,7 +22,7 @@ class ScholarshipTeenagerJurnalAdminController extends Controller
     protected string $csvPrefix       = 'jurnal-remaja-beasiswa';
     protected string $userVar         = 'targetUser';
     protected string $profileRelation = 'studentProfile';
-    protected array  $kategori        = ['pembacaan', 'sidang', 'rohani'];
+    protected array  $kategori        = ['kerohanian', 'pembacaan', 'sidang', 'rohani'];
 
     public function dashboard(Request $request)
     {

@@ -111,14 +111,13 @@ $kitabList = [
     </div>
     @endif
 
-    {{-- Section 1: Allah --}}
+    {{-- Section 1: Pembacaan Alkitab --}}
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4 {{ $isReadOnly ? 'pointer-events-none' : '' }}" :class="!formOpen && '{{ $isToday ? 'opacity-60' : '' }}'">
-        <h2 class="text-lg font-bold text-sc-ink-900 mb-4 flex items-center gap-2">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
             @php $secNo = 1; @endphp
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">{{ $secNo++ }}</span>
-            Allah
+            Pembacaan Alkitab
         </h2>
-        <h3 class="text-sm font-bold text-sc-teal-700 uppercase tracking-wider mb-2">Pembacaan Alkitab</h3>
         @if($bibleItem)
         <p class="text-xs text-sc-ink-500 mb-3 ml-9">Hari ke-{{ $dayNo }} &mdash; <span class="font-medium text-sc-ink-700">{{ $bibleItem->pl_text }}</span> / <span class="font-medium text-sc-ink-700">{{ $bibleItem->pb_text }}</span></p>
         @else
@@ -176,27 +175,8 @@ $kitabList = [
                     <span class="text-sm">{{ $item->label }}</span>
                 </label>
                 @endif
+                @endif
             @endforeach
-        @endif
-
-        {{-- Kerohanian Items --}}
-        @if(isset($lifeItems['kerohanian']) && $lifeItems['kerohanian']->isNotEmpty())
-            <div class="my-6 border-t border-sc-line"></div>
-            <div class="space-y-2">
-                @foreach($lifeItems['kerohanian'] as $item)
-                    @if(in_array($item->label, ['Baca Alkitab', 'Hafal Ayat', 'Perjanjian Lama', 'Perjanjian Baru']))
-                        @continue
-                    @endif
-                    @if($item->response_type === 'check')
-                    <label class="flex items-center gap-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
-                        <input type="checkbox" class="w-5 h-5 accent-sc-teal-600"
-                            :checked="hasLife({{ $item->id }})"
-                            @change="toggle('life', {{ $item->id }}, $event.target.checked)">
-                        <span class="text-sm">{{ $item->label }}</span>
-                    </label>
-                    @endif
-                @endforeach
-            </div>
         @endif
     </div>
 

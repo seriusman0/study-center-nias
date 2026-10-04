@@ -219,13 +219,16 @@ $kitabList = [
                 @endforeach
             @endif
         </div>
-
-        {{-- Foto Saat Belajar --}}
-        <div x-data="fotoBelajar({ date: '{{ $date->toDateString() }}', csrf: '{{ csrf_token() }}', existing: {{ $entry?->foto_belajar ? json_encode(asset('storage/' . $entry->foto_belajar)) : 'null' }} })">
-            <h3 class="text-sm font-bold text-sc-teal-700 uppercase tracking-wider mb-2">
-                Foto Saat Belajar
-                <span class="text-xs font-normal text-sc-ink-400 ml-1">(opsional)</span>
-            </h3>
+{{-- Foto Saat Belajar --}}
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
+         x-data="fotoBelajar({ date: '{{ $date->toDateString() }}', csrf: '{{ csrf_token() }}', existing: {{ $entry?->foto_belajar ? json_encode(asset('storage/' . $entry->foto_belajar)) : 'null' }} })">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">
+                4
+            </span>
+            Foto Saat Belajar
+            <span class="text-xs font-normal text-sc-ink-400 ml-1">(opsional)</span>
+        </h2>
 
         {{-- Preview area --}}
         <div x-show="preview || current" class="mb-3" style="display:none">

@@ -75,11 +75,10 @@ $kitabList = [
 
     {{-- Pembacaan Alkitab --}}
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4">
-        <h2 class="text-lg font-bold text-sc-ink-900 mb-4 flex items-center gap-2">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">1</span>
-            Allah
+            Pembacaan Alkitab
         </h2>
-        <h3 class="text-sm font-bold text-sc-teal-700 uppercase tracking-wider mb-2">Pembacaan Alkitab</h3>
         @if($bibleItem)
             <p class="text-xs text-sc-ink-500 mb-3 ml-9">Hari ke-{{ $dayNo }}</p>
             <div class="grid sm:grid-cols-2 gap-3">
@@ -111,12 +110,15 @@ $kitabList = [
                 </label>
             </div>
         @endif
-    
-        <div class="my-6 border-t border-sc-line"></div>
+    </div>
 
-        {{-- Hafal Ayat --}}
-        <div x-data="hafalAyat(jurnalPage_cfg)">
-            <h3 class="text-sm font-bold text-sc-teal-700 uppercase tracking-wider mb-2">Hafalan Ayat</h3>
+    {{-- Hafal Ayat --}}
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
+         x-data="hafalAyat(jurnalPage_cfg)">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-1 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">2</span>
+            Hafal Ayat Mingguan
+        </h2>
         @if($bibleItem)
             <p class="text-xs text-sc-ink-500 mb-3 ml-9">
                 Dari porsi hari ini: <span class="font-medium text-sc-teal-700">{{ implode(' / ', array_filter([$bibleItem->pl_text, $bibleItem->pb_text])) }}</span>
@@ -161,71 +163,63 @@ $kitabList = [
         </label>
     </div>
 
-    
-        {{-- Mengawali Hari Dengan Berdoa (Kerohanian) --}}
-        <div class="my-6 border-t border-sc-line"></div>
-        <div class="space-y-2">
-            @if(!empty($lifeItems['kerohanian']))
-                @foreach($lifeItems['kerohanian'] as $item)
-                    @if(in_array($item->label, ['Baca Alkitab', 'Hafal Ayat', 'Perjanjian Lama', 'Perjanjian Baru']))
-                        @continue
-                    @endif
-                    <label class="flex items-center gap-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
-                        <input type="checkbox" class="w-5 h-5 accent-sc-teal-600"
-                            :checked="state.life.includes({{ $item->id }})"
-                            @change="toggle('life', {{ $item->id }}, $event.target.checked)">
-                        <span class="text-sm">{{ $item->label }}</span>
-                    </label>
-                @endforeach
-            @endif
-        </div>
-    </div> <!-- Close Allah Card -->
-
-    {{-- Pendidikan --}}
+    {{-- Jadwal Kehidupan --}}
     <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4">
-        <h2 class="text-lg font-bold text-sc-ink-900 mb-4 flex items-center gap-2">
-            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">2</span>
-            Pendidikan
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">3</span>
+            Jadwal Kehidupan
         </h2>
-        <div class="space-y-2">
-            @if(!empty($lifeItems['pendidikan']))
-                @foreach($lifeItems['pendidikan'] as $item)
-                    <label class="flex items-center gap-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
-                        <input type="checkbox" class="w-5 h-5 accent-sc-teal-600"
-                            :checked="state.life.includes({{ $item->id }})"
-                            @change="toggle('life', {{ $item->id }}, $event.target.checked)">
-                        <span class="text-sm">{{ $item->label }}</span>
-                    </label>
-                @endforeach
-            @endif
-        </div>
+
+        @php
+            $kategoriList = [
+                'kerohanian' => 'Kerohanian',
+                'pendidikan' => 'Pendidikan',
+                'karakter'   => 'Karakter',
+                'pembacaan'  => 'Pembacaan',
+                'sidang'     => 'Sidang',
+                'rohani'     => 'Rohani',
+                'prajurit'   => 'Prajurit',
+            ];
+            
+            if (auth()->user()->hasRole('student')) {
+                unset($kategoriList['pembacaan'], $kategoriList['sidang'], $kategoriList['rohani'], $kategoriList['prajurit']);
+            }
+        @endphp
+
+        @foreach($kategoriList as $kKey => $kLabel)
+            <div class="mb-4">
+                <h3 class="text-xs font-bold text-sc-teal-700 uppercase tracking-wider mb-2">{{ $kLabel }}</h3>
+                @if(($lifeItems[$kKey] ?? collect())->isEmpty())
+                    <p class="text-sm text-sc-ink-500 italic pl-2">Belum ada item.</p>
+                @else
+                    <div class="space-y-2">
+                        @foreach($lifeItems[$kKey] as $item)
+                            @if(in_array($item->label, ['Baca Alkitab', 'Hafal Ayat', 'Perjanjian Lama', 'Perjanjian Baru']))
+                                @continue
+                            @endif
+                            <label class="flex items-center gap-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
+                                <input type="checkbox" class="w-5 h-5 accent-sc-teal-600"
+                                    :checked="state.life.includes({{ $item->id }})"
+                                    @change="toggle('life', {{ $item->id }}, $event.target.checked)">
+                                <span class="text-sm">{{ $item->label }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        @endforeach
     </div>
 
-    {{-- Karakter --}}
-    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4">
-        <h2 class="text-lg font-bold text-sc-ink-900 mb-4 flex items-center gap-2">
-            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">3</span>
-            Karakter
+    {{-- Foto Saat Belajar --}}
+    <div class="bg-white shadow-sc-1 border border-sc-line rounded-2xl p-5 mb-4"
+         x-data="fotoBelajar({ date: '{{ $date->toDateString() }}', csrf: '{{ csrf_token() }}', existing: {{ $entry?->foto_belajar ? json_encode(asset('storage/' . $entry->foto_belajar)) : 'null' }} })">
+        <h2 class="text-lg font-bold text-sc-ink-900 mb-3 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sc-teal-700 text-white text-sm font-bold flex items-center justify-center">
+                4
+            </span>
+            Foto Saat Belajar
+            <span class="text-xs font-normal text-sc-ink-400 ml-1">(opsional)</span>
         </h2>
-        <div class="space-y-2 mb-6">
-            @if(!empty($lifeItems['karakter']))
-                @foreach($lifeItems['karakter'] as $item)
-                    <label class="flex items-center gap-3 p-2 rounded-lg border border-sc-line hover:bg-sc-teal-50 cursor-pointer transition">
-                        <input type="checkbox" class="w-5 h-5 accent-sc-teal-600"
-                            :checked="state.life.includes({{ $item->id }})"
-                            @change="toggle('life', {{ $item->id }}, $event.target.checked)">
-                        <span class="text-sm">{{ $item->label }}</span>
-                    </label>
-                @endforeach
-            @endif
-        </div>
-
-        {{-- Foto Saat Belajar --}}
-        <div x-data="fotoBelajar({ date: '{{ $date->toDateString() }}', csrf: '{{ csrf_token() }}', existing: {{ $entry?->foto_belajar ? json_encode(asset('storage/' . $entry->foto_belajar)) : 'null' }} })">
-            <h3 class="text-sm font-bold text-sc-teal-700 uppercase tracking-wider mb-2">
-                Foto Saat Belajar
-                <span class="text-xs font-normal text-sc-ink-400 ml-1">(opsional)</span>
-            </h3>
 
         {{-- Preview area --}}
         <div x-show="preview || current" class="mb-3" style="display:none">
