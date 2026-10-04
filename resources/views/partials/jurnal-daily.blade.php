@@ -176,6 +176,7 @@ $kitabList = [
                     <span class="text-sm">{{ $item->label }}</span>
                 </label>
                 @endif
+                @endif
             @endforeach
         @endif
 

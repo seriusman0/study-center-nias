@@ -78,10 +78,12 @@ trait HasJurnalDailyActions
             ->where('checked', true)
             ->pluck('life_item_id')->all();
 
-        $checkedValues = JurnalLifeCheck::forStudent($user->id)
-            ->whereDate('tanggal', $date->toDateString())
-            ->whereIn('life_item_id', $itemIds)
-            ->pluck('value', 'life_item_id')->all();
+        $checkedValues = (property_exists($this, 'role') && $this->role === 'prajurit')
+            ? JurnalLifeCheck::forStudent($user->id)
+                ->whereDate('tanggal', $date->toDateString())
+                ->whereIn('life_item_id', $itemIds)
+                ->pluck('value', 'life_item_id')->all()
+            : [];
 
         $studyLogs  = $this->loadStudyLogs($user->id, $date, $itemIds);
         $studyState = $this->buildStudyState($studyLogs);
@@ -169,10 +171,12 @@ trait HasJurnalDailyActions
             ->where('checked', true)
             ->pluck('life_item_id')->all();
 
-        $checkedValues = JurnalLifeCheck::forStudent($targetUser->id)
-            ->whereDate('tanggal', $date->toDateString())
-            ->whereIn('life_item_id', $itemIds)
-            ->pluck('value', 'life_item_id')->all();
+        $checkedValues = (property_exists($this, 'role') && $this->role === 'prajurit')
+            ? JurnalLifeCheck::forStudent($targetUser->id)
+                ->whereDate('tanggal', $date->toDateString())
+                ->whereIn('life_item_id', $itemIds)
+                ->pluck('value', 'life_item_id')->all()
+            : [];
 
         $studyLogs  = $this->loadStudyLogs($targetUser->id, $date, $itemIds);
         $studyState = $this->buildStudyState($studyLogs);

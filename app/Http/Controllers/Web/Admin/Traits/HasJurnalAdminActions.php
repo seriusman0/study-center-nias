@@ -205,7 +205,7 @@ trait HasJurnalAdminActions
             foreach ($items as $it) {
                 if (in_array($it->id, $checkedIds)) {
                     if ($it->response_type === 'number') {
-                        $val = $dayChecks->firstWhere('life_item_id', $it->id)->value;
+                        $val = $dayChecks->firstWhere('life_item_id', $it->id)?->value;
                         $row[] = 'Y:' . $val;
                     } else {
                         $row[] = 'Y';
