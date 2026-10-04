@@ -29,7 +29,7 @@ class AdminJurnalHubController extends Controller
 
     private static array $ROLES = [
         'college'              => ['kategori' => ['pembacaan', 'sidang', 'rohani'], 'profile' => 'collegeProfile'],
-        'scholarship_teenager' => ['kategori' => ['pembacaan', 'sidang', 'rohani'], 'profile' => 'studentProfile'],
+        'scholarship_teenager' => ['kategori' => ['kerohanian', 'pembacaan', 'sidang', 'rohani'], 'profile' => 'studentProfile'],
         'student'              => ['kategori' => ['kerohanian', 'pendidikan', 'karakter', 'pembacaan', 'sidang', 'rohani', 'prajurit'], 'profile' => 'studentProfile'],
     ];
 
@@ -50,7 +50,7 @@ class AdminJurnalHubController extends Controller
                 ->whereIn('kategori', ['pembacaan', 'sidang', 'rohani'])
                 ->orderBy('kategori')->orderBy('id')->get(),
             'scholarship_teenager' => JurnalLifeItem::template()
-                ->whereIn('kategori', ['pembacaan', 'sidang', 'rohani'])
+                ->whereIn('kategori', ['kerohanian', 'pembacaan', 'sidang', 'rohani'])
                 ->orderBy('kategori')->orderBy('id')->get(),
         ];
 

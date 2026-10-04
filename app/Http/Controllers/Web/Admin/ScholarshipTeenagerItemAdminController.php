@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class ScholarshipTeenagerItemAdminController extends Controller
 {
-    private const KATEGORI = ['pembacaan', 'sidang', 'rohani'];
+    private const KATEGORI = ['kerohanian', 'pembacaan', 'sidang', 'rohani'];
     private const RESPONSE_TYPES = ['check', 'boolean', 'time_range'];
 
     public function index(Request $request)
