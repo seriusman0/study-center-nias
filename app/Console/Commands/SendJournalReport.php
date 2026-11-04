@@ -13,13 +13,47 @@ use Illuminate\Support\Facades\Log;
 #[Description('Send journal report to telegram. type can be: morning, afternoon, night, missing')]
 class SendJournalReport extends Command
 {
+    const MAX_LEN = 4000; // batas aman per pesan Telegram (max 4096)
+
+    /**
+     * Pecah teks panjang menjadi array pesan, masing-masing ≤ MAX_LEN karakter.
+     * Hanya memotong di batas baris (newline) agar tidak memotong nama orang.
+     */
+    private function splitMessage(string $header, string $body, string $footer): array
+    {
+        $lines  = explode("\n", $body);
+        $chunks = [];
+        $current = $header;
+
+        foreach ($lines as $line) {
+            $candidate = $current . $line . "\n";
+            // +footer untuk cek apakah masih muat
+            if (strlen($candidate . $footer) > self::MAX_LEN && $current !== $header) {
+                // Simpan chunk saat ini, mulai chunk baru
+                $chunks[]  = rtrim($current) . "\n" . $footer;
+                $current   = $header . $line . "\n";
+            } else {
+                $current = $candidate;
+            }
+        }
+
+        // Sisa terakhir
+        if (trim($current) !== trim($header)) {
+            $chunks[] = rtrim($current) . "\n" . $footer;
+        } elseif (empty($chunks)) {
+            $chunks[] = $header . $footer;
+        }
+
+        return $chunks;
+    }
+
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $type = $this->argument('type');
-        $token = env('TELEGRAM_BOT_TOKEN');
+        $type    = $this->argument('type');
+        $token   = env('TELEGRAM_BOT_TOKEN');
         $chatIds = explode(',', env('TELEGRAM_CHAT_ID', ''));
 
         if (!$token || empty(array_filter($chatIds))) {
@@ -56,7 +90,7 @@ class SendJournalReport extends Command
         $doneUserIds = array_unique(array_merge($journalDoneIds, $collegeDoneIds));
 
         // Kelompokkan: [cabang][role] => [nama, ...]
-        $grouped = []; // [cabangName][roleName][] = userName
+        $grouped = [];
         foreach ($users as $user) {
             $cabangName = htmlspecialchars(($user->cabang && !empty($user->cabang->nama)) ? $user->cabang->nama : 'Lainnya');
             $safeName   = htmlspecialchars($user->name);
@@ -64,36 +98,37 @@ class SendJournalReport extends Command
 
             $isDone = in_array($user->id, $doneUserIds);
 
-            if ($type === 'missing' && $isDone)   continue; // laporan missing: skip yang sudah isi
-            if ($type !== 'missing' && !$isDone)  continue; // laporan rekap: skip yang belum isi
+            if ($type === 'missing' && $isDone)  continue;
+            if ($type !== 'missing' && !$isDone) continue;
 
             foreach ($userRoles as $role) {
                 $grouped[$cabangName][$role][] = $safeName;
             }
         }
 
-        // Bangun pesan
-        $message = '';
+        // Header global (judul + tanggal)
         if ($type === 'missing') {
-            $message = "⚠️ <b>Laporan Jurnal Kosong</b> ($date)\n\n";
-            $message .= "Daftar anak/mahasiswa yang <b>belum</b> mengisi jurnal hari ini:\n";
+            $globalHeader = "⚠️ <b>Laporan Jurnal Kosong</b> ($date)\n\n"
+                          . "Daftar anak/mahasiswa yang <b>belum</b> mengisi jurnal hari ini:\n";
         } else {
-            $timeLabel = $type === 'morning' ? 'Pagi' : ($type === 'afternoon' ? 'Siang' : 'Malam');
-            $message = "📊 <b>Rekap Jurnal {$timeLabel}</b> ($date)\n\n";
-            $message .= "Daftar yang <b>sudah aktif</b> mengisi jurnal:\n";
+            $timeLabel    = $type === 'morning' ? 'Pagi' : ($type === 'afternoon' ? 'Siang' : 'Malam');
+            $globalHeader = "📊 <b>Rekap Jurnal {$timeLabel}</b> ($date)\n\n"
+                          . "Daftar yang <b>sudah aktif</b> mengisi jurnal:\n";
         }
 
-        // Kumpulkan semua pesan: 1 pesan per kombinasi Cabang+Role
+        // Kumpulkan semua pesan: 1 pesan per kombinasi Cabang+Role,
+        // dipecah otomatis jika terlalu panjang
         $messages = [];
 
         if (empty($grouped)) {
-            // Satu pesan global jika tidak ada data
             if ($type === 'missing') {
-                $messages[] = $message . "\n🎉 <b>Luar biasa! Semua orang sudah mengisi jurnalnya hari ini.</b>";
+                $messages[] = $globalHeader . "\n🎉 <b>Luar biasa! Semua orang sudah mengisi jurnalnya hari ini.</b>";
             } else {
-                $messages[] = $message . "\n💤 <i>Belum ada yang mengisi jurnal sejauh ini.</i>";
+                $messages[] = $globalHeader . "\n💤 <i>Belum ada yang mengisi jurnal sejauh ini.</i>";
             }
         } else {
+            $prefix = ($type === 'missing') ? '➖' : '✅';
+
             ksort($grouped);
             foreach ($grouped as $cabang => $roleData) {
                 foreach ($roleOrder as $role) {
@@ -102,24 +137,35 @@ class SendJournalReport extends Command
                     $label   = $roleLabels[$role] ?? $role;
                     $members = $roleData[$role];
                     sort($members);
+                    $total   = count($members);
 
-                    $msg = $message; // header (judul + tanggal)
-                    $msg .= "\n📍 <b>Cabang {$cabang}</b> — {$label}\n";
+                    // Header per blok Cabang+Role
+                    $blockHeader = $globalHeader
+                                 . "\n📍 <b>Cabang {$cabang}</b> — {$label}\n";
 
-                    $count = 0;
+                    // Footer per blok (total)
+                    $blockFooter = "\n<i>Total: {$total} orang</i>";
+
+                    // Baris nama
+                    $body = '';
                     foreach ($members as $name) {
-                        $count++;
-                        if ($count <= 40) {
-                            $prefix = ($type === 'missing') ? '➖' : '✅';
-                            $msg .= "  {$prefix} {$name}\n";
-                        }
+                        $body .= "  {$prefix} {$name}\n";
                     }
-                    if (count($members) > 40) {
-                        $msg .= "  ... (dan " . (count($members) - 40) . " lainnya)\n";
-                    }
-                    $msg .= "\n<i>Total: " . count($members) . " orang</i>";
 
-                    $messages[] = $msg;
+                    // Pecah jika perlu
+                    $chunks = $this->splitMessage($blockHeader, $body, $blockFooter);
+                    foreach ($chunks as $i => $chunk) {
+                        // Jika lebih dari 1 chunk, tambahkan penanda lanjutan
+                        if (count($chunks) > 1) {
+                            $part  = $i + 1;
+                            $total_parts = count($chunks);
+                            // Ganti footer chunk pertama & tengah
+                            if ($i < count($chunks) - 1) {
+                                $chunk = rtrim($chunk, "\n") . "\n<i>(lanjut...)</i>";
+                            }
+                        }
+                        $messages[] = $chunk;
+                    }
                 }
             }
         }
@@ -142,8 +188,7 @@ class SendJournalReport extends Command
                 } catch (\Exception $e) {
                     $this->error("Failed to send Telegram notification to {$chatId}: " . $e->getMessage());
                 }
-                // Jeda kecil agar tidak kena rate limit Telegram
-                usleep(300000); // 0.3 detik
+                usleep(300000); // 0.3 detik jeda anti rate-limit
             }
         }
 
